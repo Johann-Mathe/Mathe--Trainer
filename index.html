@@ -342,6 +342,10 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
 .strkstat>div{flex:1;background:var(--card2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center}
 .strkstat b{font-size:1.3rem;color:var(--org)}
 .strkstat small{display:block;color:var(--mut);font-weight:700;font-size:.78rem}
+.savechip{position:fixed;top:64px;right:14px;z-index:118;background:var(--card2);border:2px solid var(--grn);color:var(--ok);border-radius:999px;padding:5px 14px;font-size:.82rem;font-weight:800;opacity:0;transform:translateY(-10px);transition:all .3s;pointer-events:none}
+.savechip.on{opacity:1;transform:none}
+.savebox{display:flex;align-items:center;gap:12px;background:#20321c;border:2px solid var(--grn);border-radius:14px;padding:12px 14px;margin:6px 0}
+.savedot{width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--grn);color:#0d2a00;display:flex;align-items:center;justify-content:center;font-weight:800}
 </style>
 </head>
 <body>
@@ -356,6 +360,7 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
     </div>
   </div>
 </header>
+<div id="saveDot" class="savechip"></div>
 <main id="app"></main>
 <nav class="tabbar" id="tabbar">
   <button data-t="home" onclick="go('home')">🗺️<small>PFAD</small></button>
@@ -442,7 +447,16 @@ const IVL=[1,3,7,14,30];
 let state={xp:0,streak:0,lastDay:null,journal:[],mods:{},sessions:0,errors:[],
  dayXP:{d:'',xp:0},jokers:2,jokerWeek:'',goalDone:'',badges:[],blitzBest:0,blitzRuns:0,
  snd:true,vib:true,chests:[],stickers:[],boost:0,quests:null,miles:[],bestCombo:0};
-function save(){try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}}
+function save(){
+ state.savedAt=Date.now();
+ try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
+ /* zweite Kopie gebündelt schreiben, damit es flüssig bleibt */
+ if(typeof idbPut==='function'){
+  _dirty=true;
+  if(_saveT)clearTimeout(_saveT);
+  _saveT=setTimeout(()=>{idbPut(state);_dirty=false;},900);
+ }
+}
 function load(){try{const s=localStorage.getItem('mbtState');if(s){const p=JSON.parse(s);
  state=Object.assign(state,p);
  if(!state.dayXP)state.dayXP={d:'',xp:0};
@@ -513,7 +527,8 @@ function addXP(n,noBoost){
  const after=lvlOf(state.xp);
  if(after>before&&typeof levelUp==='function')levelUp(after);
 }
-function updHeader(){$('#hStreak').textContent='🔥 '+state.streak;
+function updHeader(){
+ $('#hStreak').textContent='🔥 '+state.streak;
  $('#hJoker').textContent='🃏 '+state.jokers;
  const l=lvlOf(state.xp);$('#hLvl').textContent='Lv. '+l+' · '+titleOf(l);
  $('#hXpTxt').textContent=state.xp+' XP';
@@ -893,6 +908,7 @@ function chestOpen(){
   big.classList.remove('shake');big.classList.add('burst');
   sfx.chest();cheer();
   $('#chRes').innerHTML='<div class="rewcard">'+rew.txt+'</div>';
+  saveNow('flash');
   btn.disabled=false;btn.textContent=state.chests.length?'Nächste Truhe ➜':'Weiter ➜';
   btn.onclick=()=>{if(state.chests.length)renderChest();else go('home');};
  },1150);
@@ -959,6 +975,109 @@ function checkMiles(){
    toast('🔥 <b>'+m+ ' Tage in Serie!</b> Weiter so!');
   }
  });
+}
+/* ============ Automatische Speicherung (Doppel-Sicherung) ============ */
+let _idb=null,_saveT=null,_lastSave=0,_dirty=false;
+
+/* --- IndexedDB als zweite, robustere Kopie --- */
+function idbOpen(){
+ return new Promise(res=>{
+  if(_idb)return res(_idb);
+  try{
+   if(typeof indexedDB==='undefined')return res(null);
+   const r=indexedDB.open('mbtDB',1);
+   r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('save'))db.createObjectStore('save');};
+   r.onsuccess=()=>{_idb=r.result;res(_idb);};
+   r.onerror=()=>res(null);
+  }catch(e){res(null);}
+ });
+}
+function idbPut(obj){
+ return idbOpen().then(db=>{
+  if(!db)return false;
+  try{
+   const tx=db.transaction('save','readwrite');
+   tx.objectStore('save').put(JSON.stringify(obj),'state');
+   return true;
+  }catch(e){return false;}
+ }).catch(()=>false);
+}
+function idbGet(){
+ return idbOpen().then(db=>new Promise(res=>{
+  if(!db)return res(null);
+  try{
+   const rq=db.transaction('save','readonly').objectStore('save').get('state');
+   rq.onsuccess=()=>{try{res(rq.result?JSON.parse(rq.result):null);}catch(e){res(null);}};
+   rq.onerror=()=>res(null);
+  }catch(e){res(null);}
+ })).catch(()=>null);
+}
+
+/* --- Speicher-Schutz beim Browser anfordern (verhindert automatisches Löschen) --- */
+function askPersist(){
+ try{
+  if(navigator.storage&&navigator.storage.persist){
+   navigator.storage.persisted().then(p=>{if(!p)navigator.storage.persist();});
+  }
+ }catch(e){}
+}
+
+/* --- Sofortspeicherung an wichtigen Punkten --- */
+function saveNow(reason){
+ state.savedAt=Date.now();
+ try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
+ idbPut(state);
+ _lastSave=Date.now();_dirty=false;
+ if(reason==='flash')flashSaved();
+}
+function flashSaved(){
+ const el=document.getElementById('saveDot');
+ if(!el)return;
+ el.textContent='💾 gespeichert';
+ el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+ setTimeout(()=>el.classList.remove('on'),1900);
+}
+function saveAgo(){
+ if(!state.savedAt)return 'noch nicht';
+ const s=Math.floor((Date.now()-state.savedAt)/1000);
+ if(s<10)return 'gerade eben';
+ if(s<60)return 'vor '+s+' Sekunden';
+ if(s<3600)return 'vor '+Math.floor(s/60)+' Minuten';
+ if(s<86400)return 'vor '+Math.floor(s/3600)+' Stunden';
+ return 'vor '+Math.floor(s/86400)+' Tagen';
+}
+
+/* --- Wiederherstellung beim Start: nimmt immer den weiter fortgeschrittenen Stand --- */
+function restoreBest(){
+ return idbGet().then(bak=>{
+  if(!bak)return false;
+  const cur=state;
+  const better=(bak.xp||0)>(cur.xp||0)||((bak.savedAt||0)>(cur.savedAt||0)&&(bak.xp||0)>=(cur.xp||0));
+  if(better){
+   state=Object.assign(state,bak);
+   try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
+   updHeader();
+   if(typeof renderHome==='function'&&!sess&&!les)renderHome();
+   toast('💾 Fortschritt wiederhergestellt ('+(state.xp||0)+' XP)');
+   return true;
+  }
+  return false;
+ }).catch(()=>false);
+}
+
+/* --- Automatik: beim Verlassen, Wechseln, Schließen --- */
+function autoSaveHooks(){
+ try{
+  document.addEventListener('visibilitychange',()=>{
+   if(document.visibilityState==='hidden')saveNow();
+   else{_lastSave=0;askPersist();}
+  });
+  window.addEventListener('pagehide',()=>saveNow());
+  window.addEventListener('beforeunload',()=>saveNow());
+  window.addEventListener('blur',()=>saveNow());
+  /* Sicherheitsnetz: alle 20 Sekunden, falls etwas offen blieb */
+  setInterval(()=>{if(_dirty)saveNow();},20000);
+ }catch(e){}
 }
 /* ============ Ansichten ============ */
 const BLOCKS=['Sicher rechnen','Algebra im Griff','Funktionen verstehen','Fit für die Oberstufe'];
@@ -1139,10 +1258,14 @@ function renderProfil(){
  h+='</div>';
  h+='<div class="setrow"><label class="sw"><input type="checkbox" '+(state.snd?'checked':'')+' onchange="toggleSnd(this.checked)"> 🔊 Sounds</label>';
  h+='<label class="sw"><input type="checkbox" '+(state.vib?'checked':'')+' onchange="toggleVib(this.checked)"> 📳 Vibration</label></div></div>';
- h+='<div class="card"><h2>💾 Fortschritt sichern</h2>'+
- '<p class="mut">Sichere deinen Spielstand ab und zu als Datei – oder nimm ihn mit auf ein anderes Gerät.</p>'+
- '<div class="btnrow"><button class="btn sec" onclick="exportState()">⬇️ Speichern</button>'+
- '<label class="btn ghost filebtn" style="display:inline-flex;align-items:center">⬆️ Laden<input type="file" accept=".json" onchange="importState(event)"></label></div></div>';
+ h+='<div class="card"><h2>💾 Automatische Speicherung</h2>'+
+ '<div class="savebox"><span class="savedot">✓</span><div><b>Alles automatisch gespeichert.</b>'+
+ '<div class="hint" style="margin:0">Zuletzt: '+saveAgo()+' · doppelt gesichert im Gerätespeicher</div></div></div>'+
+ '<p class="hint">Dein Fortschritt wird nach jeder Aufgabe, jeder Lektion und beim Schließen der App gespeichert – du musst nie selbst daran denken.</p>'+
+ '<h3 style="margin-top:16px">Gerätewechsel (optional)</h3>'+
+ '<p class="mut">Nur nötig, wenn du auf ein anderes Handy oder einen anderen Browser umziehen willst.</p>'+
+ '<div class="btnrow"><button class="btn sec" onclick="exportState()">⬇️ Als Datei sichern</button>'+
+ '<label class="btn ghost filebtn" style="display:inline-flex;align-items:center">⬆️ Datei laden<input type="file" accept=".json" onchange="importState(event)"></label></div></div>';
  h+='<div class="card"><h2>🧭 So funktioniert der Trainer</h2>'+
  '<p>1. Tippe auf den grünen <b>START</b>-Knoten – das Tagestraining beginnt mit Wiederholungen, dann kommt dein Fokusthema.</p>'+
  '<p>2. <b>Sterne</b> gibt es nur in ⚔️ Boss-Tests. <b>📅 Wiederholungen</b> kommen nach 1, 3, 7, 14, 30 Tagen.</p>'+
@@ -1413,6 +1536,7 @@ function renderSessEnd(){
  }
  h+='</div>';
  document.body.classList.remove('intask');
+ saveNow();
  $('#app').innerHTML=h;
  const won=(sess.type!=='boss'||sess.ok>=sess.pass);
  if(won){cheer();if(typeof sfx!=='undefined')sfx.finish();}
@@ -1425,10 +1549,11 @@ function renderSessEnd(){
 }
 let sessBonus=40;
 function saveReflect(){
+ /* Reflexion + Abschluss dauerhaft sichern */
  state.journal.push({d:dstr(),a1:$('#r1').value,a2:$('#r2').value,a3:$('#r3').value,ok:sess.ok,n:sess.q.length});
- state.sessions++;addXP(sessBonus||40,true);checkBadges();save();sess=null;go('home');
+ state.sessions++;addXP(sessBonus||40,true);checkBadges();saveNow('flash');sess=null;go('home');
 }
-function finishPlain(){addXP(sessBonus||40,true);sess=null;go('home');}
+function finishPlain(){addXP(sessBonus||40,true);saveNow('flash');sess=null;go('home');}
 
 /* ============ Blitzrunde ============ */
 const BLITZLEN=300;
@@ -1471,6 +1596,7 @@ function fmtT(s){return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2
 function renderBlitzEnd(){
  if(timerH)clearInterval(timerH);
  document.body.classList.remove('intask');
+ setTimeout(()=>saveNow(),50);
  const rec=sess.ok>state.blitzBest;
  if(rec)state.blitzBest=sess.ok;
  state.blitzRuns++;
@@ -1809,6 +1935,7 @@ function lesEnd(){
  const first=!s.seen;
  s.seen=true;save();
  if(first)addXP(25);
+ saveNow('flash');
  let h='<div class="card"><div class="bigemoji"><span class="mentorfig">'+M.e+'</span></div>';
  h+='<h1 style="text-align:center">Lektion geschafft!'+(first?' <b>+25 XP</b>':'')+'</h1>';
  h+='<p class="mut" style="text-align:center">'+M.n+': „Stark gemacht! Jetzt festigt das Üben alles – Wissen wächst beim Rechnen."</p>';
@@ -3283,6 +3410,8 @@ function shufMC(opts,correctIdx){
 
 /* ============ Start ============ */
 load();updHeader();renderHome();
+askPersist();autoSaveHooks();
+restoreBest();
 /* ============ App-Installation (PWA) ============ */
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
  navigator.serviceWorker.register('./sw.js').catch(function(){});
