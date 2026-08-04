@@ -287,6 +287,61 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
  .prow.o3{transform:translateX(26px)}
  .prow.o4{transform:translateX(52px)}
 }
+/* ---------- Politur & Animationen ---------- */
+.btn{text-transform:uppercase}
+.tin{animation:tslide .3s ease}
+@keyframes tslide{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
+.prow{animation:nodein .5s ease both}
+@keyframes nodein{from{opacity:0;transform:translateY(16px) scale(.85)}to{opacity:1;transform:none}}
+.node.cur{animation:curpulse 2s infinite}
+@keyframes curpulse{0%,100%{box-shadow:0 0 0 0 rgba(88,204,2,.45)}50%{box-shadow:0 0 0 13px rgba(88,204,2,0)}}
+.mcopt.ok,.chip-tap.sel,.errline.ok,.memc.found{animation:okpop .35s ease}
+@keyframes okpop{40%{transform:scale(1.045)}}
+.mcopt.bad,.errline.miss{animation:badshake .45s ease}
+@keyframes badshake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.fb.ok::before{content:'✓ ';font-weight:800}
+.lprog>div{position:relative;overflow:hidden}
+.lprog>div::after{content:'';position:absolute;top:0;bottom:0;width:40px;left:-42px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shine 1.9s infinite}
+@keyframes shine{to{left:110%}}
+.tabbar button.on{animation:pop .28s ease}
+.bigemoji{animation:drop .6s cubic-bezier(.2,1.5,.4,1)}
+@keyframes drop{from{transform:translateY(-46px) scale(.4);opacity:0}}
+.statrow .statbox{animation:nodein .45s ease both}
+.statrow .statbox:nth-child(2){animation-delay:.06s}
+.statrow .statbox:nth-child(3){animation-delay:.12s}
+.statrow .statbox:nth-child(4){animation-delay:.18s}
+.statrow .statbox:nth-child(5){animation-delay:.24s}
+.statrow .statbox:nth-child(6){animation-delay:.3s}
+.bubble{animation:pop .3s ease}
+.quest{animation:nodein .4s ease both}
+.quest:nth-child(3){animation-delay:.07s}
+.quest:nth-child(4){animation-delay:.14s}
+/* ---------- Streak-Seite ---------- */
+.flamezone{position:relative;text-align:center;padding:30px 0 6px}
+.flameglow{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,0,.5),transparent 68%);animation:glow 2s ease-in-out infinite;pointer-events:none}
+@keyframes glow{0%,100%{transform:translateX(-50%) scale(1);opacity:.75}50%{transform:translateX(-50%) scale(1.2);opacity:1}}
+.flamebig{position:relative;font-size:5.4rem;display:inline-block;animation:flamewob 2.2s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(255,110,0,.6))}
+@keyframes flamewob{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.08)}}
+.strknum{font-size:3.6rem;font-weight:800;color:var(--org);line-height:1.05;animation:drop .6s cubic-bezier(.2,1.5,.4,1)}
+.strksub{color:var(--org);font-weight:800;font-size:1.25rem}
+.cal{background:var(--card2);border:2px solid var(--line);border-radius:16px;padding:14px}
+.calnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.calnav b{font-size:1.12rem}
+.calnav button{font-size:1.4rem;color:var(--mut);padding:2px 14px;font-weight:800}
+.calnav button:disabled{opacity:.3}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:7px}
+.calgrid .hd{text-align:center;font-size:.74rem;color:var(--mut);font-weight:800;padding-bottom:4px}
+.cd{height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--mut)}
+.cd.p{background:linear-gradient(180deg,#ff9600,#ff4b4b);color:#fff}
+.cd.rs{border-radius:99px 0 0 99px}
+.cd.re{border-radius:0 99px 99px 0}
+.cd.rs.re{border-radius:99px}
+.cd.td{box-shadow:inset 0 0 0 3px var(--gold);border-radius:99px}
+.perfbadge{background:var(--gold);color:#3a2c00;border-radius:10px;padding:3px 14px;font-weight:800;font-size:.8rem;display:inline-block;animation:pop .4s ease}
+.strkstat{display:flex;gap:10px;margin:12px 0}
+.strkstat>div{flex:1;background:var(--card2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.strkstat b{font-size:1.3rem;color:var(--org)}
+.strkstat small{display:block;color:var(--mut);font-weight:700;font-size:.78rem}
 </style>
 </head>
 <body>
@@ -294,7 +349,7 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
   <div class="hrow">
     <div class="logo" onclick="go('home')">🧮 Mathe-Trainer</div>
     <div class="hstat">
-      <span class="chip" id="hStreak">🔥 0</span>
+      <span class="chip" id="hStreak" onclick="go('streak')" style="cursor:pointer">🔥 0</span>
       <span class="chip" id="hJoker">🃏 2</span>
       <span class="chip" id="hLvl">Lv. 1</span>
       <div class="xpwrap"><div class="xpbar"><div id="hXp" style="width:0%"></div></div><span class="chip" id="hXpTxt">0 XP</span></div>
@@ -398,6 +453,8 @@ function load(){try{const s=localStorage.getItem('mbtState');if(s){const p=JSON.
  if(!state.chests)state.chests=[];if(!state.stickers)state.stickers=[];
  if(!state.boost)state.boost=0;if(!state.miles)state.miles=[];
  if(!state.bestCombo)state.bestCombo=0;
+ if(!state.days)state.days=[];
+ if(state.lastDay&&state.days.indexOf(state.lastDay)<0)state.days.push(state.lastDay);
 }}catch(e){}}
 function st(id){if(!state.mods[id])state.mods[id]={c:0,t:0,a:0,seen:false,boss:0,stage:-1,due:'',hist:[],lvl:1};
  const s=state.mods[id];
@@ -424,7 +481,10 @@ function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/864e5);}
 function touchDay(){
  const wk=weekKey();
  if(state.jokerWeek!==wk){state.jokerWeek=wk;state.jokers=2;}
- const today=dstr();if(state.lastDay===today)return;
+ const today=dstr();
+ if(!state.days)state.days=[];
+ if(state.days.indexOf(today)<0){state.days.push(today);if(state.days.length>750)state.days.shift();save();}
+ if(state.lastDay===today)return;
  if(state.lastDay==null){state.streak=1;}
  else{const diff=dayDiff(state.lastDay,today);
   if(diff===1)state.streak++;
@@ -559,6 +619,7 @@ function mountTask(container,modId,lvl,onDone,opts){
  task.lvl=lvl;
  cur={task:task,tries:0,done:false,onDone:onDone,modId:modId,strict:!!opts.strict,autoNext:!!opts.autoNext};
  container.innerHTML=taskHTML(task,cur.strict);
+ container.classList.remove('tin');void container.offsetWidth;container.classList.add('tin');
  if(task.game&&GAMES[task.game].init)GAMES[task.game].init(task);
  const inp=container.querySelectorAll('input');
  inp.forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')checkTask();}));
@@ -683,6 +744,7 @@ function go(view,arg){window.scrollTo(0,0);
  else if(view==='hub')renderHub();
  else if(view==='quests')renderQuests();
  else if(view==='profil')renderProfil();
+ else if(view==='streak'){strkOff=0;renderStreak();}
  document.body.classList.toggle('intask',!!document.querySelector('.btnrow.taskbar'));
 }
 function toggleSnd(v){state.snd=v;save();if(v){_ac=null;sfx.ok();}}
@@ -990,6 +1052,47 @@ function importState(ev){
   catch(e){alert('Die Datei konnte nicht gelesen werden.');}};
  r.readAsText(f);}
 
+let strkOff=0;
+function strkNav(d){if(strkOff+d>0)return;strkOff+=d;renderStreak();}
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function renderStreak(){
+ setTab('');
+ const now=new Date();
+ const base=new Date(now.getFullYear(),now.getMonth()+strkOff,1);
+ const y=base.getFullYear(),mo=base.getMonth();
+ const dim=new Date(y,mo+1,0).getDate();
+ const startCol=(base.getDay()+6)%7;
+ const today=dstr();
+ const set={};(state.days||[]).forEach(d=>set[d]=1);
+ let practiced=0;
+ let cells='';
+ ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(w=>{cells+='<div class="hd">'+w+'</div>';});
+ for(let i=0;i<startCol;i++)cells+='<div class="cd"></div>';
+ for(let d=1;d<=dim;d++){
+  const ds=dstr(new Date(y,mo,d));
+  const p=!!set[ds];if(p)practiced++;
+  const col=(startCol+d-1)%7;
+  const prevP=d>1&&col>0&&!!set[dstr(new Date(y,mo,d-1))];
+  const nextP=d<dim&&col<6&&!!set[dstr(new Date(y,mo,d+1))];
+  let cls='cd'+(p?' p':'')+(p&&!prevP?' rs':'')+(p&&!nextP?' re':'')+(ds===today?' td':'');
+  cells+='<div class="'+cls+'">'+d+'</div>';
+ }
+ const isCurMonth=strkOff===0;
+ const lastDay=isCurMonth?now.getDate():dim;
+ let perfect=practiced>0&&lastDay>0;
+ for(let d=1;d<=lastDay;d++)if(!set[dstr(new Date(y,mo,d))]){perfect=false;break;}
+ let h='<div class="lessonhead"><button class="lx" onclick="go(\'home\')">✕</button><b style="flex:1;text-align:center">Serie</b><span style="width:40px"></span></div>';
+ h+='<div class="card"><div class="flamezone"><div class="flameglow"></div><span class="flamebig">🔥</span>';
+ h+='<div class="strknum">'+state.streak+'</div><div class="strksub">Tage Serie!</div></div>';
+ h+='<div class="bubble" style="margin-top:14px">🃏 Halte deine Serie am Leben: Ein Training pro Tag genügt. Verpasst du einen Tag, springt automatisch ein <b>Joker</b> ein ('+state.jokers+' übrig).</div></div>';
+ h+='<div class="card"><div class="calnav"><button onclick="strkNav(-1)">‹</button><b>'+MONATE[mo]+' '+y+(perfect?' <span class="perfbadge">PERFEKT</span>':'')+'</b><button onclick="strkNav(1)" '+(strkOff>=0?'disabled':'')+'>›</button></div>';
+ h+='<div class="strkstat"><div><b>🔥 '+practiced+'</b><small>Tage geübt</small></div><div><b>🃏 '+state.jokers+'</b><small>Joker übrig</small></div></div>';
+ h+='<div class="cal"><div class="calgrid">'+cells+'</div></div></div>';
+ h+='<div class="card"><h2>Meilensteine</h2><div class="badgewrap">';
+ MILES.forEach(m=>{h+='<span class="badge" style="'+(state.streak>=m?'':'opacity:.4;filter:grayscale(1)')+'">🔥 '+m+' Tage</span>';});
+ h+='</div></div>';
+ $('#app').innerHTML=h;
+}
 function renderHub(){
  setTab('hub');
  const errN=state.errors.length;
@@ -1660,7 +1763,8 @@ function renderLesson(){
  for(let k=0;k<=les.i;k++)if(L[k].b)board+='<div class="tl'+(k===les.i?' neu':'')+'">'+L[k].b+'</div>';
  if(board)h+='<div class="tafel">'+board+'</div>';
  if(step.q){
-  step.o.forEach((o,i)=>{h+='<button class="mcopt" onclick="lesPick(this,'+i+')">'+o+'</button>';});
+  if(!les.perm||les.perm.length!==step.o.length)les.perm=shuffled(step.o.map((_,i)=>i));
+  les.perm.forEach((oi,i)=>{h+='<button class="mcopt" onclick="lesPick(this,'+i+')">'+step.o[oi]+'</button>';});
  }
  h+='<div class="btnrow taskbar"><button class="btn" id="lesNext" onclick="lesNext()" '+(step.q?'style="display:none"':'')+'>'+(les.i===L.length-1?'Lektion abschließen ✅':'WEITER')+'</button></div>';
  h+='</div>';
@@ -1673,7 +1777,8 @@ function lesPick(btn,i){
  if(typeof sfx!=='undefined')sfx.click();
  const step=LESSONS[les.mod][les.i];
  const fig=$('#menFig'),say=$('#menSay');
- if(i===step.a){
+ const orig=les.perm?les.perm[i]:i;
+ if(orig===step.a){
   les.answered=true;
   btn.classList.add('ok');
   document.querySelectorAll('.mcopt').forEach(b=>b.disabled=true);
@@ -1690,7 +1795,7 @@ function lesPick(btn,i){
 }
 function lesNext(){
  if(!les)return;
- les.i++;les.answered=false;les.tried=false;
+ les.i++;les.answered=false;les.tried=false;les.perm=null;
  if(les.i>=LESSONS[les.mod].length)lesEnd();else renderLesson();
 }
 function lesQuit(){
