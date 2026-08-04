@@ -1,0 +1,17 @@
+{
+ "name": "Mathe-Basis-Trainer",
+ "short_name": "Mathe-Trainer",
+ "description": "Dein täglicher Mathe-Trainer: interaktive Lektionen, Aufgaben, Boss-Kämpfe und Wiederholungen.",
+ "start_url": "./index.html",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#f2f4f8",
+ "theme_color": "#3b5bdb",
+ "lang": "de",
+ "icons": [
+  {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"},
+  {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}

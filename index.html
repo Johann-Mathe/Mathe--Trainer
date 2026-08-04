@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mathe-Basis-Trainer</title>
+<meta name="theme-color" content="#3b5bdb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mathe-Trainer">
+<style>
+:root{
+  --bg:#f2f4f8; --card:#ffffff; --ink:#1e2533; --mut:#6b7486;
+  --pri:#3b5bdb; --pri2:#4c6ef5; --ok:#2b8a3e; --okbg:#e6f7ea;
+  --bad:#c92a2a; --badbg:#fdecec; --warn:#e8590c;
+  --gold:#f5a623; --line:#e3e7ef; --rad:14px;
+  --sh:0 1px 3px rgba(20,30,60,.08),0 4px 14px rgba(20,30,60,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16px;line-height:1.55}
+button{font-family:inherit;font-size:1rem;cursor:pointer;border:none;border-radius:10px}
+input,textarea,select{font-family:inherit;font-size:1.05rem;border:2px solid var(--line);border-radius:10px;padding:8px 12px;background:#fff;color:var(--ink)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pri2)}
+header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#3b5bdb,#5f3dc4);color:#fff;padding:10px 16px;box-shadow:var(--sh)}
+.hrow{display:flex;align-items:center;gap:14px;max-width:980px;margin:0 auto;flex-wrap:wrap}
+.logo{font-weight:800;font-size:1.15rem;letter-spacing:.3px;cursor:pointer;white-space:nowrap}
+.hstat{display:flex;align-items:center;gap:14px;margin-left:auto;flex-wrap:wrap}
+.chip{background:rgba(255,255,255,.16);border-radius:999px;padding:4px 12px;font-size:.9rem;font-weight:600;white-space:nowrap}
+.xpwrap{display:flex;align-items:center;gap:8px;min-width:170px}
+.xpbar{flex:1;height:10px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;min-width:90px}
+.xpbar>div{height:100%;background:#ffd43b;border-radius:99px;transition:width .4s}
+main{max-width:980px;margin:0 auto;padding:22px 16px 80px}
+.card{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:20px;margin-bottom:16px}
+h1{font-size:1.5rem;margin-bottom:6px}
+h2{font-size:1.2rem;margin-bottom:10px}
+h3{font-size:1.05rem;margin:14px 0 6px}
+.mut{color:var(--mut);font-size:.95rem}
+.btn{background:var(--pri);color:#fff;padding:11px 20px;font-weight:700;transition:transform .1s, background .2s}
+.btn:hover{background:var(--pri2)}
+.btn:active{transform:scale(.97)}
+.btn.big{font-size:1.1rem;padding:14px 26px;width:100%}
+.btn.sec{background:#e7ecf7;color:var(--pri)}
+.btn.sec:hover{background:#dbe4f5}
+.btn.ghost{background:transparent;color:var(--pri);border:2px solid var(--line)}
+.btn.warn{background:var(--warn)}
+.btn:disabled{opacity:.45;cursor:default}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:12px}
+.mcard{background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:14px;cursor:pointer;border:2px solid transparent;transition:border .15s, transform .1s}
+.mcard:hover{border-color:var(--pri2);transform:translateY(-2px)}
+.mcard .ic{font-size:1.6rem}
+.mcard .tt{font-weight:700;margin:4px 0 2px;font-size:.98rem}
+.pbar{height:8px;background:#edf0f6;border-radius:99px;overflow:hidden;margin-top:8px}
+.pbar>div{height:100%;background:linear-gradient(90deg,#4c6ef5,#15aabf);border-radius:99px;transition:width .4s}
+.stars{color:var(--gold);font-size:.95rem;letter-spacing:2px}
+.blockh{margin:26px 0 10px;display:flex;align-items:center;gap:10px}
+.blockh .bnum{background:var(--pri);color:#fff;border-radius:8px;padding:2px 10px;font-weight:800;font-size:.9rem}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:10px;text-align:center;border-radius:10px;background:#e9edf5;font-weight:700;cursor:pointer;color:var(--mut)}
+.tab.on{background:var(--pri);color:#fff}
+.merk{background:#eef3ff;border-left:5px solid var(--pri);border-radius:10px;padding:12px 16px;margin:12px 0}
+.merk b{color:var(--pri)}
+.exbox{background:#fbf7ee;border-left:5px solid var(--gold);border-radius:10px;padding:12px 16px;margin:12px 0}
+.exbox .stp{padding:6px 0;border-bottom:1px dashed #e8ddc4}
+.exbox .stp:last-child{border-bottom:none}
+.formel{background:#f5f6fa;border-radius:8px;padding:8px 14px;margin:6px 0;font-size:1.08rem;display:inline-block}
+.q{font-size:1.22rem;margin:14px 0;line-height:1.9}
+.lvlb{display:inline-block;border-radius:999px;padding:3px 12px;font-size:.82rem;font-weight:700}
+.lvl1{background:#e6f7ea;color:#2b8a3e}
+.lvl2{background:#fff3e0;color:#e8590c}
+.lvl3{background:#f3e8ff;color:#7048e8}
+.fieldrow{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.fieldrow label{font-weight:600;min-width:0}
+.fieldrow input{width:170px}
+.fb{border-radius:10px;padding:12px 16px;margin:12px 0;font-weight:600;display:none}
+.fb.ok{background:var(--okbg);color:var(--ok);display:block}
+.fb.bad{background:var(--badbg);color:var(--bad);display:block}
+.steps{background:#f5f6fa;border-radius:10px;padding:14px 18px;margin:12px 0;display:none}
+.steps.show{display:block}
+.steps .st{padding:5px 0;line-height:1.9}
+.steps .st::before{content:"→ ";color:var(--pri);font-weight:800}
+.btnrow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.mcopt{display:block;width:100%;text-align:left;background:#f2f4fa;border:2px solid var(--line);border-radius:10px;padding:11px 16px;margin:7px 0;font-size:1.05rem;transition:all .15s}
+.mcopt:hover{border-color:var(--pri2)}
+.mcopt.ok{background:var(--okbg);border-color:var(--ok);color:var(--ok);font-weight:700}
+.mcopt.bad{background:var(--badbg);border-color:var(--bad);color:var(--bad)}
+.fr{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 3px;line-height:1.25}
+.fr>span:first-child{border-bottom:2px solid currentColor;padding:0 5px}
+.fr>span:last-child{padding:0 5px}
+.ol{text-decoration:overline}
+sup{font-size:.72em}
+.phase{background:#5f3dc4;color:#fff;border-radius:999px;padding:4px 16px;font-weight:700;font-size:.9rem;display:inline-block}
+.sesshead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.sessbar{height:10px;background:#e6eaf2;border-radius:99px;overflow:hidden;margin:10px 0 18px}
+.sessbar>div{height:100%;background:linear-gradient(90deg,#3b5bdb,#15aabf);transition:width .3s}
+.bigemoji{font-size:3rem;text-align:center;margin:10px 0}
+.statrow{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.statbox{flex:1;min-width:130px;background:#f5f7fc;border-radius:12px;padding:14px;text-align:center}
+.statbox .v{font-size:1.6rem;font-weight:800;color:var(--pri)}
+.statbox .l{font-size:.85rem;color:var(--mut)}
+.jentry{border-left:4px solid var(--pri2);background:#f7f9fd;border-radius:8px;padding:10px 14px;margin:10px 0}
+.cheer{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}
+.cheer span{position:absolute;top:-40px;font-size:1.8rem;animation:fall 1.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(340deg);opacity:.2}}
+.navrow{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.crumb{background:none;color:var(--pri);font-weight:700;padding:6px 2px}
+.hint{font-size:.88rem;color:var(--mut);margin-top:4px}
+.badgewrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.badge{background:#fff8e1;border:1.5px solid #ffd43b;border-radius:999px;padding:4px 12px;font-size:.85rem;font-weight:600}
+table.wt{border-collapse:collapse;margin:8px 0}
+table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align:center}
+.path{position:relative;max-width:560px;margin:0 auto;padding:6px 0}
+.path::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:3px dashed #c5cfe6;transform:translateX(-1.5px)}
+.stn{position:relative;width:46%;background:var(--card);border-radius:var(--rad);box-shadow:var(--sh);padding:12px 14px;margin:16px 0;cursor:pointer;border:2px solid transparent;transition:transform .1s,border .15s;z-index:1}
+.stn:hover{border-color:var(--pri2);transform:translateY(-2px)}
+.stn.l{margin-right:auto}.stn.r{margin-left:auto}
+.stn .ic{font-size:1.5rem}
+.stn .tt{font-weight:700;font-size:.95rem;margin:2px 0}
+.stn.rec{border-color:var(--pri);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,91,219,.35)}50%{box-shadow:0 0 0 9px rgba(59,91,219,0)}}
+.stn .flags{position:absolute;top:-11px;right:-6px;font-size:1.1rem;background:#fff;border-radius:999px;padding:1px 7px;box-shadow:var(--sh)}
+.pblock{position:relative;text-align:center;margin:24px 0 4px;z-index:1}
+.pblock span{background:var(--pri);color:#fff;border-radius:999px;padding:5px 18px;font-weight:800;font-size:.9rem;box-shadow:var(--sh)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,90px);background:#1e2533;color:#fff;padding:12px 22px;border-radius:12px;font-weight:600;z-index:120;opacity:0;transition:all .35s;box-shadow:0 6px 24px rgba(0,0,0,.3);max-width:90%;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.bossbox{background:linear-gradient(135deg,#fff4e6,#ffe8cc);border:2px solid #ffc078;border-radius:12px;padding:14px 16px;margin:10px 0}
+.ringwrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.blitztime{font-size:1.5rem;font-weight:800;color:var(--warn)}
+.duebar{background:#fff9db;border:1.5px solid #ffe066;border-radius:12px;padding:10px 14px;margin:12px 0}
+.filebtn input{display:none}
+@media(max-width:560px){ .fieldrow input{width:130px} .q{font-size:1.1rem} .stn{width:47%;padding:10px} }
+.bossarena{background:linear-gradient(135deg,#2b2d42,#4a3f6b);border-radius:14px;padding:14px 16px;margin:10px 0 16px;color:#fff;display:flex;gap:14px;align-items:center}
+.bossfig{font-size:3rem;display:inline-block;animation:bossbob 2.4s ease-in-out infinite}
+.bossfig.hit{animation:bosshit .55s ease}
+.bossfig.mock{animation:bossmock .65s ease}
+.bossfig.dead{animation:bossdead 1.4s ease forwards}
+@keyframes bossbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes bosshit{0%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-9deg);filter:brightness(1.8) hue-rotate(-45deg)}40%{transform:translateX(9px) rotate(7deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
+@keyframes bossmock{0%,100%{transform:scale(1)}30%{transform:scale(1.28) rotate(-7deg)}60%{transform:scale(1.15) rotate(7deg)}}
+@keyframes bossdead{0%{transform:rotate(0) translateY(0);opacity:1}100%{transform:rotate(180deg) translateY(46px);opacity:.15}}
+.bossname{font-weight:800;font-size:.85rem;margin-top:4px}
+.bossmeta{font-size:.82rem;opacity:.92}
+.bubble{position:relative;background:#fff;color:#1e2533;border-radius:12px;padding:9px 14px;font-weight:600}
+.bubble::before{content:'';position:absolute;left:-8px;top:16px;border:8px solid transparent;border-right-color:#fff;border-left:none}
+.bosshp{height:10px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden;margin-top:4px}
+.bosshp>div{height:100%;background:linear-gradient(90deg,#ff8787,#fa5252);border-radius:99px;transition:width .5s}
+.mentorarena{background:linear-gradient(135deg,#e8f3ff,#f3ecff);border-radius:14px;padding:14px 16px;margin:10px 0 16px;display:flex;gap:14px;align-items:flex-start}
+.mentorfig{font-size:3rem;display:inline-block;animation:bossbob 2.6s ease-in-out infinite}
+.mentorfig.happy{animation:mhappy .7s ease}
+.mentorfig.think{animation:mthink .7s ease}
+@keyframes mhappy{0%,100%{transform:scale(1)}40%{transform:translateY(-14px) scale(1.18) rotate(8deg)}70%{transform:translateY(0) scale(1.05)}}
+@keyframes mthink{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}60%{transform:rotate(10deg)}}
+.mname{font-weight:800;font-size:.85rem;margin-top:4px;color:#4a3f6b}
+.tafel{background:#2f4538;color:#f4f8f3;border-radius:14px;padding:14px 20px;margin:12px 0;font-size:1.12rem;line-height:2.1;box-shadow:inset 0 0 40px rgba(0,0,0,.25)}
+.tafel .tl{padding:3px 0}
+.tafel .tl.neu{animation:tlin .5s ease}
+@keyframes tlin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <div class="logo" onclick="go('home')">🧮 Mathe-Basis-Trainer</div>
+    <div class="hstat">
+      <span class="chip" id="hStreak">🔥 0</span>
+      <span class="chip" id="hJoker">🃏 2</span>
+      <span class="chip" id="hLvl">Level 1</span>
+      <div class="xpwrap"><div class="xpbar"><div id="hXp" style="width:0%"></div></div><span class="chip" id="hXpTxt">0 XP</span></div>
+    </div>
+  </div>
+</header>
+<main id="app"></main>
+<script>
+/* ============ Hilfsfunktionen ============ */
+const $=s=>document.querySelector(s);
+const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[ri(0,a.length-1)];
+const gcd=(a,b)=>b?gcd(b,Math.abs(a%b)):Math.abs(a);
+function fmt(x){let r=Math.round(x*1000)/1000;return (''+r).replace('.',',');}
+function frac(n,d){return '<span class="fr"><span>'+n+'</span><span>'+d+'</span></span>';}
+function wz(x){return '√<span class="ol">'+x+'</span>';}
+function sgn(n){return n<0?'− '+Math.abs(n):'+ '+n;}
+function co(c,v){if(c===0)return'';return (c===1?'':(c===-1?'-':c))+v;}
+function linStr(a,b,v){v=v||'x';let p=[];
+ if(a!==0)p.push(co(a,v));
+ if(b!==0)p.push((b>0&&p.length?'+':'')+b);
+ return p.length?p.join(''):'0';}
+function linAcc(a,b,v){v=v||'x';const s1=linStr(a,b,v);let p=[];
+ if(b!==0)p.push(''+b);
+ if(a!==0)p.push((a>0&&p.length?'+':'')+co(a,v));
+ const s2=p.length?p.join(''):'0';
+ return s1===s2?[s1]:[s1,s2];}
+function normTxt(s){return (''+s).toLowerCase()
+ .replace(/\s+/g,'').replace(/\*/g,'').replace(/·/g,'').replace(/−/g,'-')
+ .replace(/,/g,'.').replace(/²/g,'^2').replace(/³/g,'^3')
+ .replace(/≤/g,'<=').replace(/≥/g,'>=').replace(/^f\(x\)=/,'y=').replace(/\(\+/g,'(')
+ .replace(/wurzel/g,'√');}
+function parseNum(s){s=(''+s).trim().toLowerCase().replace(/\s+/g,'').replace(',', '.').replace('−','-').replace(/^=+/,'').replace(/(grad|cm|mm|km|kg|std|min|jahre|jahr|tage|h|g|m|%|€|°|\u20ac)+$/,'');
+ const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+ if(m)return parseFloat(m[1])/parseFloat(m[2]);
+ if(!/^-?\d+(\.\d+)?$/.test(s))return null;
+ return parseFloat(s);}
+function redFrac(n,d){const g=gcd(n,d)||1;n/=g;d/=g;if(d<0){n=-n;d=-d;}return [n,d];}
+function fracTxt(n,d){const r=redFrac(n,d);return r[1]===1?(''+r[0]):r[0]+'/'+r[1];}
+function ineqAcc(v,sign){const flip={'<':'>','>':'<','<=':'>=','>=':'<='};
+ return ['x'+sign+v, v+flip[sign]+'x'];}
+const disp={'<':'&lt;','>':'&gt;','<=':'≤','>=':'≥'};
+
+/* ============ Koordinatensystem (SVG) ============ */
+function graphSVG(items,opts){
+ opts=opts||{};const R=5,W=240,u=W/(2*R);
+ const X=x=>W/2+x*u, Y=y=>W/2-y*u;
+ let g='';
+ for(let i=-R;i<=R;i++){
+  g+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+W+'" stroke="#e4e8f0" stroke-width="1"/>';
+  g+='<line x1="0" y1="'+Y(i)+'" x2="'+W+'" y2="'+Y(i)+'" stroke="#e4e8f0" stroke-width="1"/>';
+ }
+ g+='<line x1="0" y1="'+Y(0)+'" x2="'+W+'" y2="'+Y(0)+'" stroke="#7a8499" stroke-width="1.6"/>';
+ g+='<line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+W+'" stroke="#7a8499" stroke-width="1.6"/>';
+ g+='<polygon points="'+W+','+Y(0)+' '+(W-8)+','+(Y(0)-4)+' '+(W-8)+','+(Y(0)+4)+'" fill="#7a8499"/>';
+ g+='<polygon points="'+X(0)+',0 '+(X(0)-4)+',8 '+(X(0)+4)+',8" fill="#7a8499"/>';
+ g+='<text x="'+(W-10)+'" y="'+(Y(0)+14)+'" font-size="10" fill="#6b7486">x</text>';
+ g+='<text x="'+(X(0)+6)+'" y="10" font-size="10" fill="#6b7486">y</text>';
+ [-4,-2,2,4].forEach(i=>{
+  g+='<text x="'+(X(i)-3)+'" y="'+(Y(0)+13)+'" font-size="9" fill="#6b7486">'+i+'</text>';
+  g+='<text x="'+(X(0)+4)+'" y="'+(Y(i)+3)+'" font-size="9" fill="#6b7486">'+i+'</text>';
+ });
+ (items||[]).forEach(it=>{
+  const col=it.col||'#3b5bdb';
+  if(it.f){
+   let seg=[];const segs=[];
+   for(let x=-R;x<=R+0.001;x+=0.05){
+    const y=it.f(x);
+    if(isFinite(y)&&y>=-R-0.6&&y<=R+0.6)seg.push(X(x).toFixed(1)+','+Y(y).toFixed(1));
+    else{if(seg.length>1)segs.push(seg);seg=[];}
+   }
+   if(seg.length>1)segs.push(seg);
+   segs.forEach(s=>{g+='<polyline points="'+s.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.6"/>';});
+  }
+  if(it.dot){g+='<circle cx="'+X(it.dot[0])+'" cy="'+Y(it.dot[1])+'" r="4.5" fill="'+(it.col||'#e8590c')+'" stroke="#fff" stroke-width="1.5"/>';}
+ });
+ return '<div style="text-align:center;margin:8px 0"><svg width="'+W+'" height="'+W+'" viewBox="0 0 '+W+' '+W+'" style="max-width:100%;background:#fff;border:1.5px solid var(--line);border-radius:10px">'+g+'</svg></div>';
+}
+
+/* ============ Zustand ============ */
+const GOAL=100;
+const IVL=[1,3,7,14,30];
+let state={xp:0,streak:0,lastDay:null,journal:[],mods:{},sessions:0,errors:[],
+ dayXP:{d:'',xp:0},jokers:2,jokerWeek:'',goalDone:'',badges:[],blitzBest:0,blitzRuns:0};
+function save(){try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}}
+function load(){try{const s=localStorage.getItem('mbtState');if(s){const p=JSON.parse(s);
+ state=Object.assign(state,p);
+ if(!state.dayXP)state.dayXP={d:'',xp:0};
+ if(state.jokers==null)state.jokers=2;
+ if(!state.badges)state.badges=[];
+ if(!state.blitzBest)state.blitzBest=0;if(!state.blitzRuns)state.blitzRuns=0;
+}}catch(e){}}
+function st(id){if(!state.mods[id])state.mods[id]={c:0,t:0,a:0,seen:false,boss:0,stage:-1,due:''};
+ const s=state.mods[id];
+ if(s.boss==null)s.boss=0;if(s.stage==null)s.stage=-1;if(s.due==null)s.due='';
+ return s;}
+function stars(s){return s.boss||0;}
+function starStr(n){return '★'.repeat(n)+'<span style="color:#d8dbe2">'+'★'.repeat(3-n)+'</span>';}
+function dstr(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function addDays(n){return dstr(new Date(Date.now()+n*864e5));}
+function weekKey(){const d=new Date();const off=(d.getDay()+6)%7;return dstr(new Date(Date.now()-off*864e5));}
+function dayDiff(a,b){return Math.round((new Date(b)-new Date(a))/864e5);}
+
+function touchDay(){
+ const wk=weekKey();
+ if(state.jokerWeek!==wk){state.jokerWeek=wk;state.jokers=2;}
+ const today=dstr();if(state.lastDay===today)return;
+ if(state.lastDay==null){state.streak=1;}
+ else{const diff=dayDiff(state.lastDay,today);
+  if(diff===1)state.streak++;
+  else if(diff===2&&state.jokers>0){state.jokers--;state.streak++;toast('🃏 Joker eingesetzt – deine Serie lebt weiter! ('+state.jokers+' übrig)');}
+  else state.streak=1;}
+ state.lastDay=today;}
+
+function lvlOf(xp){return Math.floor(xp/150)+1;}
+const TITLES=['Zahlen-Neuling','Rechen-Lehrling','Klammer-Knacker','Term-Bändiger','Gleichungs-Profi','Wurzel-Wächter','Funktionen-Kenner','Kurven-Künstler','Grenzwert-Jäger','Analysis-Pionier','Vektor-Kapitän','Mathe-Meister','Mathe-Legende'];
+function titleOf(l){return TITLES[Math.min(l-1,TITLES.length-1)];}
+
+function bumpDay(){const t=dstr();if(state.dayXP.d!==t)state.dayXP={d:t,xp:0};}
+function addXP(n){state.xp+=n;bumpDay();state.dayXP.xp+=n;touchDay();
+ if(state.dayXP.xp>=GOAL&&state.goalDone!==dstr()){state.goalDone=dstr();cheer();toast('🎯 Tagesziel erreicht – stark! Alles ab jetzt ist Bonus.');}
+ checkBadges();save();updHeader();}
+function updHeader(){$('#hStreak').textContent='🔥 '+state.streak;
+ $('#hJoker').textContent='🃏 '+state.jokers;
+ const l=lvlOf(state.xp);$('#hLvl').textContent='Lv. '+l+' · '+titleOf(l);
+ $('#hXpTxt').textContent=state.xp+' XP';
+ $('#hXp').style.width=Math.round((state.xp%150)/150*100)+'%';}
+function cheer(){const c=document.createElement('div');c.className='cheer';
+ const em=['🎉','⭐','🎊','✨','🏆','💪'];let h='';
+ for(let i=0;i<26;i++)h+='<span style="left:'+ri(2,96)+'%;animation-delay:'+(Math.random()*0.5)+'s">'+pick(em)+'</span>';
+ c.innerHTML=h;document.body.appendChild(c);setTimeout(()=>c.remove(),2300);}
+function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=msg;
+ document.body.appendChild(t);setTimeout(()=>t.classList.add('on'),30);
+ setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),400);},3500);}
+
+/* ============ Wiederholungs-Termine (Spaced Repetition) ============ */
+function scheduleStart(id){const s=st(id);if(s.stage<0){s.stage=0;s.due=addDays(1);save();}}
+function scheduleAdvance(id){const s=st(id);if(s.stage<0)return;
+ s.stage=Math.min(s.stage+1,IVL.length-1);s.due=addDays(IVL[s.stage]);save();}
+function dueMods(){const t=dstr();return MODS.filter(m=>{const s=st(m.id);return s.due&&s.due<=t;});}
+
+/* ============ Boss-Tests ============ */
+const BOSSTIERS=[
+ {need:5, n:6, pass:5, lvls:[1,1,1,2,2,2], xp:60, name:'Boss I'},
+ {need:12,n:8, pass:6, lvls:[1,1,2,2,2,3,3,3], xp:100, name:'Boss II'},
+ {need:20,n:8, pass:7, lvls:[2,2,2,3,3,3,3,3], xp:150, name:'Boss III'}];
+function bossState(id){const s=st(id);if(s.boss>=3)return {done:true};
+ const t=BOSSTIERS[s.boss];return {done:false,tier:s.boss,unlocked:s.c>=t.need,t:t};}
+
+/* ============ Abzeichen ============ */
+function totalC(){return MODS.reduce((a,m)=>a+st(m.id).c,0);}
+function blockDone(b,minB){return MODS.filter(m=>m.blk===b).every(m=>st(m.id).boss>=minB);}
+const BADGES=[
+ {id:'b_first',e:'🐣',n:'Erster Schritt',d:'Erste Aufgabe richtig gelöst',c:()=>totalC()>=1},
+ {id:'b_50',e:'✏️',n:'Fleißarbeiter',d:'50 Aufgaben richtig',c:()=>totalC()>=50},
+ {id:'b_200',e:'🏗️',n:'Ausdauer-Ass',d:'200 Aufgaben richtig',c:()=>totalC()>=200},
+ {id:'b_500',e:'🏔️',n:'Unaufhaltsam',d:'500 Aufgaben richtig',c:()=>totalC()>=500},
+ {id:'b_streak3',e:'🔥',n:'Dranbleiber',d:'3 Tage in Serie',c:()=>state.streak>=3},
+ {id:'b_streak7',e:'🚀',n:'Wochen-Krieger',d:'7 Tage in Serie',c:()=>state.streak>=7},
+ {id:'b_streak14',e:'🌋',n:'Gewohnheits-Tier',d:'14 Tage in Serie',c:()=>state.streak>=14},
+ {id:'b_boss1',e:'⚔️',n:'Boss-Bezwinger',d:'Ersten Boss-Test bestanden',c:()=>MODS.some(m=>st(m.id).boss>=1)},
+ {id:'b_bru3',e:'🍕',n:'Bruchmeister',d:'Brüche & Prozent mit 3 Sternen',c:()=>st('bru').boss>=3},
+ {id:'b_glg3',e:'⚖️',n:'Gleichungs-Champion',d:'Lineare Gleichungen mit 3 Sternen',c:()=>st('glg').boss>=3},
+ {id:'b_abl3',e:'🎢',n:'Ableitungs-Ass',d:'Ableitungen mit 3 Sternen',c:()=>st('abl').boss>=3},
+ {id:'b_blockA',e:'🧱',n:'Rechen-Fundament',d:'Block A: überall mind. ★★',c:()=>blockDone(0,2)},
+ {id:'b_blockB',e:'🧩',n:'Algebra im Griff',d:'Block B: überall mind. ★★',c:()=>blockDone(1,2)},
+ {id:'b_blockC',e:'📈',n:'Funktionen-Kenner',d:'Block C: überall mind. ★★',c:()=>blockDone(2,2)},
+ {id:'b_blockD',e:'🎓',n:'Bereit für die Oberstufe',d:'Block D: überall mind. ★★',c:()=>blockDone(3,2)},
+ {id:'b_blitz10',e:'⚡',n:'Blitzdenker',d:'10 richtige in einer Blitzrunde',c:()=>state.blitzBest>=10},
+ {id:'b_blitz18',e:'🌩️',n:'Gedankenblitz',d:'18 richtige in einer Blitzrunde',c:()=>state.blitzBest>=18},
+ {id:'b_xp1000',e:'💎',n:'XP-Sammler',d:'1000 XP erreicht',c:()=>state.xp>=1000},
+ {id:'b_xp3000',e:'👑',n:'XP-König',d:'3000 XP erreicht',c:()=>state.xp>=3000}];
+function checkBadges(){let neu=false;
+ BADGES.forEach(b=>{if(state.badges.indexOf(b.id)<0&&b.c()){state.badges.push(b.id);
+  toast('🏅 Neues Abzeichen: <b>'+b.e+' '+b.n+'</b>');neu=true;}});
+ if(neu)save();}
+
+const praise=['Richtig! 💪','Stark! ⭐','Genau so! 🎯','Sauber gerechnet! ✅','Top! 🚀','Perfekt! 🌟'];
+const retry=['Noch nicht ganz – versuch es noch einmal!','Fast! Schau dir dein Vorzeichen/deine Rechnung nochmal an.','Knapp daneben – du schaffst das, noch ein Versuch!'];
+const wrongMsg=['Kein Problem – Fehler gehören zum Lernen. Schau dir den Lösungsweg genau an!','Schau dir den Lösungsweg an und rechne die Aufgabe im Kopf nach.','Diese Aufgabe kommt später nochmal – dann klappt es!'];
+
+/* ============ Aufgaben-Engine ============ */
+function autoLvl(s){if(s.c<5)return pick([1,1,1,2]);if(s.c<12)return pick([1,2,2,3]);return pick([2,3,3]);}
+function modById(id){return MODS.find(m=>m.id===id);}
+function recMod(){for(const m of MODS){if(stars(st(m.id))<2)return m;}return MODS[MODS.length-1];}
+
+const lvlName={1:'Level 1 · Grundlagen',2:'Level 2 · Anwenden',3:'Level 3 · Transfer'};
+
+function taskHTML(task,strict){
+ let h='<span class="lvlb lvl'+task.lvl+'">'+lvlName[task.lvl]+'</span>';
+ h+='<div class="q">'+task.q+'</div>';
+ if(task.mc){
+  task.mc.opts.forEach((o,i)=>{h+='<button class="mcopt" data-i="'+i+'" onclick="mcPick(this,'+i+')">'+o+'</button>';});
+ }else{
+  task.fields.forEach((f,i)=>{
+   h+='<div class="fieldrow"><label>'+f.l+'</label><input id="fin'+i+'" autocomplete="off"></div>';});
+  if(task.hint)h+='<div class="hint">💡 '+task.hint+'</div>';
+ }
+ h+='<div class="fb" id="tfb"></div>';
+ h+='<div class="steps" id="tsteps"><b>Lösungsweg:</b>'+task.steps.map(s=>'<div class="st">'+s+'</div>').join('')+'</div>';
+ h+='<div class="btnrow">';
+ if(!task.mc)h+='<button class="btn" id="bCheck" onclick="checkTask()">Prüfen ✔</button>';
+ if(!strict)h+='<button class="btn ghost" id="bSteps" onclick="showSteps()">Lösungsweg 👀</button>';
+ h+='<button class="btn sec" id="bNext" style="display:none" onclick="nextTask()">Weiter ➜</button></div>';
+ return h;
+}
+
+let cur={task:null,tries:0,done:false,onDone:null,modId:null,strict:false,autoNext:false};
+
+function mountTask(container,modId,lvl,onDone,opts){
+ opts=opts||{};
+ const m=modById(modId);
+ const task=m.gen(lvl);
+ task.lvl=lvl;
+ cur={task:task,tries:0,done:false,onDone:onDone,modId:modId,strict:!!opts.strict,autoNext:!!opts.autoNext};
+ container.innerHTML=taskHTML(task,cur.strict);
+ const inp=container.querySelectorAll('input');
+ inp.forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')checkTask();}));
+ if(inp[0])inp[0].focus();
+}
+
+function fieldOK(f,val){
+ if(f.type==='txt'){const n=normTxt(val);return f.acc.some(a=>normTxt(a)===n);}
+ const v=parseNum(val);if(v===null)return false;return Math.abs(v-f.a)<0.006;}
+
+function checkTask(){
+ if(cur.done)return;
+ const t=cur.task;let allOk=true;
+ if(t.setAns){
+  const vals=t.fields.map((f,i)=>parseNum($('#fin'+i).value));
+  if(vals.some(v=>v===null)){allOk=false;}
+  else{const want=t.fields.map(f=>f.a).sort((a,b)=>a-b);
+   const got=vals.slice().sort((a,b)=>a-b);
+   allOk=want.every((w,i)=>Math.abs(w-got[i])<0.006);}
+ }else{
+  t.fields.forEach((f,i)=>{const el=$('#fin'+i);const okf=fieldOK(f,el.value);
+   el.style.borderColor=okf?'var(--ok)':'var(--bad)';
+   if(!okf)allOk=false;});
+ }
+ finishAttempt(allOk);
+}
+
+function mcPick(btn,i){
+ if(cur.done)return;
+ const t=cur.task;
+ if(i===t.mc.a){btn.classList.add('ok');finishAttempt(true);}
+ else{btn.classList.add('bad');btn.disabled=true;finishAttempt(false);}
+}
+
+function finishAttempt(ok){
+ const fb=$('#tfb');const t=cur.task;
+ if(ok){
+  cur.done=true;
+  const base={1:10,2:15,3:25}[t.lvl];
+  const xp=cur.tries>0?Math.ceil(base/2):base;
+  addXP(xp);
+  const s=st(cur.modId);s.c++;s.a++;if(t.lvl===3)s.t++;save();
+  fb.className='fb ok';fb.innerHTML=pick(praise)+' <b>+'+xp+' XP</b>';
+  lockTask();
+  if(sess&&sess.type==='boss')bossReact(true);
+  if(cur.autoNext){const tk=cur.task;setTimeout(()=>{if(cur.task===tk&&cur.done)nextTask();},750);}
+ }else{
+  cur.tries++;
+  if(cur.tries===1&&!cur.strict){
+   fb.className='fb bad';fb.textContent=pick(retry);
+  }else{
+   cur.done=true;
+   const s=st(cur.modId);s.a++;save();
+   state.errors.push({m:cur.modId,lvl:t.lvl});
+   if(state.errors.length>40)state.errors.shift();
+   save();
+   fb.className='fb bad';fb.textContent=pick(wrongMsg);
+   $('#tsteps').classList.add('show');
+   lockTask();
+   if(sess&&sess.type==='boss')bossReact(false);
+  }
+ }
+}
+function lockTask(){
+ document.querySelectorAll('#taskarea input').forEach(i=>i.disabled=true);
+ document.querySelectorAll('.mcopt').forEach(b=>b.disabled=true);
+ const bc=$('#bCheck');if(bc)bc.style.display='none';
+ $('#bNext').style.display='inline-block';$('#bNext').focus();
+}
+function showSteps(){
+ $('#tsteps').classList.add('show');
+ if(!cur.done){
+  cur.done=true;cur.peeked=true;
+  const s=st(cur.modId);s.a++;
+  state.errors.push({m:cur.modId,lvl:cur.task.lvl});
+  if(state.errors.length>40)state.errors.shift();
+  save();
+  const fb=$('#tfb');fb.className='fb bad';
+  fb.innerHTML='👀 Lösungsweg vor der Antwort angeschaut – diese Aufgabe zählt nicht. Lies ihn genau: Eine ähnliche kommt gleich wieder!';
+  lockTask();
+ }
+}
+function nextTask(){if(cur.onDone){const cb=cur.onDone;cur.onDone=null;cb(cur);}}
+
+/* ============ Router ============ */
+function go(view,arg){window.scrollTo(0,0);
+ if(view==='home')renderHome();
+ else if(view==='mod')renderModule(arg);
+ else if(view==='daily')startDaily();
+ else if(view==='err')startErrTraining();
+ else if(view==='blitz')startBlitz();
+ else if(view==='log')renderLog();
+}
+/* v2 */
+/* ============ Ansichten ============ */
+const BLOCKS=['Sicher rechnen','Algebra im Griff','Funktionen verstehen','Fit für die Oberstufe'];
+
+function ringSVG(){
+ bumpDay();
+ const pct=Math.min(1,state.dayXP.xp/GOAL);
+ const r=30,C=2*Math.PI*r;
+ return '<svg width="84" height="84" viewBox="0 0 84 84">'+
+ '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="#e6eaf2" stroke-width="9"/>'+
+ '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="'+(pct>=1?'#2b8a3e':'#3b5bdb')+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'" transform="rotate(-90 42 42)"/>'+
+ '<text x="42" y="39" text-anchor="middle" font-size="15" font-weight="800" fill="#1e2533">'+state.dayXP.xp+'</text>'+
+ '<text x="42" y="54" text-anchor="middle" font-size="9" fill="#6b7486">/ '+GOAL+' XP</text></svg>';
+}
+
+function renderHome(){
+ const rec=recMod();
+ const errN=state.errors.length;
+ const due=dueMods();
+ const totalStars=MODS.reduce((s,m)=>s+stars(st(m.id)),0);
+ let h='<div class="card">';
+ h+='<div class="ringwrap"><div>'+ringSVG()+'</div><div><h1>Hallo! 👋</h1>';
+ h+='<p class="mut">Tagesziel: '+GOAL+' XP. '+(state.dayXP.xp>=GOAL?'Geschafft für heute – alles Weitere ist Bonus! 🎉':'Ein Tagestraining reicht dafür locker.')+'</p></div></div>';
+ h+='<div class="statrow">';
+ h+='<div class="statbox"><div class="v">🔥 '+state.streak+'</div><div class="l">Tage-Serie</div></div>';
+ h+='<div class="statbox"><div class="v">🃏 '+state.jokers+'</div><div class="l">Streak-Joker</div></div>';
+ h+='<div class="statbox"><div class="v">'+totalStars+'/'+(MODS.length*3)+'</div><div class="l">Sterne</div></div>';
+ h+='<div class="statbox"><div class="v">🏅 '+state.badges.length+'</div><div class="l">Abzeichen</div></div>';
+ h+='</div>';
+ if(due.length){
+  h+='<div class="duebar">📅 <b>Wiederholung fällig:</b> ';
+  h+=due.map(m=>'<button class="btn ghost" style="padding:4px 12px;margin:3px" onclick="startReview(\''+m.id+'\')">'+m.ic+' '+m.t+'</button>').join(' ');
+  h+='<div class="hint">Kurz wiederholen (5 Aufgaben) – so bleibt es dauerhaft im Kopf.</div></div>';
+ }
+ h+='<button class="btn big" onclick="go(\'daily\')">🚀 Tagestraining starten (ca. 60 Min)</button>';
+ h+='<p class="hint" style="margin-top:8px">Empfohlenes Fokusthema heute: <b>'+rec.ic+' '+rec.t+'</b></p>';
+ h+='<div class="btnrow">';
+ h+='<button class="btn warn" onclick="go(\'blitz\')">⚡ Blitzrunde (5 Min)</button>';
+ if(errN>0)h+='<button class="btn sec" onclick="go(\'err\')">🔁 Fehler-Training ('+errN+')</button>';
+ h+='<button class="btn sec" onclick="go(\'log\')">📓 Logbuch & Abzeichen</button>';
+ h+='</div></div>';
+
+ h+='<div class="path">';
+ let side=0;
+ MODS.forEach((m,i)=>{
+  if(i===0||m.blk!==MODS[i-1].blk){
+   h+='<div class="pblock"><span>Block '+String.fromCharCode(65+m.blk)+' · '+BLOCKS[m.blk]+'</span></div>';
+  }
+  const s=st(m.id);const sn=stars(s);
+  const prog=Math.min(100,Math.round(s.c/22*100));
+  const bs=bossState(m.id);
+  const isRec=m.id===rec.id;
+  const isDue=s.due&&s.due<=dstr();
+  let flags='';
+  if(isDue)flags+='📅';
+  if(!bs.done&&bs.unlocked)flags+='⚔️';
+  h+='<div class="stn '+(side%2?'r':'l')+(isRec?' rec':'')+'" onclick="go(\'mod\',\''+m.id+'\')">';
+  if(flags)h+='<div class="flags">'+flags+'</div>';
+  h+='<span class="ic">'+m.ic+'</span><div class="tt">'+m.t+'</div>';
+  h+='<div class="stars">'+starStr(sn)+'</div>';
+  h+='<div class="pbar"><div style="width:'+prog+'%"></div></div>';
+  if(isRec)h+='<div class="hint" style="color:var(--pri);font-weight:700">▸ Dein nächstes Ziel</div>';
+  h+='</div>';
+  side++;
+ });
+ h+='</div>';
+
+ h+='<div class="card" style="margin-top:24px"><h2>So holst du das Maximum heraus 🧭</h2>'+
+ '<p>1. <b>Tagestraining</b> jeden Tag: Es beginnt mit fälligen Wiederholungen, dann kommt dein Fokusthema, am Ende ein Mix gegen das Vergessen.</p>'+
+ '<p>2. <b>Sterne gibt es nur im Boss-Test</b> (⚔️ im Modul, sobald freigeschaltet). So weißt du ehrlich, was wirklich sitzt – üben allein reicht nicht.</p>'+
+ '<p>3. <b>📅 Wiederholungen</b> erscheinen nach 1, 3, 7, 14 und 30 Tagen. Genau dieses Wiederholen im richtigen Abstand besiegt das Vergessen.</p>'+
+ '<p>4. <b>Level 3 (Transfer)</b> sind Aufgaben, die anders aussehen als die Beispiele – genau die brauchst du in Klausuren.</p>'+
+ '<p>5. Ein Tag verpasst? Ein 🃏 Joker rettet deine Serie automatisch (2 pro Woche).</p></div>';
+
+ h+='<div class="card"><h2>💾 Fortschritt sichern</h2>'+
+ '<p class="mut">Dein Fortschritt wird im Browser gespeichert. Sichere ihn ab und zu als Datei – dann kann nichts verloren gehen.</p>'+
+ '<div class="btnrow"><button class="btn sec" onclick="exportState()">⬇️ Fortschritt speichern</button>'+
+ '<label class="btn ghost filebtn" style="display:inline-flex;align-items:center">⬆️ Fortschritt laden<input type="file" accept=".json" onchange="importState(event)"></label></div></div>';
+ $('#app').innerHTML=h;
+}
+
+function exportState(){
+ const a=document.createElement('a');
+ a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state));
+ a.download='mathe-trainer-fortschritt.json';
+ document.body.appendChild(a);a.click();a.remove();
+ toast('💾 Fortschritt als Datei gespeichert!');}
+function importState(ev){
+ const f=ev.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{try{state=Object.assign(state,JSON.parse(r.result));save();updHeader();go('home');toast('✅ Fortschritt geladen!');}
+  catch(e){alert('Die Datei konnte nicht gelesen werden.');}};
+ r.readAsText(f);}
+
+function renderModule(id,tab){
+ tab=tab||'lernen';
+ const m=modById(id);const s=st(id);
+ let h='<button class="crumb" onclick="go(\'home\')">← Übersicht</button>';
+ h+='<div class="card"><h1>'+m.ic+' '+m.t+'</h1>';
+ h+='<div class="stars" style="font-size:1.2rem">'+starStr(stars(s))+'</div>';
+ h+='<p class="hint">'+s.c+' richtig gelöst · Sterne verdienst du in den ⚔️ Boss-Tests</p>';
+ h+='<div class="tabs" style="margin-top:12px">';
+ h+='<div class="tab '+(tab==='lernen'?'on':'')+'" onclick="renderModule(\''+id+'\',\'lernen\')">📖 Lernen</div>';
+ h+='<div class="tab '+(tab==='ueben'?'on':'')+'" onclick="renderModule(\''+id+'\',\'ueben\')">✏️ Üben</div>';
+ h+='</div>';
+ if(tab==='lernen'){
+  const M=(typeof MENTORS!=='undefined'&&MENTORS[id])?MENTORS[id]:{e:'🧑‍🏫',n:'Mentor'};
+  h+='<div class="mentorarena"><div style="text-align:center;min-width:86px"><span class="mentorfig">'+M.e+'</span><div class="mname">'+M.n+'</div></div>';
+  h+='<div style="flex:1"><div class="bubble">'+(s.seen?'Schön, dich wiederzusehen! Nochmal die Lektion durchgehen – oder unten im Spickzettel nachschlagen?':'Hallo! Ich bin '+M.n+' und erkläre dir <b>'+m.t+'</b> – in kleinen Schritten, mit Fragen zwischendurch. Bereit?')+'</div>';
+  h+='<div class="btnrow"><button class="btn" onclick="startLesson(\''+id+'\')">'+(s.seen?'Lektion wiederholen 🎓':'Interaktive Lektion starten 🎓')+'</button></div></div></div>';
+  if(s.seen){
+   h+='<h3 style="margin-top:16px">📌 Spickzettel & Beispiele</h3>'+m.ex;
+   m.exm.forEach((e,i)=>{
+    h+='<div class="exbox"><b>📝 Beispiel: '+e.q+'</b><div id="exs'+i+'"></div>';
+    h+='<button class="btn ghost" style="margin-top:8px" id="exb'+i+'" onclick="exStep('+i+')">Nächster Schritt ▸</button></div>';
+   });
+   h+='<button class="btn big" style="margin-top:14px" onclick="renderModule(\''+id+'\',\'ueben\')">Jetzt üben ✏️</button>';
+  }else{
+   h+='<p class="hint" style="margin-top:12px">Nach der Lektion findest du hier deinen Spickzettel mit allen Regeln und Beispielen.</p>';
+  }
+ }else{
+  const bs=bossState(id);
+  if(bs.done){
+   h+='<div class="bossbox">🏆 <b>Alle drei Boss-Tests bestanden – Modul gemeistert!</b><div class="hint">Du kannst hier weiter üben, um fit zu bleiben.</div></div>';
+  }else if(bs.unlocked){
+   const B=bossOf(id);
+   h+='<div class="bossbox"><div style="display:flex;gap:14px;align-items:center">'+
+   '<span class="bossfig" style="font-size:2.6rem">'+B.e+'</span>'+
+   '<div><b>'+B.n+'</b> bewacht '+bs.t.name+'!<br><i>„'+pick(B.t)+'"</i></div></div>'+
+   '<div class="hint" style="margin-top:6px">'+bs.t.n+' Aufgaben · nur <b>ein Versuch</b> pro Aufgabe · kein Lösungsweg-Spickzettel · mind. '+bs.t.pass+' richtige → '+'★'.repeat(bs.tier+1)+' und +'+bs.t.xp+' XP</div>'+
+   '<div class="btnrow"><button class="btn warn" onclick="startBoss(\''+id+'\')">Boss herausfordern ⚔️</button></div></div>';
+  }else{
+   const B=bossOf(id);
+   h+='<div class="bossbox" style="opacity:.8">🔒 <span style="font-size:1.6rem;filter:grayscale(1)">'+B.e+'</span> <b>'+B.n+'</b> wartet hinter '+bs.t.name+': Noch '+(bs.t.need-s.c)+' richtige Aufgaben bis zur Herausforderung.</div>';
+  }
+  h+='<div class="fieldrow"><label>Schwierigkeit:</label><select id="lvlSel" onchange="practiceNext()">'+
+   '<option value="0">Auto (empfohlen)</option><option value="1">Level 1 · Grundlagen</option>'+
+   '<option value="2">Level 2 · Anwenden</option><option value="3">Level 3 · Transfer</option></select></div>';
+  h+='<div id="taskarea"></div>';
+ }
+ h+='</div>';
+ $('#app').innerHTML=h;
+ if(tab==='lernen'){exSteps=m.exm.map(()=>0);}
+ else practiceNext(id);
+}
+let exSteps=[];
+function exStep(i){
+ const mod=MODS.find(mm=>document.querySelector('h1')&&document.querySelector('h1').textContent.indexOf(mm.t)>=0);
+ if(!mod)return;
+ const e=mod.exm[i];
+ if(exSteps[i]<e.steps.length){
+  const d=document.createElement('div');d.className='stp';d.innerHTML=e.steps[exSteps[i]];
+  $('#exs'+i).appendChild(d);exSteps[i]++;
+  if(exSteps[i]>=e.steps.length)$('#exb'+i).style.display='none';
+ }
+}
+let curPracticeMod=null;
+function practiceNext(id){
+ if(id)curPracticeMod=id;
+ const m=modById(curPracticeMod);
+ const selEl=$('#lvlSel');
+ const sel=selEl?parseInt(selEl.value):0;
+ const lvl=sel===0?autoLvl(st(m.id)):sel;
+ mountTask($('#taskarea'),m.id,lvl,()=>practiceNext());
+}
+
+
+/* ============ Boss-Figuren ============ */
+const OUCH=['Autsch! Das saß!','Uff! Sauber gerechnet!','Nein! Meine Kräfte schwinden!','Wie hast du das so schnell gesehen?!','Argh! Noch so ein Treffer und ich bin erledigt!','Unmöglich! Niemand rechnet so genau!'];
+const MOCK=['Haha! Daneben!','Zu leicht für mich!','Das übst du besser nochmal!','Mein Punkt! Weiter so … für mich!','Hihi, das kitzelt nicht mal!'];
+const BOSSES={
+ bru:{e:'👹',n:'Bruchbaron Halbwert',t:['Ich zerteile dich in tausend Brüche!','Niemand kürzt MICH klein!'],mid:'Hmpf … du hältst länger durch als gedacht!',lose:'Gekürzt und besiegt … du bist würdig!',win:'Zu viele Fehler! Komm wieder, wenn du kürzen kannst!'},
+ klm:{e:'🦂',n:'Minus-Skorpion',t:['Mein Stachel dreht jedes Vorzeichen um!','Ein Minus zu viel – und du bist erledigt!'],mid:'Pass auf – jetzt kommen die doppelten Klammern!',lose:'Mein Vorzeichen … endgültig umgedreht …',win:'Wieder ein Vorzeichenfehler! Hahaha!'},
+ pot:{e:'🐲',n:'Potenzdrache Expon',t:['Meine Macht wächst hoch drei!','Spürst du meine geballte Potenz?'],mid:'Nicht schlecht … aber jetzt ziehe ich die Wurzel aus dir!',lose:'Auf hoch null geschrumpft … also 1 … also nichts …',win:'Deine Kräfte reichen ja nicht mal für x²!'},
+ ter:{e:'🕷️',n:'Term-Tarantel',t:['Ich spinne ein Netz aus Termen um dich!','Verheddere dich in meinen Variablen!'],mid:'Mein Netz hält … gerade noch!',lose:'Alles zusammengefasst … sogar ich …',win:'Gefangen im Term-Netz! Bis bald!'},
+ glg:{e:'👻',n:'Gleichungsgeist',t:['Ich spuke auf beiden Seiten des Gleichheitszeichens!','Mein x findest du niemals!'],mid:'Du kommst meinem x gefährlich nahe …',lose:'x gefunden … ich löse mich auf …',win:'Mein x bleibt mein Geheimnis! Huuuu!'},
+ ung:{e:'🦈',n:'Ungleich-Hai',t:['Ich fresse alles, was kleiner ist als ich!','Teile durch Minus – und schon schnappe ich zu!'],mid:'Gleich dreht sich das Zeichen … pass bloß auf!',lose:'Besiegt … das Zeichen hat sich gegen mich gedreht …',win:'Zu klein für mich! Merk dir: das Zeichen dreht sich!'},
+ bin:{e:'🎭',n:'Binom-Bandit',t:['(a + b)² – und zack, bist du verwirrt!','Ich stehle dir den Mittelterm!'],mid:'Was?! Du kennst meine Formeln?!',lose:'Vollständig faktorisiert … ich ergebe mich …',win:'Den Mittelterm vergessen! Ein Klassiker!'},
+ fak:{e:'🦖',n:'Faktor-Saurus',t:['Rrrroar! Zerlege DAS mal in Faktoren!','Ich bin unzerlegbar!'],mid:'Meine Panzerung bröckelt …',lose:'In Faktoren zerlegt … rrroa …',win:'Unzerlegbar! Ich bin eben ein Prim-Saurus!'},
+ brt:{e:'🐙',n:'Bruchterm-Krake',t:['Acht Arme, acht Nenner – alle verschieden!','In meinen Nennern lauert die Null!'],mid:'Du findest ja jeden Hauptnenner …!',lose:'Auf einen Nenner gebracht … blubb …',win:'An meinen Nennern bist du zerschellt!'},
+ qua:{e:'🤖',n:'Quadrator 3000',t:['SYSTEM GELADEN: x²-Angriffsmodus!','Ich habe immer ZWEI Lösungen – du keine!'],mid:'WARNUNG: Gegner rechnet fehlerfrei!',lose:'Nullstellen gefunden … System … fährt … herunter …',win:'FEHLER BEIM GEGNER GEFUNDEN. HAHA.EXE'},
+ txt:{e:'🧙',n:'Wortzauberer Verbalix',t:['Meine Worte vernebeln deine Gleichungen!','Übersetze DAS, wenn du kannst!'],mid:'Du durchschaust meine Rätselsprache …',lose:'In eine Gleichung gebannt … besiegt …',win:'Schön verwirrt? Meine Texte wirken immer!'},
+ fun:{e:'🧟',n:'Zuordnungs-Zombie',t:['Jedem x sein y … oder auch zwei … muhaha!','Ich bin keine Funktion – ich bin das Chaos!'],mid:'Du ordnest schneller zu, als ich laufen kann …',lose:'Eindeutig zugeordnet … zurück ins Grab …',win:'Dein Graph … zu langsam … gelesen …'},
+ lin:{e:'🐍',n:'Steigungs-Schlange',t:['Ich ssschlängle mich durch jeden Punkt!','Meine Steigung? Steiler als dein Lernweg!'],mid:'Du liest meine Steigung einfach ab?!',lose:'Auf y = 0 abgestürzt … besiegt …',win:'Zu flach gedacht! Ssssieg für mich!'},
+ qfk:{e:'👾',n:'Parabel-Phantom',t:['Ich öffne mich nach unten – direkt über dir!','Meinen Scheitel findest du nie!'],mid:'Mein Scheitel wackelt bedenklich …',lose:'Beide Nullstellen getroffen … ich verschwinde …',win:'Mein Scheitelpunkt bleibt mein Geheimnis!'},
+ exp:{e:'🦠',n:'Wachstums-Virus',t:['Ich verdopple mich schneller, als du rechnest!','Erst 1, dann 2, dann 4 … bald ÜBERALL!'],mid:'Du bremst mein Wachstum … unerhört!',lose:'Zerfallen … halbiert … geviertelt … weg …',win:'Exponentiell überlegen! Hahaha!'},
+ log:{e:'🗿',n:'Logarithmus-Golem',t:['HOCH WIE VIEL? Das weißt du nie!','Ich bin die Umkehrung all deiner Hoffnung!'],mid:'Du kennst … meine Basis …?',lose:'log(Golem) = 0 … ich zerbrösle …',win:'Meine Rätsel bleiben ungelöst! GRMMM.'},
+ fol:{e:'🌪️',n:'Grenzwert-Wirbel',t:['Ich nähere mich dir … unendlich nah!','Gegen welchen Wert strebst du? Gegen NULL!'],mid:'Du bleibst stabil … beeindruckend …',lose:'Mein Grenzwert ist erreicht … null …',win:'Du divergierst! Keine Richtung, kein Sieg!'},
+ abl:{e:'🐺',n:'Steigungs-Wolf',t:['Meine Steigung wechselt schneller als der Wind!','Ich jage dich über jede Kurve!'],mid:'Du hast meine Ableitung berechnet?! AUUUU!',lose:'f′(Wolf) = 0 … Extremum erreicht … erledigt …',win:'Zu langsam! Deine Steigung: negativ!'},
+ int:{e:'🧌',n:'Flächen-Troll',t:['Die Fläche unter MIR berechnet niemand!','Ich sitze auf deiner Stammfunktion!'],mid:'Du … integrierst mich einfach weg?!',lose:'In unendlich kleine Streifen zerlegt …',win:'Meine Fläche bleibt unberechnet! Muahaha!'},
+ tri:{e:'🦅',n:'Winkel-Adler',t:['Ich sehe jeden Fehler – aus 90 Grad!','Sinus und Cosinus sind meine Flügel!'],mid:'Du kennst die Hypotenuse … respektabel …',lose:'Abgestürzt … im rechten Winkel …',win:'Deine Werte: schief und krumm! Kreisch!'},
+ vek:{e:'🤺',n:'Vektor-Fechter',t:['Meine Klinge hat Richtung UND Länge!','En garde! Ich verschiebe dich ins Nichts!'],mid:'Du parierst jeden meiner Vektoren …',lose:'Auf den Nullvektor reduziert … touché …',win:'Ohne Richtung keine Chance! En garde!'}};
+function bossOf(id){return BOSSES[id]||{e:'😈',n:'Mathe-Dämon',t:['Du wagst es, mich herauszufordern?'],mid:'Nicht schlecht …',lose:'Besiegt …',win:'Ich bleibe ungeschlagen!'};}
+function bossReact(ok){
+ const fig=$('#bossFig');if(!fig||!sess||sess.type!=='boss')return;
+ sess.say=ok?pick(OUCH):pick(MOCK);
+ const say=$('#bossSay');if(say)say.textContent=sess.say;
+ fig.classList.remove('hit','mock');void fig.offsetWidth;
+ fig.classList.add(ok?'hit':'mock');
+ const hp=$('#bossHp');if(hp)hp.style.width=Math.max(0,Math.round((sess.pass-sess.ok-(ok?1:0))/sess.pass*100))+'%';
+}
+
+/* ============ Sessions ============ */
+let sess=null,timerH=null;
+function shufArr(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);const t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+function startDaily(){
+ const rec=recMod();
+ const due=dueMods().filter(m=>m.id!==rec.id);
+ const started=MODS.filter(m=>st(m.id).c>0&&m.id!==rec.id);
+ const q=[];
+ for(let i=0;i<3;i++){
+  let m;
+  if(due[i])m=due[i];
+  else m=started.length?pick(started):rec;
+  q.push({m:m.id,lvl:Math.min(2,autoLvl(st(m.id))),ph:'🔄 Aufwärmen & Wiederholen'});
+ }
+ for(let i=0;i<8;i++)q.push({m:rec.id,lvl:autoLvl(st(rec.id)),ph:'🎯 Fokus: '+rec.t});
+ const mixPool=started.concat(due).concat([rec]);
+ for(let i=0;i<3;i++){const m=pick(mixPool);q.push({m:m.id,lvl:autoLvl(st(m.id)),ph:'🧩 Gemischter Abschluss'});}
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'daily',focus:rec.id};
+ if(!st(rec.id).seen)startLesson(rec.id,true);
+ else renderSessTask();
+}
+function startErrTraining(){
+ if(!state.errors.length){go('home');return;}
+ const take=state.errors.slice(0,12);
+ state.errors=state.errors.slice(take.length);save();
+ const q=take.map(e=>({m:e.m,lvl:e.lvl,ph:'🔁 Fehler-Training'}));
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'err'};
+ renderSessTask();
+}
+function startBoss(id){
+ const bs=bossState(id);
+ if(bs.done||!bs.unlocked)return;
+ const lvls=shufArr(bs.t.lvls.slice());
+ const q=lvls.map(l=>({m:id,lvl:l,ph:'⚔️ '+bs.t.name+': '+modById(id).t}));
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'boss',mod:id,tier:bs.tier,pass:bs.t.pass,xp:bs.t.xp,name:bs.t.name};
+ renderSessTask();
+}
+function startReview(id){
+ const q=[];
+ for(let i=0;i<5;i++)q.push({m:id,lvl:autoLvl(st(id)),ph:'📅 Wiederholung: '+modById(id).t});
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'rev',mod:id};
+ renderSessTask();
+}
+function renderSessIntro(m){
+ let h='<div class="card"><span class="phase">🎯 Heutiges Fokusthema</span>';
+ h+='<h1 style="margin-top:10px">'+m.ic+' '+m.t+'</h1>';
+ h+='<p class="mut">Lies dir die Erklärung und die Beispiele in Ruhe durch (ca. 10 Min). Danach geht das Training los.</p>';
+ h+=m.ex;
+ m.exm.forEach(e=>{
+  h+='<div class="exbox"><b>📝 Beispiel: '+e.q+'</b>'+e.steps.map(s=>'<div class="stp">'+s+'</div>').join('')+'</div>';
+ });
+ h+='<button class="btn big" onclick="sessBegin()">Verstanden – los geht\'s! 🚀</button></div>';
+ $('#app').innerHTML=h;
+}
+function sessBegin(){const m=modById(sess.focus);st(m.id).seen=true;save();renderSessTask();}
+function sessTime(){const s=Math.floor((Date.now()-sess.t0)/1000);
+ return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2);}
+function renderSessTask(){
+ if(!sess||!sess.q||!sess.q[sess.i]){go('home');return;}
+ const item=sess.q[sess.i];
+ const m=modById(item.m);
+ let h='<div class="card"><div class="sesshead">';
+ h+='<span class="phase">'+item.ph+'</span>';
+ h+='<span class="chip" style="background:#e9edf5;color:var(--ink)">⏱ <span id="stimer">'+sessTime()+'</span> · Aufgabe '+(sess.i+1)+' / '+sess.q.length+'</span></div>';
+ h+='<div class="sessbar"><div style="width:'+Math.round(sess.i/sess.q.length*100)+'%"></div></div>';
+ if(sess.type==='boss'){
+  const B=bossOf(sess.mod);
+  const say=sess.i===0?pick(B.t):(sess.i===Math.floor(sess.q.length/2)?B.mid:(sess.say||pick(B.t)));
+  const hpPct=Math.max(0,Math.round((sess.pass-sess.ok)/sess.pass*100));
+  const maxErr=sess.q.length-sess.pass,used=sess.i-sess.ok,left=Math.max(0,maxErr-used);
+  h+='<div class="bossarena"><div style="text-align:center;min-width:86px"><span class="bossfig" id="bossFig">'+B.e+'</span><div class="bossname">'+B.n+'</div></div>';
+  h+='<div style="flex:1"><div class="bubble" id="bossSay">'+say+'</div>';
+  h+='<div class="bossmeta" style="margin-top:8px">Boss-Energie (besiege ihn mit '+sess.pass+' richtigen):</div><div class="bosshp"><div id="bossHp" style="width:'+hpPct+'%"></div></div>';
+  h+='<div class="bossmeta" style="margin-top:4px">Deine Schilde: '+(left>0?'🛡️'.repeat(left):'⚠️ keine mehr – jede Aufgabe muss sitzen!')+' · nur 1 Versuch pro Aufgabe</div></div></div>';
+ }
+ h+='<h2>'+m.ic+' '+m.t+'</h2><div id="taskarea"></div></div>';
+ h+='<button class="crumb" onclick="quitSess()">✕ Abbrechen</button>';
+ $('#app').innerHTML=h;
+ if(timerH)clearInterval(timerH);
+ timerH=setInterval(()=>{const el=$('#stimer');if(!el){clearInterval(timerH);return;}el.textContent=sessTime();},1000);
+ mountTask($('#taskarea'),item.m,item.lvl,(c)=>{
+  if($('#tfb').classList.contains('ok'))sess.ok++;
+  sess.i++;
+  if(sess.type==='boss'&&(sess.ok>=sess.pass||sess.i-sess.ok>sess.q.length-sess.pass)){renderSessEnd();return;}
+  if(sess.i>=sess.q.length)renderSessEnd();else renderSessTask();
+ },{strict:sess.type==='boss'});
+}
+function quitSess(){if(timerH)clearInterval(timerH);sess=null;go('home');}
+
+function renderSessEnd(){
+ if(timerH)clearInterval(timerH);
+ const n=sess.q.length;
+ const quote=Math.round(sess.ok/n*100);
+ let h='<div class="card">';
+ if(sess.type==='boss'){
+  const B=bossOf(sess.mod);
+  const win=sess.ok>=sess.pass;
+  if(win){
+   const s=st(sess.mod);s.boss=Math.min(3,s.boss+1);
+   if(s.boss===1)scheduleStart(sess.mod);
+   addXP(sess.xp);checkBadges();save();
+   h+='<div class="bigemoji"><span class="bossfig dead" style="font-size:3.4rem">'+B.e+'</span></div>';
+   h+='<h1 style="text-align:center">'+B.n+' besiegt! 🏆</h1>';
+   h+='<div class="bossarena" style="opacity:.85"><span style="font-size:2rem;filter:grayscale(.6)">'+B.e+'</span><div class="bubble">'+B.lose+'</div></div>';
+   h+='<p style="text-align:center;font-size:1.2rem">'+modById(sess.mod).t+': jetzt <span class="stars">'+starStr(s.boss)+'</span> · <b>+'+sess.xp+' XP</b></p>';
+   h+='<p class="mut" style="text-align:center">'+sess.ok+' richtige Antworten – der Boss hatte keine Chance!</p>';
+  }else{
+   h+='<div class="bigemoji"><span class="bossfig mock" style="font-size:3.4rem">'+B.e+'</span></div>';
+   h+='<h1 style="text-align:center">'+B.n+' hat gewonnen … diesmal!</h1>';
+   h+='<div class="bossarena"><span style="font-size:2rem">'+B.e+'</span><div class="bubble">'+B.win+'</div></div>';
+   h+='<p style="text-align:center">'+sess.ok+' richtig – du brauchst '+sess.pass+'.</p>';
+   h+='<p class="mut" style="text-align:center">Kein Drama: Übe noch ein paar Aufgaben (besonders im Fehler-Training) und fordere ihn erneut heraus. Beim zweiten Anlauf klappt es fast immer!</p>';
+  }
+  h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'mod\',\''+sess.mod+'\')">Zurück zum Modul</button></div>';
+ }else if(sess.type==='rev'){
+  scheduleAdvance(sess.mod);addXP(25);checkBadges();
+  const s=st(sess.mod);
+  h+='<div class="bigemoji">📅</div><h1 style="text-align:center">Wiederholung geschafft!</h1>';
+  h+='<p style="text-align:center">'+sess.ok+' von '+n+' richtig · <b>+25 XP</b></p>';
+  h+='<p class="mut" style="text-align:center">Nächste Wiederholung von „'+modById(sess.mod).t+'": in '+IVL[s.stage]+' Tag'+(IVL[s.stage]>1?'en':'')+'. Jede geschaffte Wiederholung verlängert den Abstand – so wandert der Stoff ins Langzeitgedächtnis.</p>';
+  h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'home\')">Weiter</button></div>';
+ }else{
+  h+='<div class="bigemoji">'+(quote>=80?'🏆':quote>=50?'💪':'🌱')+'</div>';
+  h+='<h1 style="text-align:center">Training geschafft!</h1>';
+  h+='<div class="statrow">';
+  h+='<div class="statbox"><div class="v">'+sess.ok+'/'+n+'</div><div class="l">richtig</div></div>';
+  h+='<div class="statbox"><div class="v">'+sessTime()+'</div><div class="l">Dauer</div></div>';
+  h+='<div class="statbox"><div class="v">+40</div><div class="l">Bonus-XP</div></div></div>';
+  if(sess.type==='daily'){
+   const t=dstr();const seen={};
+   sess.q.forEach(it=>{if(seen[it.m])return;seen[it.m]=1;
+    const s=st(it.m);if(s.due&&s.due<=t)scheduleAdvance(it.m);});
+   h+='<h2>📝 Mini-Zusammenfassung (wichtig!)</h2>';
+   h+='<p class="mut">Das Aufschreiben in eigenen Worten ist der stärkste Trick gegen das Vergessen.</p>';
+   h+='<p><b>Was habe ich heute verstanden?</b></p><textarea id="r1" rows="2" style="width:100%"></textarea>';
+   h+='<p style="margin-top:8px"><b>Was war schwer?</b></p><textarea id="r2" rows="2" style="width:100%"></textarea>';
+   h+='<p style="margin-top:8px"><b>Was wiederhole ich morgen?</b></p><textarea id="r3" rows="2" style="width:100%"></textarea>';
+   h+='<button class="btn big" style="margin-top:14px" onclick="saveReflect()">Speichern & abschließen ✅</button>';
+  }else{
+   h+='<button class="btn big" onclick="finishPlain()">Zurück zur Übersicht</button>';
+  }
+ }
+ h+='</div>';
+ $('#app').innerHTML=h;
+ if(sess.type!=='boss'||sess.ok>=sess.pass)cheer();
+ if(sess.type==='boss'||sess.type==='rev'||sess.type==='err')sess=null;
+}
+function saveReflect(){
+ state.journal.push({d:dstr(),a1:$('#r1').value,a2:$('#r2').value,a3:$('#r3').value,ok:sess.ok,n:sess.q.length});
+ state.sessions++;addXP(40);checkBadges();save();sess=null;go('home');
+}
+function finishPlain(){addXP(40);sess=null;go('home');}
+
+/* ============ Blitzrunde ============ */
+const BLITZLEN=300;
+function startBlitz(){
+ sess={type:'blitz',t0:Date.now(),end:Date.now()+BLITZLEN*1000,ok:0,n:0};
+ renderBlitzTask();
+}
+function blitzPool(){
+ const started=MODS.filter(m=>st(m.id).c>0);
+ return started.length?started:MODS.slice(0,3);
+}
+function blitzLeft(){return Math.max(0,Math.ceil((sess.end-Date.now())/1000));}
+function renderBlitzTask(){
+ if(!sess||sess.type!=='blitz')return;
+ if(Date.now()>=sess.end){renderBlitzEnd();return;}
+ const m=pick(blitzPool());
+ const lvl=pick([1,1,2]);
+ let h='<div class="card"><div class="sesshead">';
+ h+='<span class="phase" style="background:var(--warn)">⚡ Blitzrunde</span>';
+ h+='<span class="blitztime" id="btime">'+fmtT(blitzLeft())+'</span>';
+ h+='<span class="chip" style="background:#e9edf5;color:var(--ink)">✅ '+sess.ok+' richtig</span></div>';
+ h+='<h2>'+m.ic+' '+m.t+'</h2><div id="taskarea"></div></div>';
+ h+='<button class="crumb" onclick="quitSess()">✕ Abbrechen</button>';
+ $('#app').innerHTML=h;
+ if(timerH)clearInterval(timerH);
+ timerH=setInterval(()=>{
+  if(!sess||sess.type!=='blitz'){clearInterval(timerH);return;}
+  const el=$('#btime');
+  if(Date.now()>=sess.end){clearInterval(timerH);renderBlitzEnd();return;}
+  if(el)el.textContent=fmtT(blitzLeft());
+ },500);
+ mountTask($('#taskarea'),m.id,lvl,()=>{
+  if($('#tfb')&&$('#tfb').classList.contains('ok'))sess.ok++;
+  sess.n++;
+  renderBlitzTask();
+ },{strict:true,autoNext:true});
+}
+function fmtT(s){return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2);}
+function renderBlitzEnd(){
+ if(timerH)clearInterval(timerH);
+ const rec=sess.ok>state.blitzBest;
+ if(rec)state.blitzBest=sess.ok;
+ state.blitzRuns++;
+ const bonus=sess.ok*8;
+ addXP(bonus);checkBadges();save();
+ let h='<div class="card"><div class="bigemoji">⚡</div>';
+ h+='<h1 style="text-align:center">Blitzrunde vorbei!</h1>';
+ h+='<div class="statrow">';
+ h+='<div class="statbox"><div class="v">'+sess.ok+'</div><div class="l">richtig</div></div>';
+ h+='<div class="statbox"><div class="v">'+sess.n+'</div><div class="l">versucht</div></div>';
+ h+='<div class="statbox"><div class="v">+'+bonus+'</div><div class="l">XP</div></div>';
+ h+='<div class="statbox"><div class="v">'+state.blitzBest+'</div><div class="l">Rekord</div></div></div>';
+ if(rec&&sess.ok>0)h+='<p style="text-align:center;font-weight:700;color:var(--warn)">🎉 Neuer persönlicher Rekord!</p>';
+ h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'home\')">Zurück</button>'+
+ '<button class="btn warn" onclick="go(\'blitz\')">Nochmal! ⚡</button></div></div>';
+ $('#app').innerHTML=h;
+ if(rec&&sess.ok>0)cheer();
+ sess=null;
+}
+
+/* ============ Logbuch & Abzeichen ============ */
+function renderLog(){
+ let h='<button class="crumb" onclick="go(\'home\')">← Übersicht</button>';
+ h+='<div class="card"><h1>🏅 Abzeichen</h1><div class="badgewrap">';
+ BADGES.forEach(b=>{
+  const has=state.badges.indexOf(b.id)>=0;
+  h+='<span class="badge" style="'+(has?'':'opacity:.38;filter:grayscale(1)')+'" title="'+b.d+'">'+b.e+' '+b.n+'</span>';
+ });
+ h+='</div><p class="hint" style="margin-top:8px">Grau = noch nicht verdient. Tippe auf ein Abzeichen für die Bedingung.</p></div>';
+ h+='<div class="card"><h2>⚡ Blitzrunde</h2><p>Rekord: <b>'+state.blitzBest+' richtige</b> in 5 Minuten · '+state.blitzRuns+' Runden gespielt</p></div>';
+ h+='<div class="card"><h1>📓 Logbuch</h1>';
+ if(!state.journal.length)h+='<p class="mut">Noch keine Einträge. Schließe dein erstes Tagestraining ab!</p>';
+ state.journal.slice().reverse().forEach(j=>{
+  h+='<div class="jentry"><b>'+j.d+'</b> · '+j.ok+'/'+j.n+' richtig';
+  if(j.a1)h+='<br>✅ Verstanden: '+j.a1;
+  if(j.a2)h+='<br>❓ Schwer: '+j.a2;
+  if(j.a3)h+='<br>🔁 Morgen: '+j.a3;
+  h+='</div>';
+ });
+ h+='</div>';
+ $('#app').innerHTML=h;
+}
+/* v2 */
+/* ============ Mentoren & interaktive Lektionen ============ */
+const MENTORS={
+ bru:{e:'👨‍🍳',n:'Chefkoch Toni'},
+ klm:{e:'🕵️',n:'Detektiv Minus'},
+ pot:{e:'🧙‍♂️',n:'Magier Potenzius'},
+ ter:{e:'👩‍🔧',n:'Meisterin Terma'},
+ glg:{e:'👩‍⚖️',n:'Richterin Gleichwaage'},
+ ung:{e:'🐊',n:'Kroko'},
+ bin:{e:'🎩',n:'Magier Binomio'},
+ fak:{e:'👷',n:'Baumeister Bruno'},
+ brt:{e:'🤿',n:'Taucherin Nena Nenner'},
+ qua:{e:'👨‍🚀',n:'Captain Nullprodukt'},
+ txt:{e:'🦜',n:'Papagei Textor'},
+ fun:{e:'🤹',n:'Jongleur Funki'},
+ lin:{e:'🧗',n:'Bergführer Milo'},
+ qfk:{e:'🏀',n:'Coach Para'},
+ exp:{e:'👨‍🔬',n:'Dr. Wachstum'},
+ log:{e:'🦉',n:'Eule Logarithma'},
+ fol:{e:'🐢',n:'Schildkröte Limes'},
+ abl:{e:'🦊',n:'Felix f′'},
+ int:{e:'👩‍🌾',n:'Flora Fläche'},
+ tri:{e:'👷‍♀️',n:'Vermesserin Trixi'},
+ vek:{e:'👩‍✈️',n:'Pilotin Vera Vektor'}};
+
+const LESSONS={
+bru:[
+ {m:'Ciao! Ich bin Toni, Pizzabäcker. Brüche sind mein Alltag – jede Pizza wird geteilt! Ich zeige dir alles in kleinen Häppchen. Andiamo!'},
+ {m:'Stell dir eine Pizza vor, geschnitten in 4 gleiche Stücke. Du nimmst dir 3 davon.',b:'Du hast '+frac(3,4)+' der Pizza = 3 von 4 Stücken'},
+ {q:'Was sagt dir die Zahl <b>unten</b> im Bruch (der Nenner)?',o:['In wie viele Teile geschnitten wurde','Wie viele Teile ich nehme','Wie groß die Pizza ist'],a:0,ok:'Genau! Unten steht, in wie viele Teile geteilt wird – oben, wie viele du nimmst.',no:'Schau nochmal: Die Zahl unten (Nenner) sagt, in wie viele Teile geschnitten wurde.'},
+ {m:'Wichtig: Bruch, Dezimalzahl und Prozent sind <b>dieselbe Sache in drei Sprachen</b>.',b:frac(1,2)+' = 0,5 = 50 %'},
+ {m:'Die Übersetzung ist immer gleich: Zähler durch Nenner teilen, dann mal 100 für Prozent.',b:frac(3,4)+' → 3 : 4 = 0,75 → 75 %'},
+ {q:'Wandle um: '+frac(1,5)+' in Prozent?',o:['20 %','15 %','50 %'],a:0,ok:'Perfetto! 1 : 5 = 0,2 und 0,2 · 100 = 20 %.',no:'Rechne 1 : 5 = 0,2 – und dann mal 100.'},
+ {m:'Kürzen heißt: Stücke wieder zusammenkleben. Teile oben UND unten durch dieselbe Zahl.',b:frac(6,12)+' → oben und unten : 6 → '+frac(1,2)},
+ {m:'Plus und Minus geht nur mit <b>gleichem Nenner</b>! Erst erweitern, dann Zähler verrechnen.',b:frac(1,2)+' + '+frac(1,4)+' = '+frac(2,4)+' + '+frac(1,4)+' = '+frac(3,4)},
+ {q:'Was ist '+frac(1,3)+' + '+frac(1,6)+'?',o:[frac(1,2),frac(2,9),frac(2,6)],a:0,ok:'Bravissimo! '+frac(2,6)+' + '+frac(1,6)+' = '+frac(3,6)+' = '+frac(1,2)+'.',no:'Erst erweitern: '+frac(1,3)+' = '+frac(2,6)+'. Dann Zähler addieren und kürzen!'},
+ {m:'Und Prozente vom Preis? p % von N heißt: N · p/100.',b:'20 % von 60 € → 60 · 0,20 = 12 € Rabatt → 48 €'},
+ {q:'Berechne: 25 % von 80',o:['20','25','40'],a:0,ok:'Ottimo! 80 · 0,25 = 20. Oder: 25 % = ein Viertel.',no:'25 % ist ein Viertel: 80 : 4 = ?'},
+ {m:'Du bist bereit! Übe jetzt ein paar Runden – und wenn du dich stark fühlst, wartet der Bruchbaron auf dich. Der hasst gekürzte Brüche!'}],
+klm:[
+ {m:'Psst… Detektiv Minus hier. Ich jage den häufigsten Fehler der Mathematik: den <b>Vorzeichenfehler</b>. Hilf mir bei der Ermittlung!'},
+ {m:'Erste Spur: Bei Mal und Geteilt gelten klare Regeln.',b:'(−) · (−) = +&nbsp;&nbsp;&nbsp;(−) · (+) = −&nbsp;&nbsp;&nbsp;(+) · (+) = +'},
+ {q:'Was ist (−3) · (−4)?',o:['12','−12','−7'],a:0,ok:'Richtig kombiniert! Minus mal Minus ergibt Plus.',no:'Zwei gleiche Vorzeichen → Ergebnis positiv. Also?'},
+ {m:'Jetzt der Haupttäter: das <b>Minus vor der Klammer</b>. Es dreht ALLE Vorzeichen in der Klammer um!',b:'4 − (2x − 3) = 4 − 2x <b>+ 3</b> = 7 − 2x'},
+ {q:'Löse auf: −(a − 7)',o:['−a + 7','−a − 7','a − 7'],a:0,ok:'Exzellent ermittelt! Beide Vorzeichen drehen sich.',no:'Das Minus trifft BEIDE: aus a wird −a, aus −7 wird +7.'},
+ {m:'Bei verschachtelten Klammern arbeiten wir wie Profis: <b>von innen nach außen</b>.',b:'6 − [2 − (4 − 1)] = 6 − [2 − 3] = 6 − (−1) = 7'},
+ {q:'Berechne: 5 − 2 · (3 − 7)',o:['13','−3','−11'],a:0,ok:'Fall gelöst! Klammer zuerst: (3−7) = −4, dann 5 − 2·(−4) = 5 + 8 = 13.',no:'Erst die Klammer: 3 − 7 = −4. Dann Punkt vor Strich: 2 · (−4) = −8. Also 5 − (−8)…'},
+ {m:'Merke dir meine Detektiv-Regel: Vor jeder Klammer kurz stoppen und fragen: „Steht da ein Minus?" Das verhindert 90 % aller Fehler. Jetzt ab ins Training!'}],
+pot:[
+ {m:'Willkommen, junger Lehrling! Ich bin Potenzius. Potenzen sind Zauberformeln für <b>wiederholtes Multiplizieren</b>.'},
+ {m:'Statt 2 · 2 · 2 schreiben wir kurz:',b:'2<sup>3</sup> = 2 · 2 · 2 = 8'},
+ {q:'Was bedeutet 5<sup>4</sup>?',o:['5 · 5 · 5 · 5','5 · 4','4 · 4 · 4 · 4 · 4'],a:0,ok:'Sehr gut! Die kleine Zahl zählt, wie oft multipliziert wird.',no:'Der Exponent (die 4) zählt, wie oft die 5 mit sich selbst multipliziert wird.'},
+ {m:'Meine drei mächtigsten Zaubersprüche:',b:'a<sup>m</sup> · a<sup>n</sup> = a<sup>m+n</sup> &nbsp;&nbsp; a<sup>m</sup> : a<sup>n</sup> = a<sup>m−n</sup> &nbsp;&nbsp; (a<sup>m</sup>)<sup>n</sup> = a<sup>m·n</sup>'},
+ {q:'Vereinfache: 2<sup>3</sup> · 2<sup>4</sup>',o:['2<sup>7</sup>','2<sup>12</sup>','4<sup>7</sup>'],a:0,ok:'Gleiche Basis → Exponenten addieren. 3 + 4 = 7!',no:'Gleiche Basis, Mal-Zeichen → Exponenten ADDIEREN, nicht multiplizieren.'},
+ {m:'Wurzeln sind die Umkehr-Magie: Sie fragen „Welche Zahl mal sich selbst…?"',b:wz(49)+' = 7, denn 7² = 49'},
+ {m:'Große Wurzeln vereinfache ich mit Quadratzahl-Magie:',b:wz(50)+' = '+wz('25 · 2')+' = 5'+wz(2)},
+ {q:'Vereinfache: '+wz(72),o:['6'+wz(2),'36'+wz(2),'8'+wz(3)],a:0,ok:'Meisterhaft! 72 = 36 · 2 und '+wz(36)+' = 6.',no:'Suche die größte Quadratzahl in 72: Es ist 36, denn 72 = 36 · 2.'},
+ {m:'Letzter Zauber: Negative Exponenten bedeuten <b>Kehrwert</b>.',b:'2<sup>−3</sup> = '+frac(1,'2<sup>3</sup>')+' = '+frac(1,8)},
+ {q:'Was ist 5<sup>−2</sup>?',o:[frac(1,25),'−25','−10'],a:0,ok:'Du bist bereit für die Prüfung! Kehrwert von 5² = 25.',no:'Negativer Exponent heißt NICHT negative Zahl – sondern 1 geteilt durch 5².'},
+ {m:'Der Potenzdrache wartet schon… aber erst üben, dann kämpfen!'}],
+ter:[
+ {m:'Hi, ich bin Terma – in meiner Werkstatt bringen wir Terme in Form! Ein Term ist ein Rechenausdruck ohne Gleichheitszeichen.'},
+ {m:'Regel Nr. 1: Nur <b>gleichartige</b> Teile lassen sich verschrauben.',b:'3x + 5x = 8x&nbsp;&nbsp;&nbsp;aber:&nbsp;&nbsp;3x + 5y bleibt 3x + 5y'},
+ {q:'Was ist 2x + 3y + 4x?',o:['6x + 3y','9xy','6x + 4y'],a:0,ok:'Sauber sortiert! x zu x, y bleibt allein.',no:'Sortiere: nur die x-Teile zusammenfassen (2x + 4x). Das y bleibt eigenständig!'},
+ {m:'Werkzeug Nr. 2: <b>Ausmultiplizieren</b> – die Zahl vor der Klammer trifft jeden darin.',b:'2(x + 3) = 2x + 6'},
+ {q:'Multipliziere aus: 3(2a − 4)',o:['6a − 12','6a − 4','5a − 7'],a:0,ok:'Beide getroffen: 3·2a und 3·(−4).',no:'Die 3 muss BEIDE Teile treffen: 3 · 2a = 6a und 3 · (−4) = −12.'},
+ {m:'Werkzeug Nr. 3: <b>Ausklammern</b> – das Gegenteil. Gemeinsamen Faktor rausziehen.',b:'6x + 12 = 6(x + 2)'},
+ {q:'Klammere aus: 10y + 15',o:['5(2y + 3)','10(y + 15)','5(2y + 15)'],a:0,ok:'Der ggT 5 sauber rausgezogen. Probe: 5·2y + 5·3 = 10y + 15 ✓',no:'Was teilt 10 UND 15? Die 5! Also 5 · (… + …).'},
+ {m:'Profi-Tipp aus der Werkstatt: Nach jedem Umformen kurz die <b>Probe</b> durch Rückwärtsrechnen. Jetzt du!'}],
+glg:[
+ {m:'Guten Tag! Hier spricht Richterin Gleichwaage. In meinem Gerichtssaal gilt ein einziges Gesetz: <b>Beide Seiten werden immer gleich behandelt!</b>'},
+ {m:'Eine Gleichung ist eine Waage im Gleichgewicht. Was du links tust, musst du auch rechts tun.',b:'2x + 3 = 11'},
+ {m:'Ziel: x allein stellen. Wir räumen Schritt für Schritt auf – zuerst die +3 durch −3 auf beiden Seiten.',b:'2x + 3 = 11&nbsp;&nbsp;| −3<br>2x = 8'},
+ {q:'Und jetzt? Wie bekommst du das x ganz allein?',o:['Beide Seiten durch 2 teilen','Auf beiden Seiten −2 rechnen','Links das x streichen'],a:0,ok:'So ist es Recht! 2x : 2 = x und 8 : 2 = 4.',no:'Vor dem x steht „2 mal" – das Gegenteil von Mal ist Geteilt.'},
+ {m:'Das Urteil:',b:'x = 4&nbsp;&nbsp;&nbsp;Probe: 2 · 4 + 3 = 11 ✓'},
+ {q:'Dein Fall: Löse 3x = 21',o:['x = 7','x = 18','x = 63'],a:0,ok:'Einwandfrei: 21 : 3 = 7.',no:'Beide Seiten durch 3 teilen: 21 : 3 = ?'},
+ {m:'Steht x auf beiden Seiten, hole zuerst alle x auf eine Seite.',b:'3x + 5 = 2x + 12&nbsp;&nbsp;| −2x<br>x + 5 = 12&nbsp;&nbsp;| −5<br>x = 7'},
+ {q:'Löse: 5x + 3 = 18',o:['x = 3','x = 4','x = 15'],a:0,ok:'Verhandlung geschlossen! −3, dann :5 ergibt 3.',no:'Erst −3 auf beiden Seiten (→ 5x = 15), dann durch 5.'},
+ {m:'Und vergiss nie die <b>Probe</b> – setze dein Ergebnis ein und prüfe, ob beide Seiten gleich sind. Das ist dein Freispruch! Jetzt ins Training.'}],
+ung:[
+ {m:'Schnapp! Ich bin Kroko. Ich fresse immer die <b>größere</b> Zahl – mein offenes Maul zeigt zu ihr: 3 &lt; 5. Merk dir das Maul!'},
+ {q:'Zu welcher Zahl zeigt das offene Maul bei 8 &gt; 2?',o:['Zur 8 – die ist größer','Zur 2','Zu beiden'],a:0,ok:'Genau, ich fresse die 8! Das Maul zeigt immer zur größeren Zahl.',no:'Ich habe Hunger auf die GRÖSSERE Zahl – das offene Ende zeigt zu ihr.'},
+ {m:'Ungleichungen löst du fast genau wie Gleichungen: plus, minus, mal, geteilt auf beiden Seiten.',b:'2x − 4 &lt; 6&nbsp;&nbsp;| +4<br>2x &lt; 10&nbsp;&nbsp;| :2<br>x &lt; 5'},
+ {m:'ABER – jetzt kommt mein Lieblingstrick: Multiplizierst oder dividierst du mit einer <b>negativen</b> Zahl, drehe ich mein Maul um!',b:'−2x &gt; 8&nbsp;&nbsp;| :(−2) ⚠️ Zeichen dreht sich!<br>x &lt; −4'},
+ {q:'Löse: −3x ≤ 12',o:['x ≥ −4','x ≤ −4','x ≤ 4'],a:0,ok:'Schnapp! Durch −3 geteilt → Maul dreht sich: aus ≤ wird ≥.',no:'Du teilst durch −3 (negativ!) → das Zeichen MUSS sich umdrehen.'},
+ {q:'Und bei x + 5 &gt; 8 – dreht sich das Zeichen?',o:['Nein, bei Plus/Minus nie','Ja, immer','Nur bei geraden Zahlen'],a:0,ok:'Richtig! Nur bei Mal/Geteilt mit NEGATIVEN Zahlen drehe ich mich. Hier: x &gt; 3.',no:'Plus und Minus sind harmlos – nur negatives Multiplizieren/Dividieren dreht das Zeichen.'},
+ {m:'Das war schon das ganze Geheimnis! Der Ungleich-Hai da draußen hofft, dass du das Umdrehen vergisst. Enttäusche ihn!'}],
+bin:[
+ {m:'Willkommen zur Zaubershow! Binomio mein Name. Meine drei Formeln lassen lange Rechnungen… verschwinden!'},
+ {m:'Hier meine drei Zauberformeln – gleich siehst du, was dahintersteckt:',b:'(a + b)² = a² + 2ab + b²<br>(a − b)² = a² − 2ab + b²<br>(a + b)(a − b) = a² − b²'},
+ {q:'Achtung, beliebter Trugschluss: Ist (a + b)² dasselbe wie a² + b²?',o:['Nein – der Mittelterm 2ab fehlt!','Ja, klar','Nur wenn a = b'],a:0,ok:'Du durchschaust die Illusion! Probier es mit a=1, b=2: (1+2)²=9, aber 1²+2²=5.',no:'Vorsicht, Falle! Teste mit Zahlen: (1+2)² = 9, aber 1² + 2² = 5. Der Mittelterm 2ab fehlt!'},
+ {m:'So wirkt Formel 1 in Aktion:',b:'(x + 3)² = x² + 2·x·3 + 3² = x² + 6x + 9'},
+ {q:'Multipliziere aus: (a − 5)²',o:['a² − 10a + 25','a² − 25','a² + 10a − 25'],a:0,ok:'Abrakadabra! a², dann 2·a·5 mit Minus, dann 5².',no:'Formel 2: a² MINUS 2·a·5 PLUS 5². Das letzte Vorzeichen ist immer Plus!'},
+ {m:'Der wahre Zauber: Es geht auch <b>rückwärts</b>! Erkenne die Formel im Term.',b:'x² − 10x + 25 = (x − 5)²&nbsp;&nbsp;&nbsp;Check: 2 · x · 5 = 10x ✓'},
+ {q:'Faktorisiere: x² − 9',o:['(x + 3)(x − 3)','(x − 3)²','(x − 9)(x + 1)'],a:0,ok:'Formel 3 rückwärts – a² − b² zerfällt in (a+b)(a−b)!',no:'Kein Mittelterm? Dann ist es die 3. Formel: a² − b² = (a + b)(a − b).'},
+ {m:'Mit diesen drei Formeln zauberst du dich durch Faktorisieren, quadratische Gleichungen und später sogar durchs Abitur. Vorhang auf fürs Training!'}],
+fak:[
+ {m:'Moin! Bruno hier, Baumeister. Faktorisieren heißt: ein Gebäude in seine <b>Bausteine</b> zerlegen – aus einer Summe wird ein Produkt.'},
+ {m:'Werkzeug 1: Den größten gemeinsamen Teiler ausklammern.',b:'8x + 12 = 4(2x + 3)'},
+ {q:'Klammere aus: 15m − 10',o:['5(3m − 2)','5(3m − 10)','10(5m − 1)'],a:0,ok:'Solide gebaut! ggT von 15 und 10 ist 5.',no:'Was teilt 15 UND 10? Die 5. Dann: 15m:5 = 3m und 10:5 = 2.'},
+ {m:'Werkzeug 2: Steckt in jedem Teil ein x, zieh es raus.',b:'x² + 5x = x(x + 5)'},
+ {m:'Werkzeug 3 – der Trinom-Trick: Suche zwei Zahlen mit passendem <b>Produkt</b> und passender <b>Summe</b>.',b:'x² + 5x + 6:&nbsp;Produkt 6, Summe 5 → 2 und 3<br>x² + 5x + 6 = (x + 2)(x + 3)'},
+ {q:'Welche zwei Zahlen brauchst du für x² + 7x + 12?',o:['3 und 4','6 und 2','12 und 1'],a:0,ok:'Passgenau! 3 · 4 = 12 und 3 + 4 = 7 → (x+3)(x+4).',no:'Produkt muss 12 sein, Summe 7. Geh die Paare durch: 1·12, 2·6, 3·4…'},
+ {q:'Und bei Minus? x² − 2x − 8: Welches Paar passt?',o:['−4 und +2','+4 und −2','−4 und −2'],a:0,ok:'Stark! (−4)·2 = −8 ✓ und −4+2 = −2 ✓ → (x−4)(x+2).',no:'Produkt −8 (ein Minus!), Summe −2. Teste: −4 und +2.'},
+ {m:'Warum das Ganze? Zerlegte Produkte lösen dir gleich die quadratischen Gleichungen fast von selbst. Ab auf die Baustelle!'}],
+brt:[
+ {m:'Blubb! Nena hier, Tieftaucherin. Bruchterme sind Brüche mit Variablen – und in der Tiefe lauert eine Gefahr: die <b>Null im Nenner</b>!'},
+ {q:'Warum ist '+frac(3,'x − 1')+' für x = 1 verboten?',o:['Weil der Nenner dann 0 wird','Weil das Ergebnis negativ wird','Weil 3 eine Primzahl ist'],a:0,ok:'Genau! Durch 0 teilen geht nie. Wir notieren: x ≠ 1 (Definitionsmenge).',no:'Setz mal x = 1 ein: Der Nenner wird 1 − 1 = 0. Und durch 0 teilen ist verboten!'},
+ {m:'Gleiche Nenner? Dann einfach die Zähler verrechnen.',b:frac(2,'x')+' + '+frac(3,'x')+' = '+frac(5,'x')},
+ {m:'Verschiedene Nenner? Erst auf den <b>Hauptnenner</b> erweitern – wie bei Zahlbrüchen.',b:frac(1,'x')+' + '+frac(1,'2x')+' = '+frac(2,'2x')+' + '+frac(1,'2x')+' = '+frac(3,'2x')},
+ {q:'Fasse zusammen: '+frac(3,'a')+' − '+frac(1,'2a'),o:[frac(5,'2a'),frac(2,'a'),frac(3,'2a')],a:0,ok:'Sauber getaucht! '+frac(6,'2a')+' − '+frac(1,'2a')+' = '+frac(5,'2a')+'.',no:'Hauptnenner 2a: erweitere '+frac(3,'a')+' zu '+frac(6,'2a')+', dann Zähler subtrahieren.'},
+ {m:'Bruchgleichungen knacke ich so: Verbotene x notieren, dann mit dem Nenner multiplizieren – weg ist der Bruch!',b:frac(3,'x − 1')+' = 6&nbsp;&nbsp;(x ≠ 1)&nbsp;&nbsp;| · (x − 1)<br>3 = 6x − 6 → x = 1,5 ✓ erlaubt'},
+ {q:'Löse: '+frac('x',2)+' = 5',o:['x = 10','x = 2,5','x = 7'],a:0,ok:'Blubb-tastisch! Beide Seiten mal 2.',no:'Multipliziere beide Seiten mit 2 – dann steht x allein.'},
+ {m:'Merke: Erst Definitionsmenge, dann rechnen, am Ende prüfen, ob die Lösung erlaubt ist. Tauchgang beendet – jetzt üben!'}],
+qua:[
+ {m:'Hier spricht Captain Nullprodukt, Kommandant der x²-Mission! Quadratische Gleichungen haben meist <b>zwei Lösungen</b> – wir finden beide.'},
+ {m:'Mein wichtigstes Manöver – die Nullprodukt-Regel:',b:'Ein Produkt ist 0, wenn (mindestens) ein Faktor 0 ist.<br>x(x − 5) = 0 → x = 0 oder x = 5'},
+ {q:'(x − 2)(x + 3) = 0. Wie lauten die Lösungen?',o:['x = 2 oder x = −3','x = −2 oder x = 3','x = 2 oder x = 3'],a:0,ok:'Volltreffer, Kadett! Jeder Faktor wird einzeln 0 gesetzt – Vorzeichen drehen sich.',no:'Setze jeden Faktor = 0: x − 2 = 0 → x = 2. Und x + 3 = 0 → x = −3.'},
+ {m:'Fehlt das konstante Glied, klammere x aus:',b:'x² − 5x = 0 → x(x − 5) = 0 → x₁ = 0, x₂ = 5'},
+ {m:'Steht ein Trinom da, nutze Brunos Produkt-Summen-Trick:',b:'x² + 6x + 8 = 0 → (x + 2)(x + 4) = 0 → x₁ = −2, x₂ = −4'},
+ {q:'Löse: x² = 9',o:['x = 3 oder x = −3','nur x = 3','x = 81'],a:0,ok:'Beide Lösungen an Bord! (−3)² ist auch 9 – das vergessen viele.',no:'Achtung: Auch (−3)² = 9! Beim Wurzelziehen gibt es ±.'},
+ {q:'Erster Schritt bei x² + 5x = 14?',o:['Alles auf eine Seite: x² + 5x − 14 = 0','Wurzel ziehen','Durch x teilen'],a:0,ok:'Korrekt, Kommando ausgeführt! Erst = 0 herstellen, dann faktorisieren: (x+7)(x−2)=0.',no:'Meine Regel braucht eine 0 auf einer Seite – also erst −14 rechnen. (Durch x teilen verliert eine Lösung!)'},
+ {m:'Mission verstanden? Denk dran: Immer BEIDE Lösungen melden. Der Quadrator wartet im Orbit… erst trainieren, dann angreifen!'}],
+txt:[
+ {m:'Krrrah! Ich bin Textor, dein Übersetzungs-Papagei. Textaufgaben sind nur eine Fremdsprache – ich lehre dich Deutsch → Mathe!'},
+ {m:'Hier mein Wörterbuch:',b:'„das Dreifache" → 3x&nbsp;&nbsp;„um 5 mehr" → +5<br>„die Summe" → +&nbsp;&nbsp;„ergibt / ist" → ='},
+ {q:'Übersetze: „Das Doppelte einer Zahl plus 3 ergibt 11."',o:['2x + 3 = 11','x² + 3 = 11','2(x + 3) = 11'],a:0,ok:'Krrrah, perfekt übersetzt!',no:'„Das Doppelte einer Zahl" = 2x. Dann „plus 3" und „ergibt 11".'},
+ {m:'Und dann? Einfach lösen wie immer:',b:'2x + 3 = 11 → 2x = 8 → x = 4'},
+ {m:'Mein 4-Schritte-Flugplan:',b:'1. Was ist gesucht? → nenne es x<br>2. Text Stück für Stück übersetzen<br>3. Gleichung lösen<br>4. Im Satz antworten + Sinn prüfen!'},
+ {q:'„Die Summe zweier aufeinanderfolgender Zahlen ist 31." Welcher Ansatz stimmt?',o:['x + (x + 1) = 31','x + x = 31','2x + 2 = 31'],a:0,ok:'Krrrah! Die zweite Zahl ist genau 1 größer: x und x+1. → 15 und 16.',no:'Aufeinanderfolgend heißt: die zweite Zahl ist x + 1. Also x + (x+1) = 31.'},
+ {q:'Warum lohnt Schritt 4 (Sinn prüfen)?',o:['Weil z. B. −3 Personen unmöglich sind','Weil man sonst Punkte geschenkt bekommt','Er lohnt nicht'],a:0,ok:'Kluger Vogel! Ein Alter von −3 oder 2,5 Personen zeigt sofort: Rechenfehler!',no:'Denk nach: Wenn „Anzahl Personen = −3" rauskommt, MUSS ein Fehler drin sein. Das fängt Schritt 4 ab.'},
+ {m:'Genau DIESE Übersetzungskunst brauchst du bei unbekannten Klausuraufgaben. Üben, üben – krrrah!'}],
+fun:[
+ {m:'Hepp! Funki hier, Jongleur. Eine Funktion ist wie perfektes Jonglieren: <b>Jeder Ball (x) landet in genau einer Hand (y)</b> – nie in zwei!'},
+ {q:'Welche Zuordnung ist eine Funktion?',o:['x ↦ 2x + 1','x ↦ ±'+wz('x'),'Jede Zahl bekommt ihre zwei Nachbarn'],a:0,ok:'Hepp! Genau ein Ergebnis pro x – das ist eine Funktion.',no:'Bei ± bekommt ein x ZWEI Werte – ein Ball in zwei Händen? Unmöglich!'},
+ {m:'f(x) liest du als „f von x": Wirf x hinein, ein y kommt raus.',b:'f(x) = 2x + 1<br>f(3) = 2 · 3 + 1 = 7'},
+ {q:'f(x) = x² − 1. Berechne f(2).',o:['3','1','5'],a:0,ok:'Gefangen! 2² − 1 = 3.',no:'Setze die 2 ein: 2² = 4, dann − 1.'},
+ {m:'Zwei Punkte fange ich bei jedem Graphen zuerst:',b:'y-Achsenabschnitt: f(0) berechnen<br>Nullstelle: f(x) = 0 lösen'},
+ {q:'f(x) = 2x − 6. Wo ist die Nullstelle?',o:['x = 3','x = −6','x = 0'],a:0,ok:'Hepp, hepp! 2x − 6 = 0 → x = 3. Dort schneidet der Graph die x-Achse.',no:'Setze f(x) = 0: also 2x − 6 = 0 und nach x auflösen.'},
+ {m:'Das war die Grundlage ALLER Funktionen – Geraden, Parabeln, Exponentialkurven. Alle jonglieren nach dieser Regel. Weiter zum Training!'}],
+lin:[
+ {m:'Servus! Milo, Bergführer. Lineare Funktionen sind meine Wanderwege: immer gleichmäßig steil. Die Karte dazu: <b>y = mx + b</b>.'},
+ {m:'m ist die <b>Steigung</b> (wie steil), b der <b>Startpunkt</b> auf der y-Achse.',b:graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#e8590c'},{dot:[1,3],col:'#2b8a3e'}])+'y = 2x + 1: Start bei 1 (orange), pro Schritt nach rechts 2 hoch (grün)'},
+ {q:'Bei y = 3x − 2: Was passiert mit y, wenn x um 1 wächst?',o:['y wächst um 3','y sinkt um 2','y wächst um 1'],a:0,ok:'Bergauf mit Steigung 3! Genau das bedeutet m.',no:'Die Zahl VOR dem x (m = 3) sagt: pro Schritt nach rechts geht es 3 nach oben.'},
+ {q:'Und wo startet y = 3x − 2 auf der y-Achse?',o:['Bei −2','Bei 3','Bei 0'],a:0,ok:'Basislager gefunden: b = −2!',no:'b ist die Zahl OHNE x – hier −2. Dort schneidet die Gerade die y-Achse.'},
+ {m:'Steigung aus zwei Punkten? Höhenunterschied durch Wegstrecke:',b:'m = '+frac('y₂ − y₁','x₂ − x₁')+'&nbsp;&nbsp;z. B. (0|2) und (2|6): m = '+frac(4,2)+' = 2'},
+ {m:'Wo kreuzen sich zwei Wege? <b>Gleichsetzen!</b>',b:'2x + 1 = x + 4 → x = 3 → y = 7<br>Schnittpunkt (3 | 7)'},
+ {q:'Schnittpunkt von y = 2x und y = x + 5: Wie lautet der Ansatz?',o:['2x = x + 5','2x + x = 5','y = 2x + 5'],a:0,ok:'Beide Wege treffen sich, wo beide y gleich sind – also Terme gleichsetzen! (x = 5, y = 10)',no:'Am Schnittpunkt haben beide dasselbe y – setze die Terme gleich: 2x = x + 5.'},
+ {m:'Mit m und b liest du jede Gerade wie eine Wanderkarte. Pack die Stiefel – Übungszeit!'}],
+qfk:[
+ {m:'Yo! Coach Para hier. Jeder Basketballwurf fliegt eine <b>Parabel</b> – genau die Kurve der quadratischen Funktionen!'},
+ {m:'Die Scheitelpunktform ist mein Spielzug Nummer 1:',b:'f(x) = a(x − d)² + e → Scheitel S(d | e)<br>'+graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#e8590c'}])+'f(x) = (x − 2)² − 1: Scheitel S(2 | −1)'},
+ {q:'Scheitelpunkt von f(x) = (x + 1)² + 3?',o:['S(−1 | 3)','S(1 | 3)','S(−1 | −3)'],a:0,ok:'Nothing but net! (x + 1) = (x − (−1)) → d = −1. Das Vorzeichen dreht sich!',no:'Achtung, Trick: (x + 1)² heißt d = −1, denn die Form ist (x − d)². e = +3 bleibt.'},
+ {q:'f(x) = −2x² + 3: Wie ist die Parabel geöffnet?',o:['Nach unten (a < 0)','Nach oben','Gar nicht'],a:0,ok:'Wie ein Wurf zum Korb – erst hoch, dann runter: a = −2 ist negativ!',no:'Entscheidend ist die Zahl vor x²: negativ → Öffnung nach unten.'},
+ {m:'Nullstellen = wo der Ball den Boden trifft. Setze f(x) = 0:',b:'(x − 1)² − 4 = 0 → (x − 1)² = 4<br>x − 1 = ±2 → x = 3 oder x = −1'},
+ {q:'Parabel öffnet nach oben, Scheitel liegt ÜBER der x-Achse. Wie viele Nullstellen?',o:['Keine','Genau eine','Zwei'],a:0,ok:'Airball für die x-Achse! Die Kurve kommt nie unter den Scheitel – kein Bodenkontakt.',no:'Stell es dir vor: Tiefster Punkt über der Achse, Kurve geht nach oben – sie kann die Achse nie berühren.'},
+ {m:'Scheitel, Öffnung, Nullstellen – das Dreier-Set jeder Parabel-Analyse. Auf geht es ins Wurftraining!'}],
+exp:[
+ {m:'Guten Tag, hier Dr. Wachstum aus dem Labor! Meine Bakterien rechnen nicht mit Plus – sie rechnen mit <b>Mal</b>. Das ist exponentiell!'},
+ {m:'Wachstum um 10 % heißt: jedes Jahr <b>mal 1,1</b> – vom neuen Wert!',b:'100 € → 110 € → 121 € (nicht 120!)<br>Zinseszins: Es wird immer vom neuen Betrag gerechnet'},
+ {q:'Ein Bestand wächst um 25 % pro Jahr. Der Faktor ist…',o:['1,25','0,25','25'],a:0,ok:'Korrekt beobachtet! 1 + 25/100 = 1,25.',no:'Faktor = 1 + p/100. Bei +25 % also 1 + 0,25.'},
+ {q:'Und bei 20 % <b>Abnahme</b> pro Jahr?',o:['0,8','1,2','−0,2'],a:0,ok:'Präzise! Es bleiben 80 % übrig: Faktor 0,8.',no:'Abnahme: 1 − 20/100 = 0,8. Es bleiben 80 % übrig.'},
+ {m:'Nach n Schritten gilt die Laborformel:',b:'Endwert = Startwert · Faktor<sup>n</sup><br>200 g, jedes Jahr halbiert: 200 · 0,5³ = 25 g'},
+ {q:'Was wächst langfristig am schnellsten?',o:['y = 2<sup>x</sup>','y = x²','y = 1000x'],a:0,ok:'Exponentiell schlägt ALLES – bei x = 20 ist 2²⁰ schon über eine Million!',no:'Vergleich bei x = 20: 2²⁰ ≈ 1 000 000, x² = 400, 1000x = 20 000. Mal schlägt Plus!'},
+ {m:'Merke aus dem Labor: Prozent-Wachstum = Multiplizieren, nie Addieren. Experiment beendet – jetzt du!'}],
+log:[
+ {m:'Schuhu! Logarithma hier, die weise Eule. Ich stelle nur eine einzige Frage – aber die richtig gut: <b>„Hoch wie viel?"</b>'},
+ {m:'Der Logarithmus ist die Umkehrung des Potenzierens:',b:'log<sub>2</sub>(8) = 3, weil 2³ = 8<br>Frage: „2 hoch wie viel ergibt 8?"'},
+ {q:'log<sub>2</sub>(16) = ?',o:['4','8','2'],a:0,ok:'Schuhu! 2·2·2·2 = 16, also hoch 4.',no:'Frag dich: 2 hoch wie viel ergibt 16? Zähle: 2, 4, 8, 16…'},
+ {q:'log<sub>10</sub>(1000) = ?',o:['3','100','10'],a:0,ok:'Weise geantwortet – drei Nullen, dreimal die 10!',no:'10 hoch wie viel ergibt 1000? Zähle die Nullen!'},
+ {m:'Damit löst du Exponentialgleichungen:',b:'3<sup>x</sup> = 81 → x = log<sub>3</sub>(81) = 4<br>denn 3 · 3 · 3 · 3 = 81'},
+ {q:'Warum ist log<sub>a</sub>(1) = 0 für jede Basis a?',o:['Weil a⁰ = 1 gilt','Weil 1 die kleinste Zahl ist','Das stimmt gar nicht'],a:0,ok:'Schuhu, du denkst wie eine Eule! Jede Zahl hoch 0 ergibt 1.',no:'Frage: a hoch wie viel ergibt 1? Erinnere dich: a⁰ = 1!'},
+ {m:'Später zähmst du mit mir Exponentialgleichungen im Abitur. Für heute: Übe die Frage „hoch wie viel?" – schuhu!'}],
+fol:[
+ {m:'Laaangsam und stetig – ich bin Limes, die Schildkröte. Ich nähere mich Dingen beliebig nah an, ohne je anzukommen. Das nennt man <b>Grenzwert</b>!'},
+ {m:'Schau dir meine Lieblingsfolge an:',b:frac(1,1)+', '+frac(1,2)+', '+frac(1,3)+', '+frac(1,10)+', '+frac(1,100)+', …<br>Die Werte: 1; 0,5; 0,33…; 0,1; 0,01; …'},
+ {q:'Wohin kriecht '+frac(1,'n')+', wenn n riesig wird?',o:['Gegen 0','Gegen 1','Wächst über alle Grenzen'],a:0,ok:'Genau – immer näher an die 0, ohne sie je zu erreichen. DAS ist ein Grenzwert.',no:'Setz große n ein: 1/1000 = 0,001. Immer winziger… wohin geht die Reise?'},
+ {m:'„Geht gegen 0" heißt: Ich komme der 0 <b>beliebig nahe</b> – erreichen muss ich sie nie.'},
+ {m:'Mein Panzer-Trick für Brüche: aufteilen!',b:frac('2n + 3','n')+' = '+frac('2n','n')+' + '+frac(3,'n')+' = 2 + '+frac(3,'n')+' → Grenzwert 2'},
+ {q:'Grenzwert von '+frac('5n + 1','n')+' für n → ∞?',o:['5','6','0'],a:0,ok:'Gemächlich und goldrichtig: 5 + 1/n, und 1/n verschwindet.',no:'Teile auf: 5n/n + 1/n = 5 + 1/n. Was passiert mit 1/n?'},
+ {m:'Diese Idee vom „Annähern" ist DAS Fundament der Analysis – Ableitungen und Integrale bauen darauf. Immer schön Schritt für Schritt!'}],
+abl:[
+ {m:'Wuff-tastisch, du bist da! Felix f′ mein Name – schlauster Fuchs des Waldes. Mein Thema: Wie <b>steil</b> ist eine Kurve an jeder einzelnen Stelle?'},
+ {m:'Eine Gerade ist überall gleich steil. Aber eine Kurve? Die ändert ihre Steigung ständig! Die <b>Ableitung f′(x)</b> verrät sie an jeder Stelle.'},
+ {m:'Mein Lieblingstrick, die Potenzregel: Exponent nach vorn, dann um 1 verringern.',b:'(x³)′ = 3x²<br>(x<sup>n</sup>)′ = n · x<sup>n−1</sup>'},
+ {q:'Leite ab: f(x) = x⁵',o:['5x⁴','x⁴','5x⁵'],a:0,ok:'Schlau wie ein Fuchs! 5 nach vorn, Exponent 5−1 = 4.',no:'Exponent (5) nach vorn holen, dann Exponent um 1 senken.'},
+ {m:'Faktoren bleiben einfach stehen, Summanden werden einzeln behandelt:',b:'(4x²)′ = 4 · 2x = 8x<br>(x² + 3x)′ = 2x + 3'},
+ {q:'Was ist die Ableitung einer Konstanten, z. B. (7)′?',o:['0','7','1'],a:0,ok:'Genau! Eine konstante Zahl ändert sich nie – Steigung 0.',no:'Wie steil ist die waagerechte Linie y = 7? Gar nicht – also 0.'},
+ {m:'Und wozu? Setze eine Stelle ein und du kennst die Steigung dort:',b:'f(x) = x² → f′(x) = 2x<br>Steigung bei x = 3: f′(3) = 6'},
+ {q:'f(x) = x² − 4x. Wo ist die Steigung 0 (der Scheitel)?',o:['x = 2','x = 4','x = 0'],a:0,ok:'Wuff! f′(x) = 2x − 4 = 0 → x = 2. So findet man Extrempunkte!',no:'Bilde f′(x) = 2x − 4 und setze es gleich 0.'},
+ {m:'Steigung = Änderung = Geschwindigkeit – die Ableitung ist überall. Jetzt jag ein paar Aufgaben!'}],
+int:[
+ {m:'Grüß dich! Flora hier, Bäuerin. Meine Felder haben krumme Ränder – wie groß ist so eine Fläche? Das <b>Integral</b> verrät es mir!'},
+ {m:'Ein Integral misst die <b>Fläche unter einem Graphen</b>. Und die Stammfunktion F ist das Rückwärts-Ableiten: F′(x) = f(x).'},
+ {m:'Meine Ernteregel – Gegenteil der Potenzregel: Exponent +1, dann dadurch teilen.',b:'∫ x² dx = '+frac('x³',3)+' + C<br>∫ 3x² dx = x³ + C&nbsp;&nbsp;Probe: (x³)′ = 3x² ✓'},
+ {q:'Eine Stammfunktion von f(x) = 2x?',o:['x²','2','2x²'],a:0,ok:'Reiche Ernte! Probe: (x²)′ = 2x ✓',no:'Suche F mit F′ = 2x. Leite die Optionen probehalber ab!'},
+ {m:'Konkrete Flächen: von a bis b heißt F(b) − F(a).',b:'∫₀² x dx = '+frac('x²',2)+' ausgewertet: '+frac(4,2)+' − 0 = 2<br>Check: Dreieck ½ · 2 · 2 = 2 ✓'},
+ {q:'∫₀³ 2 dx = ? (Fläche unter der Linie y = 2)',o:['6','2','9'],a:0,ok:'Ein sauberes Rechteck-Feld: Breite 3 mal Höhe 2!',no:'Unter y = 2 von 0 bis 3 liegt ein Rechteck: Breite 3, Höhe 2.'},
+ {q:'Wie prüfst du jede Stammfunktion blitzschnell?',o:['Ableiten – es muss wieder f herauskommen','Nochmal integrieren','Gar nicht nötig'],a:0,ok:'Die goldene Probe! F ableiten → f. Damit fängst du jeden Fehler.',no:'Stammfunktion und Ableitung sind Gegenspieler: F ableiten muss f ergeben.'},
+ {m:'Ableiten und Integrieren sind Hin- und Rückweg über denselben Acker. Zeit zum Feldeinsatz!'}],
+tri:[
+ {m:'Hallo! Trixi, Vermesserin. Ich messe Türme, ohne hinaufzuklettern – nur mit <b>Winkeln und Dreiecken</b>. Zeig ich dir!'},
+ {m:'Im rechtwinkligen Dreieck hat jede Seite einen Namen:',b:'Hypotenuse: längste Seite, gegenüber dem rechten Winkel<br>Gegenkathete: liegt dem Winkel α gegenüber<br>Ankathete: liegt am Winkel α an'},
+ {q:'Welche Seite ist immer die längste?',o:['Die Hypotenuse','Die Gegenkathete','Die Ankathete'],a:0,ok:'Exakt vermessen! Sie liegt gegenüber dem größten Winkel (90°).',no:'Gegenüber dem größten Winkel (90°) liegt die längste Seite – die Hypotenuse.'},
+ {m:'Die drei Vermesser-Formeln (GAGA-Merkhilfe: Gegen-, An-, Gegen- durch Ankathete):',b:'sin(α) = '+frac('Gegenkathete','Hypotenuse')+'&nbsp;&nbsp;cos(α) = '+frac('Ankathete','Hypotenuse')+'&nbsp;&nbsp;tan(α) = '+frac('Gegenkathete','Ankathete')},
+ {q:'sin(30°) = ? (Auswendig-Wert!)',o:['0,5','1','0,3'],a:0,ok:'Der berühmteste Wert der Trigonometrie – bei 30° ist die Gegenkathete halb so lang wie die Hypotenuse!',no:'Merke: sin(30°) = 0,5 – der Klassiker unter den Werten.'},
+ {m:'Und der alte Grieche hilft bei den Seiten:',b:'Pythagoras: a² + b² = c²<br>Katheten 3 und 4: c² = 9 + 16 = 25 → c = 5'},
+ {q:'Katheten 6 cm und 8 cm – die Hypotenuse?',o:['10 cm','14 cm','48 cm'],a:0,ok:'Millimetergenau! 36 + 64 = 100, Wurzel = 10.',no:'c² = 6² + 8² = 100. Und die Wurzel aus 100?'},
+ {m:'Mit sin, cos, tan und Pythagoras vermisst du jeden Turm, jede Rampe, jedes Dach. Ab zur Baustelle – äh, zum Training!'}],
+vek:[
+ {m:'Hier spricht Ihre Pilotin Vera Vektor – willkommen an Bord! Ein Vektor ist ein Flugbefehl: <b>Richtung + Strecke</b>. Zum Beispiel: 3 nach rechts, 4 nach oben.'},
+ {m:'Geschrieben wird das als Zahlenpaar:',b:'v = (3 | 4) → 3 in x-Richtung, 4 in y-Richtung'},
+ {m:'Zwei Flüge nacheinander? Komponenten einzeln addieren:',b:'(1 | 2) + (3 | 4) = (4 | 6)'},
+ {q:'Berechne: (2 | −1) + (−3 | 5)',o:['(−1 | 4)','(5 | 4)','(−1 | −6)'],a:0,ok:'Sauber navigiert! x: 2 + (−3) = −1, y: −1 + 5 = 4.',no:'Rechne getrennt: x-Teile 2 + (−3), y-Teile −1 + 5.'},
+ {m:'Wie weit fliege ich wirklich? Die Länge liefert Pythagoras:',b:'|(3 | 4)| = '+wz('3² + 4²')+' = '+wz(25)+' = 5'},
+ {q:'Wie lang ist der Vektor (6 | 8)?',o:['10','14','7'],a:0,ok:'Punktlandung! '+wz('36 + 64')+' = '+wz(100)+' = 10.',no:'Pythagoras: 6² + 8² = 100 – und die Wurzel daraus?'},
+ {q:'Sind (2 | 4) und (1 | 2) parallel?',o:['Ja – (2|4) = 2 · (1|2)','Nein','Nur im Notfall'],a:0,ok:'Roger! Ein Vektor ist ein Vielfaches des anderen → gleiche Richtung, parallel.',no:'Prüfe: 2 = 2·1 und 4 = 2·2. Beides Faktor 2 → Vielfaches → parallel!'},
+ {m:'Richtung, Länge, Vielfache – damit steuerst du später sogar Geraden im Raum. Crew, bereit machen zum Üben!'}]
+};
+
+/* ============ Lektions-Player ============ */
+let les=null;
+function lesMentor(){return MENTORS[les.mod]||{e:'🧑‍🏫',n:'Mentor'};}
+function startLesson(id,toSession){
+ if(!LESSONS[id]){renderModule(id,'ueben');return;}
+ les={mod:id,i:0,toSession:!!toSession,answered:false,tried:false};
+ renderLesson();
+}
+function renderLesson(){
+ const L=LESSONS[les.mod],step=L[les.i],M=lesMentor(),m=modById(les.mod);
+ let h='<div class="card"><div class="sesshead"><span class="phase" style="background:#2b8a3e">🎓 Lektion: '+m.ic+' '+m.t+'</span>';
+ h+='<span class="chip" style="background:#e9edf5;color:var(--ink)">Schritt '+(les.i+1)+' / '+L.length+'</span></div>';
+ h+='<div class="sessbar"><div style="width:'+Math.round(les.i/L.length*100)+'%"></div></div>';
+ h+='<div class="mentorarena"><div style="text-align:center;min-width:86px"><span class="mentorfig" id="menFig">'+M.e+'</span><div class="mname">'+M.n+'</div></div>';
+ h+='<div style="flex:1"><div class="bubble" id="menSay">'+(step.q?step.q:step.m)+'</div></div></div>';
+ let board='';
+ for(let k=0;k<=les.i;k++)if(L[k].b)board+='<div class="tl'+(k===les.i?' neu':'')+'">'+L[k].b+'</div>';
+ if(board)h+='<div class="tafel">'+board+'</div>';
+ if(step.q){
+  step.o.forEach((o,i)=>{h+='<button class="mcopt" onclick="lesPick(this,'+i+')">'+o+'</button>';});
+ }
+ h+='<div class="btnrow"><button class="btn" id="lesNext" onclick="lesNext()" '+(step.q?'style="display:none"':'')+'>'+(les.i===L.length-1?'Lektion abschließen ✅':'Weiter ▸')+'</button></div>';
+ h+='</div><button class="crumb" onclick="lesQuit()">✕ Lektion verlassen</button>';
+ $('#app').innerHTML=h;
+ const nx=$('#lesNext');if(nx&&!step.q)nx.focus();
+}
+function lesPick(btn,i){
+ if(!les||les.answered)return;
+ const step=LESSONS[les.mod][les.i];
+ const fig=$('#menFig'),say=$('#menSay');
+ if(i===step.a){
+  les.answered=true;
+  btn.classList.add('ok');
+  document.querySelectorAll('.mcopt').forEach(b=>b.disabled=true);
+  if(say)say.innerHTML='✅ '+step.ok;
+  if(fig){fig.classList.remove('think');void fig.offsetWidth;fig.classList.add('happy');}
+  if(!les.tried)addXP(5);
+  const nx=$('#lesNext');if(nx){nx.style.display='inline-block';nx.focus();}
+ }else{
+  les.tried=true;
+  btn.classList.add('bad');btn.disabled=true;
+  if(say)say.innerHTML='🤔 '+step.no;
+  if(fig){fig.classList.remove('happy');void fig.offsetWidth;fig.classList.add('think');}
+ }
+}
+function lesNext(){
+ if(!les)return;
+ les.i++;les.answered=false;les.tried=false;
+ if(les.i>=LESSONS[les.mod].length)lesEnd();else renderLesson();
+}
+function lesQuit(){
+ const toSess=les&&les.toSession;les=null;
+ if(toSess)sess=null;
+ go('home');
+}
+function lesEnd(){
+ const id=les.mod,m=modById(id),M=lesMentor(),s=st(id);
+ const first=!s.seen;
+ s.seen=true;save();
+ if(first)addXP(25);
+ let h='<div class="card"><div class="bigemoji"><span class="mentorfig">'+M.e+'</span></div>';
+ h+='<h1 style="text-align:center">Lektion geschafft!'+(first?' <b>+25 XP</b>':'')+'</h1>';
+ h+='<p class="mut" style="text-align:center">'+M.n+': „Stark gemacht! Jetzt festigt das Üben alles – Wissen wächst beim Rechnen."</p>';
+ h+='<h2 style="margin-top:16px">📌 Dein Spickzettel</h2>'+m.ex;
+ if(les.toSession){
+  h+='<button class="btn big" onclick="lesToSess()">Weiter zum Training 🚀</button>';
+ }else{
+  h+='<div class="btnrow"><button class="btn big" onclick="les=null;renderModule(\''+id+'\',\'ueben\')">Jetzt üben ✏️</button></div>';
+  h+='<button class="crumb" onclick="les=null;go(\'home\')">Zur Übersicht</button>';
+ }
+ h+='</div>';
+ $('#app').innerHTML=h;cheer();
+}
+function lesToSess(){les=null;renderSessTask();}
+/* ============ Module: Block A + B ============ */
+function polyStr(a2,a1,a0,v){v=v||'x';let p=[];
+ if(a2!==0)p.push(co(a2,v+'²'));
+ if(a1!==0)p.push((a1>0&&p.length?'+':'')+co(a1,v));
+ if(a0!==0)p.push((a0>0&&p.length?'+':'')+a0);
+ return p.length?p.join(''):'0';}
+function coAcc(n,v){const arr=[co(n,v)];if(n===1)arr.push('1'+v);if(n===-1)arr.push('-1'+v);return arr;}
+function facR(r,v){v=v||'x';return '('+v+(r<0?'−'+Math.abs(r):'+'+r)+')';}
+const flipS={'<':'>','>':'<','<=':'>=','>=':'<='};
+
+const MODS=[
+
+/* ---------- A1 Brüche & Prozent ---------- */
+{id:'bru',ic:'🍕',t:'Brüche & Prozent',blk:0,
+ex:'<p>Brüche, Dezimalzahlen und Prozente sind <b>drei Schreibweisen für denselben Wert</b>: '+frac(1,2)+' = 0,5 = 50 %. Wer hier sicher ist, hat es in fast jedem anderen Thema leichter.</p>'+
+'<div class="merk"><b>Merke:</b><br>• Bruch → Dezimalzahl: <b>Zähler durch Nenner</b> teilen.<br>• Dezimalzahl → Prozent: <b>mal 100</b>.<br>• Kürzen: Zähler <b>und</b> Nenner durch dieselbe Zahl teilen.<br>• Plus/Minus: erst auf den <b>Hauptnenner</b> bringen, dann nur die Zähler verrechnen.<br>• p % von N: N · '+frac('p',100)+'</div>',
+exm:[
+ {q:frac(3,4)+' in Dezimalzahl und Prozent umwandeln',steps:['Zähler durch Nenner: 3 : 4 = 0,75','Mal 100: 0,75 · 100 = <b>75 %</b>']},
+ {q:frac(2,3)+' − '+frac(1,6),steps:['Hauptnenner von 3 und 6 ist 6','Erweitern: '+frac(2,3)+' = '+frac(4,6),frac(4,6)+' − '+frac(1,6)+' = '+frac(3,6),'Kürzen: '+frac(3,6)+' = <b>'+frac(1,2)+'</b>']},
+ {q:'Ein Pullover kostet 60 €, er wird um 20 % reduziert. Neuer Preis?',steps:['20 % von 60 € = 60 · 0,20 = 12 €','60 € − 12 € = <b>48 €</b>','Schneller: 60 · 0,80 = 48 €']}],
+gen:function(lvl){
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const p=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[7,10],[3,10],[9,10],[1,8],[3,20],[1,25],[7,20]]);
+   const dec=p[0]/p[1];
+   return {q:'Wandle um: '+frac(p[0],p[1]),
+    fields:[{l:'Dezimalzahl:',a:dec},{l:'Prozent (%):',a:dec*100}],
+    steps:[p[0]+' : '+p[1]+' = '+fmt(dec),fmt(dec)+' · 100 = '+fmt(dec*100)+' %'],
+    hint:'Dezimalzahl mit Komma oder Punkt.'};
+  }
+  const b=pick([[1,2],[2,3],[3,4],[2,5],[3,5],[5,6],[1,3],[4,5],[3,7]]);const k=ri(2,6);
+  return {q:'Kürze so weit wie möglich: '+frac(b[0]*k,b[1]*k),
+   fields:[{l:'Ergebnis (z. B. 2/3):',type:'txt',acc:[b[0]+'/'+b[1]]}],
+   steps:['Größter gemeinsamer Teiler von '+(b[0]*k)+' und '+(b[1]*k)+' ist '+k,'Zähler und Nenner durch '+k+': '+frac(b[0],b[1])]};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const d1=pick([2,3,4,5,6]);const mf=pick([2,3]);const d2=d1*mf;
+   let n1=ri(1,d1-1),n2=ri(1,d2-1);
+   const minus=pick([true,false]);
+   if(minus){let g=0;while(n1*mf<=n2&&g<30){n1=ri(1,d1-1);n2=ri(1,d2-1);g++;}if(n1*mf<=n2){n1=d1-1;n2=1;}}
+   const num=minus?n1*mf-n2:n1*mf+n2;
+   const op=minus?' − ':' + ';
+   return {q:'Berechne: '+frac(n1,d1)+op+frac(n2,d2),
+    fields:[{l:'Ergebnis (Bruch a/b oder Dezimalzahl):',a:num/d2}],
+    steps:['Hauptnenner: '+d2,'Erweitern: '+frac(n1,d1)+' = '+frac(n1*mf,d2),frac(n1*mf,d2)+op+frac(n2,d2)+' = '+frac(num,d2),'Gekürzt: '+fracTxt(num,d2)]};
+  }
+  const p=pick([5,10,15,20,25,30,40,50,75]);const N=ri(2,12)*20;
+  return {q:'Berechne: '+p+' % von '+N,
+   fields:[{l:'Ergebnis:',a:N*p/100}],
+   steps:[p+' % bedeutet '+frac(p,100)+' = '+fmt(p/100),N+' · '+fmt(p/100)+' = '+fmt(N*p/100)]};
+ }
+ const v=pick([0,1,2]);
+ if(v===0){const P=ri(3,12)*10;const p=pick([10,20,25,30,50]);
+  return {q:'Ein Artikel kostet '+P+' €. Er wird um '+p+' % <b>reduziert</b>. Wie viel kostet er jetzt?',
+   fields:[{l:'Neuer Preis (€):',a:P*(1-p/100)}],
+   steps:['Rabatt: '+p+' % von '+P+' € = '+fmt(P*p/100)+' €',P+' − '+fmt(P*p/100)+' = '+fmt(P*(1-p/100))+' €','Schneller: '+P+' · '+fmt(1-p/100)+' = '+fmt(P*(1-p/100))+' €']};}
+ if(v===1){const a=ri(2,6)*20;const inc=pick([10,15,20,25,50]);const b=a*(1+inc/100);
+  return {q:'Ein Preis steigt von '+a+' € auf '+fmt(b)+' €. Um wie viel <b>Prozent</b> ist das gestiegen?',
+   fields:[{l:'Prozent (%):',a:inc}],
+   steps:['Zuwachs: '+fmt(b)+' − '+a+' = '+fmt(b-a)+' €','Anteil: '+fmt(b-a)+' : '+a+' = '+fmt((b-a)/a),'Mal 100: <b>'+inc+' %</b>']};}
+ const P0=ri(3,10)*10;const p=pick([10,20,25,50]);const E=P0*(1-p/100);
+ return {q:'<b>Rückwärts denken:</b> Nach '+p+' % Rabatt kostet eine Jacke '+fmt(E)+' €. Was war der <b>Originalpreis</b>?',
+  fields:[{l:'Originalpreis (€):',a:P0}],
+  steps:['Nach dem Rabatt bleiben '+(100-p)+' % übrig','Also: Originalpreis · '+fmt(1-p/100)+' = '+fmt(E),'Originalpreis = '+fmt(E)+' : '+fmt(1-p/100)+' = <b>'+P0+' €</b>'],
+  hint:'Der Rabatt wurde vom Originalpreis berechnet, nicht von '+fmt(E)+' €!'};
+}},
+
+/* ---------- A2 Klammern & Vorzeichen ---------- */
+{id:'klm',ic:'➖',t:'Klammern & Vorzeichen',blk:0,
+ex:'<p>Vorzeichenfehler sind Fehlerquelle Nr. 1 – auch noch im Abitur. Hier trainierst du sie weg.</p>'+
+'<div class="merk"><b>Merke:</b><br>• Minus vor der Klammer: <b>alle</b> Vorzeichen in der Klammer drehen sich um.<br>• Minus · Minus = Plus, Minus · Plus = Minus.<br>• Punkt- vor Strichrechnung.<br>• Bei verschachtelten Klammern: <b>von innen nach außen</b>.</div>',
+exm:[
+ {q:'4 − (2x − 3)',steps:['Das Minus dreht beide Vorzeichen um','4 − 2x + 3','= <b>7 − 2x</b>']},
+ {q:'6 − [2 − (4 − 1)]',steps:['Innerste Klammer: 4 − 1 = 3','6 − [2 − 3] = 6 − [−1]','Minus Minus wird Plus: 6 + 1 = <b>7</b>']}],
+gen:function(lvl){
+ const pr=n=>n<0?'('+n+')':''+n;
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const a=ri(2,9)*pick([-1,1]),b=ri(2,9)*pick([-1,1]);
+   if(pick([0,1])===0){
+    return {q:'Berechne: '+pr(a)+' · '+pr(b),fields:[{l:'Ergebnis:',a:a*b}],
+     steps:['Vorzeichen: '+(a*b>0?'gleiche Vorzeichen → Plus':'verschiedene Vorzeichen → Minus'),Math.abs(a)+' · '+Math.abs(b)+' = '+Math.abs(a*b),'Ergebnis: '+(a*b)]};}
+   return {q:'Berechne: '+pr(a*b)+' : '+pr(b),fields:[{l:'Ergebnis:',a:a}],
+    steps:['Vorzeichen: '+(a>0?'gleiche Vorzeichen → Plus':'verschiedene Vorzeichen → Minus'),Math.abs(a*b)+' : '+Math.abs(b)+' = '+Math.abs(a),'Ergebnis: '+a]};}
+  const a=ri(1,9),b=ri(1,9),c=ri(1,9);
+  return {q:'Berechne: '+a+' − ('+b+' − '+c+')',fields:[{l:'Ergebnis:',a:a-(b-c)}],
+   steps:['Minus vor der Klammer dreht die Vorzeichen um',a+' − '+b+' + '+c,'= '+(a-(b-c))]};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const a=ri(1,5),b=ri(1,9),minus=pick([true,false]);
+   const inner=minus?co(a,'x')+' − '+b:co(a,'x')+' + '+b;
+   const rx=-a,rc=minus?b:-b;
+   return {q:'Löse die Klammer auf: −('+inner+')',
+    fields:[{l:'Ergebnis:',type:'txt',acc:linAcc(rx,rc)}],
+    steps:['Alle Vorzeichen drehen sich um','−('+inner+') = <b>'+linStr(rx,rc)+'</b>'],
+    hint:'z. B. -3x+4'};}
+  const k=pick([-4,-3,-2,2,3,4,5]),a=ri(1,4),b=ri(1,6),minus=pick([true,false]);
+  const ib=minus?-b:b;
+  return {q:'Multipliziere aus: '+(k<0?'('+k+')':k)+' · ('+linStr(a,ib)+')',
+   fields:[{l:'Ergebnis:',type:'txt',acc:linAcc(k*a,k*ib)}],
+   steps:['Jeden Summanden mit '+k+' multiplizieren',k+' · '+co(a,'x')+' = '+co(k*a,'x')+' und '+k+' · '+pr(ib)+' = '+(k*ib),'Ergebnis: <b>'+linStr(k*a,k*ib)+'</b>'],
+   hint:'z. B. -6x+3'};
+ }
+ if(pick([0,1])===0){
+  const a=ri(3,15),b=ri(1,9),c=ri(1,9),d=ri(1,9);
+  const inner=c-d,mid=b-inner,ans=a-mid;
+  return {q:'Berechne Schritt für Schritt: '+a+' − ['+b+' − ('+c+' − '+d+')]',
+   fields:[{l:'Ergebnis:',a:ans}],
+   steps:['Innen zuerst: '+c+' − '+d+' = '+inner,a+' − ['+b+' − '+pr(inner)+'] = '+a+' − ['+mid+']','= '+ans]};}
+ let a=ri(2,4),b=ri(1,3),cc=ri(1,6),d=ri(2,4),e=ri(1,3),f=ri(1,6),g=0;
+ while(a*b-d*e===0&&g<20){e=ri(1,3);d=ri(2,4);g++;}
+ if(a*b-d*e===0){b=e+1;}
+ const X=a*b-d*e,C=a*cc-d*f;
+ return {q:'Vereinfache: '+a+'('+linStr(b,cc)+') − '+d+'('+linStr(e,f)+')',
+  fields:[{l:'Ergebnis:',type:'txt',acc:linAcc(X,C)}],
+  steps:['Erste Klammer: '+linStr(a*b,a*cc),'Zweite Klammer (mit Minus!): −'+d+'('+linStr(e,f)+') = '+linStr(-d*e,-d*f),'Zusammenfassen: '+co(a*b,'x')+' '+sgn(-d*e).replace('− ','− ')+'x und '+a*cc+' '+sgn(-d*f),'Ergebnis: <b>'+linStr(X,C)+'</b>'],
+  hint:'z. B. 2x-14'};
+}},
+
+/* ---------- A3 Potenzen & Wurzeln ---------- */
+{id:'pot',ic:'⚡',t:'Potenzen & Wurzeln',blk:0,
+ex:'<p>Potenzen zeigen, wie oft eine Zahl mit sich selbst multipliziert wird: 2<sup>3</sup> = 2 · 2 · 2 = 8. Wurzeln sind die Umkehrung: '+wz(49)+' = 7, weil 7<sup>2</sup> = 49.</p>'+
+'<div class="merk"><b>Potenzgesetze:</b><br><span class="formel">a<sup>m</sup> · a<sup>n</sup> = a<sup>m+n</sup></span> <span class="formel">a<sup>m</sup> : a<sup>n</sup> = a<sup>m−n</sup></span> <span class="formel">(a<sup>m</sup>)<sup>n</sup> = a<sup>m·n</sup></span><br><span class="formel">a<sup>0</sup> = 1</span> <span class="formel">a<sup>−n</sup> = '+frac(1,'a<sup>n</sup>')+'</span></div>'+
+'<p>Wurzeln vereinfachen: Suche den größten <b>quadratischen Faktor</b> unter der Wurzel.</p>',
+exm:[
+ {q:'2<sup>3</sup> · 2<sup>4</sup>',steps:['Gleiche Basis → Exponenten addieren','2<sup>3+4</sup> = 2<sup>7</sup> = <b>128</b>']},
+ {q:wz(50)+' vereinfachen',steps:['50 = 25 · 2 (25 ist eine Quadratzahl)',wz(50)+' = '+wz(25)+' · '+wz(2),'= <b>5'+wz(2)+'</b>']},
+ {q:'2<sup>−3</sup>',steps:['Negativer Exponent = Kehrwert','2<sup>−3</sup> = '+frac(1,'2<sup>3</sup>')+' = <b>'+frac(1,8)+'</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const base=pick(['2','3','x','a']),m=ri(2,5),n=ri(2,4);
+   const acc=[base+'^'+(m+n)];
+   if(base==='2'||base==='3')acc.push(''+Math.pow(parseInt(base),m+n));
+   return {q:'Vereinfache mit den Potenzgesetzen: '+base+'<sup>'+m+'</sup> · '+base+'<sup>'+n+'</sup>',
+    fields:[{l:'Ergebnis:',type:'txt',acc:acc}],
+    steps:['Gleiche Basis → Exponenten addieren',base+'<sup>'+m+'+'+n+'</sup> = <b>'+base+'<sup>'+(m+n)+'</sup></b>'],
+    hint:'Potenzen so eingeben: x^'+(m+n)};}
+  const s=ri(2,15);
+  return {q:'Berechne: '+wz(s*s),fields:[{l:'Ergebnis:',a:s}],
+   steps:['Gesucht: Welche Zahl mal sich selbst ergibt '+(s*s)+'?',s+' · '+s+' = '+(s*s)+' → <b>'+s+'</b>']};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){
+   const base=pick([2,3,4,5,10]),n=ri(1,3);
+   const val=1/Math.pow(base,n);
+   return {q:'Berechne: '+base+'<sup>−'+n+'</sup>',
+    fields:[{l:'Ergebnis (Bruch oder Dezimalzahl):',a:val}],
+    steps:['Negativer Exponent = Kehrwert',base+'<sup>−'+n+'</sup> = '+frac(1,base+'<sup>'+n+'</sup>')+' = '+frac(1,Math.pow(base,n))],
+    hint:'z. B. 1/25 oder 0,04'};}
+  if(v===1){
+   const base=pick(['a','x','2','5']);
+   if(pick([0,1])===0){const m=ri(4,9),n=ri(1,3);
+    return {q:'Vereinfache: '+frac(base+'<sup>'+m+'</sup>',base+'<sup>'+n+'</sup>'),
+     fields:[{l:'Ergebnis:',type:'txt',acc:[base+'^'+(m-n)]}],
+     steps:['Division → Exponenten subtrahieren',base+'<sup>'+m+'−'+n+'</sup> = <b>'+base+'<sup>'+(m-n)+'</sup></b>'],hint:'z. B. a^4'};}
+   const m=ri(2,4),n=ri(2,4);
+   return {q:'Vereinfache: ('+base+'<sup>'+m+'</sup>)<sup>'+n+'</sup>',
+    fields:[{l:'Ergebnis:',type:'txt',acc:[base+'^'+(m*n)]}],
+    steps:['Potenz einer Potenz → Exponenten multiplizieren',base+'<sup>'+m+'·'+n+'</sup> = <b>'+base+'<sup>'+(m*n)+'</sup></b>'],hint:'z. B. x^8'};}
+  const k=pick([2,3,4,5,6]),m=pick([2,3,5,7]);
+  return {q:'Vereinfache '+wz(k*k*m)+' zur Form a·'+wz('b')+' (b so klein wie möglich):',
+   fields:[{l:'a =',a:k},{l:'b =',a:m}],
+   steps:[(k*k*m)+' = '+(k*k)+' · '+m+' ('+(k*k)+' ist Quadratzahl)',wz(k*k*m)+' = '+wz(k*k)+' · '+wz(m)+' = <b>'+k+wz(m)+'</b>']};
+ }
+ const v=pick([0,1,2]);
+ if(v===0){
+  let a=ri(1,5),b=ri(1,5),g=0;while(a===b&&g<10){b=ri(1,5);g++;}if(a===b)b=a+1;
+  const d=a-b;
+  const acc=d>0?['x^'+d]:['x^'+d,'1/x^'+(-d)];
+  if(d===1)acc.push('x');
+  return {q:'Vereinfache: x<sup>'+a+'</sup> · x<sup>−'+b+'</sup>',
+   fields:[{l:'Ergebnis:',type:'txt',acc:acc}],
+   steps:['Exponenten addieren: '+a+' + (−'+b+') = '+d,'Ergebnis: <b>x<sup>'+d+'</sup></b>'+(d<0?' = '+frac(1,'x<sup>'+(-d)+'</sup>'):'')],
+   hint:'z. B. x^2 oder x^-2'};}
+ if(v===1){
+  const m=pick([2,3,5]);const p=ri(2,5);let q2=ri(1,4),g=0;while(q2===p&&g<10){q2=ri(1,4);g++;}if(q2===p)q2=p-1||p+1;
+  return {q:'Vereinfache: '+wz(p*p*m)+' + '+wz(q2*q2*m)+' = c·'+wz('b'),
+   fields:[{l:'c =',a:p+q2},{l:'b =',a:m}],
+   steps:[wz(p*p*m)+' = '+p+wz(m)+' (denn '+(p*p*m)+' = '+(p*p)+'·'+m+')',wz(q2*q2*m)+' = '+q2+wz(m),p+wz(m)+' + '+q2+wz(m)+' = <b>'+(p+q2)+wz(m)+'</b>'],
+   hint:'Beide Wurzeln zuerst einzeln vereinfachen.'};}
+ const a=ri(2,5),b=ri(1,3);
+ return {q:'Berechne den Wert: 2<sup>'+a+'</sup> · 2<sup>−'+b+'</sup>',
+  fields:[{l:'Ergebnis (Zahl oder Bruch):',a:Math.pow(2,a-b)}],
+  steps:['Exponenten addieren: '+a+' − '+b+' = '+(a-b),'2<sup>'+(a-b)+'</sup> = '+fmt(Math.pow(2,a-b))]};
+}},
+
+/* ---------- B1 Terme vereinfachen ---------- */
+{id:'ter',ic:'🧩',t:'Terme vereinfachen',blk:1,
+ex:'<p>Ein Term ist ein Rechenausdruck ohne Gleichheitszeichen. Die wichtigste Fähigkeit der ganzen Algebra: Terme <b>zusammenfassen</b>, <b>ausmultiplizieren</b> und <b>ausklammern</b>.</p>'+
+'<div class="merk"><b>Merke:</b><br>• Nur <b>gleichartige</b> Terme zusammenfassen: 3x + 5x = 8x, aber 3x + 5y bleibt so.<br>• Ausmultiplizieren: 2(x + 3) = 2x + 6 (jeden Summanden multiplizieren).<br>• Ausklammern ist die Umkehrung: 6x + 12 = 6(x + 2).</div>',
+exm:[
+ {q:'2x + 3y − x + y',steps:['x-Terme: 2x − x = x','y-Terme: 3y + y = 4y','Ergebnis: <b>x + 4y</b>']},
+ {q:'3(x + 2) − 2(x − 5)',steps:['3(x + 2) = 3x + 6','−2(x − 5) = −2x + 10 (Vorzeichen!)','3x + 6 − 2x + 10 = <b>x + 16</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  const a=ri(2,9),b=ri(1,9),c=ri(1,9),v=pick(['x','a','m']);
+  if(pick([0,1])===0){
+   return {q:'Fasse zusammen: '+co(a,v)+' + '+co(b,v),
+    fields:[{l:'Ergebnis:',type:'txt',acc:coAcc(a+b,v)}],
+    steps:[a+' + '+b+' = '+(a+b),'Ergebnis: <b>'+co(a+b,v)+'</b>'],hint:'z. B. 8'+v};}
+  let r=a-b+c,g=0;while(r===0&&g<10){r=a-b+ri(1,9);g++;}
+  const c2=r-a+b;
+  return {q:'Fasse zusammen: '+co(a,v)+' − '+co(b,v)+' + '+co(c2,v),
+   fields:[{l:'Ergebnis:',type:'txt',acc:coAcc(r,v)}],
+   steps:[a+' − '+b+' + '+c2+' = '+r,'Ergebnis: <b>'+co(r,v)+'</b>'],hint:'z. B. 5'+v};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){
+   let A=ri(2,7),C=ri(1,7),B=ri(1,6),D=ri(1,6),g=0;
+   while(A-C===0&&g<10){C=ri(1,7);g++;}if(A===C)C=A-1||A+1;
+   const X=A-C,Y=B+D;
+   const t1=co(X,'x'),t2=co(Y,'y');
+   return {q:'Fasse zusammen: '+co(A,'x')+' + '+co(B,'y')+' − '+co(C,'x')+' + '+co(D,'y'),
+    fields:[{l:'Ergebnis:',type:'txt',acc:[t1+'+'+t2,t2+'+'+t1]}],
+    steps:['x-Terme: '+A+' − '+C+' = '+X,'y-Terme: '+B+' + '+D+' = '+Y,'Ergebnis: <b>'+t1+' + '+t2+'</b>'],hint:'z. B. 3x+2y'};}
+  if(v===1){
+   const k=ri(2,5),a=ri(1,7),m=ri(1,6);
+   return {q:'Vereinfache: '+k+'(x + '+a+') + '+co(m,'x'),
+    fields:[{l:'Ergebnis:',type:'txt',acc:linAcc(k+m,k*a)}],
+    steps:['Ausmultiplizieren: '+k+'(x + '+a+') = '+linStr(k,k*a),co(k,'x')+' + '+co(m,'x')+' = '+co(k+m,'x'),'Ergebnis: <b>'+linStr(k+m,k*a)+'</b>'],hint:'z. B. 7x+12'};}
+  let g2=pick([2,3,4,5,6]),a=ri(1,6),b=ri(1,9),tries=0;
+  while(gcd(a,b)!==1&&tries<20){a=ri(1,6);b=ri(1,9);tries++;}
+  if(gcd(a,b)!==1){a=2;b=3;}
+  const acc=linAcc(a,b).map(s=>g2+'('+s+')');
+  return {q:'Klammere so viel wie möglich aus: '+linStr(g2*a,g2*b),
+   fields:[{l:'Ergebnis:',type:'txt',acc:acc}],
+   steps:['Größter gemeinsamer Teiler von '+(g2*a)+' und '+(g2*b)+' ist '+g2,'Ergebnis: <b>'+g2+'('+linStr(a,b)+')</b>','Probe durch Ausmultiplizieren!'],hint:'z. B. 6(x+2)'};
+ }
+ if(pick([0,1])===0){
+  let a=ri(2,6),k=pick([-3,-2,2,3]),c=ri(1,4),d=ri(1,6),g=0;
+  while(a+k*c===0&&g<10){c=ri(1,4);g++;}if(a+k*c===0)a++;
+  const X=a+k*c,C=k*d;
+  const kd=k<0?'− '+(-k):'+ '+k;
+  return {q:'Vereinfache: '+co(a,'x')+' '+kd+'('+linStr(c,d)+')',
+   fields:[{l:'Ergebnis:',type:'txt',acc:linAcc(X,C)}],
+   steps:['Klammer ausmultiplizieren: '+k+'('+linStr(c,d)+') = '+linStr(k*c,k*d),'x-Terme: '+a+' + ('+(k*c)+') = '+X,'Ergebnis: <b>'+linStr(X,C)+'</b>'],hint:'z. B. 5y-2'};}
+ const k=pick([2,3,4,5]),c=ri(2,6);
+ return {q:'Klammere vollständig aus: '+co(k,'a²')+' + '+co(k*c,'a'),
+  fields:[{l:'Ergebnis:',type:'txt',acc:[k+'a(a+'+c+')','a·'+k+'(a+'+c+')',k+'a('+c+'+a)']}],
+  steps:['Beide Terme enthalten '+k+' und a','Gemeinsamer Faktor: '+k+'a','Ergebnis: <b>'+k+'a(a + '+c+')</b>'],hint:'z. B. 3a(a+2)'};
+}},
+
+/* ---------- B2 Lineare Gleichungen ---------- */
+{id:'glg',ic:'⚖️',t:'Lineare Gleichungen',blk:1,
+ex:'<p>Eine Gleichung ist wie eine Waage: Was du links machst, musst du auch rechts machen. Ziel: <b>x allein auf einer Seite</b>.</p>'+
+'<div class="merk"><b>Strategie:</b><br>1. Klammern auflösen.<br>2. Alle x-Terme auf eine Seite, alle Zahlen auf die andere (durch + / −).<br>3. Zusammenfassen.<br>4. Durch die Zahl vor dem x teilen.<br>5. <b>Probe machen!</b> Einsetzen und prüfen.</div>',
+exm:[
+ {q:'2x + 3 = 11',steps:['Beide Seiten − 3:  2x = 8','Beide Seiten : 2:  <b>x = 4</b>','Probe: 2 · 4 + 3 = 11 ✓']},
+ {q:'3x + 5 = 2x + 12',steps:['Beide Seiten − 2x:  x + 5 = 12','Beide Seiten − 5:  <b>x = 7</b>','Probe: 3·7+5 = 26 und 2·7+12 = 26 ✓']}],
+gen:function(lvl){
+ if(lvl===1){
+  const v=pick([0,1,2]);
+  if(v===0){const x=ri(-9,15),a=ri(1,20);
+   return {q:'Löse: x + '+a+' = '+(x+a),fields:[{l:'x =',a:x}],
+    steps:['Beide Seiten − '+a,'x = '+(x+a)+' − '+a+' = <b>'+x+'</b>']};}
+  if(v===1){const a=ri(2,9),x=ri(-6,12);
+   return {q:'Löse: '+co(a,'x')+' = '+(a*x),fields:[{l:'x =',a:x}],
+    steps:['Beide Seiten : '+a,'x = '+(a*x)+' : '+a+' = <b>'+x+'</b>']};}
+  const a=ri(2,7),x=ri(-5,10),b=ri(1,15),c=a*x+b;
+  return {q:'Löse: '+linStr(a,b)+' = '+c,fields:[{l:'x =',a:x}],
+   steps:['Beide Seiten − '+b+':  '+co(a,'x')+' = '+(c-b),'Beide Seiten : '+a+':  <b>x = '+x+'</b>','Probe: '+a+'·'+x+'+'+b+' = '+c+' ✓']};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){const a=ri(2,6),b=ri(1,8),x=ri(-5,9),c=a*(x+b);
+   return {q:'Löse: '+a+'(x + '+b+') = '+c,fields:[{l:'x =',a:x}],
+    steps:['Beide Seiten : '+a+':  x + '+b+' = '+(c/a),'Beide Seiten − '+b+':  <b>x = '+x+'</b>']};}
+  if(v===1){
+   const a=ri(3,9),c=ri(1,5),x=ri(-6,9),b=ri(1,12);
+   const cc=Math.min(a-1,c);const d=b+(a-cc)*x;
+   return {q:'Löse: '+linStr(a,b)+' = '+linStr(cc,d),fields:[{l:'x =',a:x}],
+    steps:['Beide Seiten − '+co(cc,'x')+':  '+linStr(a-cc,b)+' = '+d,'Beide Seiten − '+b+':  '+co(a-cc,'x')+' = '+(d-b),'Beide Seiten : '+(a-cc)+':  <b>x = '+x+'</b>']};}
+  const b=ri(2,6),c=ri(2,9),a=ri(1,8),x=b*c-a;
+  return {q:'Löse: '+frac('x + '+a,b)+' = '+c,fields:[{l:'x =',a:x}],
+   steps:['Beide Seiten · '+b+':  x + '+a+' = '+(b*c),'Beide Seiten − '+a+':  <b>x = '+x+'</b>']};
+ }
+ if(pick([0,1])===0){
+  let a=ri(2,6),c=ri(1,5),g=0;while(a-c<1&&g<10){c=ri(1,5);g++;}if(a<=c)a=c+1;
+  const b=ri(1,6),d=ri(1,6),x=ri(-5,8),e=(a-c)*x+(a*b-c*d);
+  return {q:'Löse: '+a+'(x + '+b+') − '+c+'(x + '+d+') = '+e,fields:[{l:'x =',a:x}],
+   steps:['Ausmultiplizieren: '+linStr(a,a*b)+' − ('+linStr(c,c*d)+') = '+e,'Zusammenfassen: '+linStr(a-c,a*b-c*d)+' = '+e,'Beide Seiten − '+(a*b-c*d)+':  '+co(a-c,'x')+' = '+(e-(a*b-c*d)),'Beide Seiten : '+(a-c)+':  <b>x = '+x+'</b>']};}
+ let p=ri(2,4),x=ri(1,9),q2=ri(1,9),r=ri(2,5),s=0,g=0,found=false;
+ for(g=0;g<60;g++){x=ri(-4,9);q2=ri(1,9);if((p*x-q2)%r===0){s=(p*x-q2)/r;found=true;break;}}
+ if(!found){p=2;x=5;q2=4;r=2;s=3;}
+ return {q:'Löse: '+frac(linStr(p,-q2),r)+' = '+s,fields:[{l:'x =',a:x}],
+  steps:['Beide Seiten · '+r+':  '+linStr(p,-q2)+' = '+(s*r),'Beide Seiten + '+q2+':  '+co(p,'x')+' = '+(s*r+q2),'Beide Seiten : '+p+':  <b>x = '+x+'</b>']};
+}},
+
+/* ---------- B3 Ungleichungen ---------- */
+{id:'ung',ic:'↔️',t:'Ungleichungen',blk:1,
+ex:'<p>Ungleichungen löst du fast genauso wie Gleichungen – mit <b>einer</b> wichtigen Ausnahme.</p>'+
+'<div class="merk"><b>Merke:</b> Wenn du mit einer <b>negativen Zahl multiplizierst oder dividierst</b>, dreht sich das Ungleichheitszeichen um!<br>−2x &gt; 8  →  x &lt; −4</div>'+
+'<p>Bei Plus und Minus passiert dem Zeichen nichts.</p>',
+exm:[
+ {q:'2x − 4 &lt; 6',steps:['Beide Seiten + 4:  2x &lt; 10','Beide Seiten : 2 (positiv, Zeichen bleibt):  <b>x &lt; 5</b>']},
+ {q:'−3x ≤ 12',steps:['Beide Seiten : (−3) → <b>Zeichen dreht sich um!</b>','<b>x ≥ −4</b>']}],
+gen:function(lvl){
+ const signs=['<','>','<=','>='];
+ if(lvl===1){
+  const sign=pick(signs);
+  if(pick([0,1])===0){
+   const a=ri(2,6),sol=ri(-6,9),b=a*sol;
+   return {q:'Löse: '+co(a,'x')+' '+disp[sign]+' '+b,
+    fields:[{l:'Lösung:',type:'txt',acc:ineqAcc(sol,sign)}],
+    steps:['Beide Seiten : '+a+' (positiv → Zeichen bleibt)','<b>x '+disp[sign]+' '+sol+'</b>'],hint:'Schreibe z. B. x<4 oder x>=-2'};}
+  const a=ri(1,12),sol=ri(-6,12),b=sol+a;
+  return {q:'Löse: x + '+a+' '+disp[sign]+' '+b,
+   fields:[{l:'Lösung:',type:'txt',acc:ineqAcc(sol,sign)}],
+   steps:['Beide Seiten − '+a,'<b>x '+disp[sign]+' '+sol+'</b>'],hint:'Schreibe z. B. x<4 oder x>=-2'};
+ }
+ if(lvl===2){
+  const a=ri(2,5),sol=ri(-8,8),b=-a*sol,sign=pick(signs);
+  return {q:'Löse: −'+co(a,'x')+' '+disp[sign]+' '+b,
+   fields:[{l:'Lösung:',type:'txt',acc:ineqAcc(sol,flipS[sign])}],
+   steps:['Beide Seiten : (−'+a+')','<b>Achtung: Zeichen dreht sich um!</b>','<b>x '+disp[flipS[sign]]+' '+sol+'</b>'],hint:'Schreibe z. B. x<4 oder x>=-2'};
+ }
+ if(pick([0,1])===0){
+  const k=ri(2,4),m=ri(-6,6),c=ri(5,20),d=c-k*m,sign=pick(['>','>=']);
+  return {q:'Löse: '+c+' − '+co(k,'x')+' '+disp[sign]+' '+d,
+   fields:[{l:'Lösung:',type:'txt',acc:ineqAcc(m,flipS[sign])}],
+   steps:['Beide Seiten − '+c+':  −'+co(k,'x')+' '+disp[sign]+' '+(d-c),'Beide Seiten : (−'+k+') → Zeichen dreht sich um!','<b>x '+disp[flipS[sign]]+' '+m+'</b>'],hint:'Schreibe z. B. x<4 oder x>=-2'};}
+ const a=ri(1,3),b=a+ri(1,3),e=ri(1,6),x0=ri(-5,9),f=a*e+x0*(a-b),sign=pick(['<','<=']);
+ return {q:'Löse: '+a+'(x + '+e+') '+disp[sign]+' '+linStr(b,f),
+  fields:[{l:'Lösung:',type:'txt',acc:ineqAcc(x0,flipS[sign])}],
+  steps:['Ausmultiplizieren: '+linStr(a,a*e)+' '+disp[sign]+' '+linStr(b,f),'Beide Seiten − '+co(b,'x')+':  '+linStr(a-b,a*e)+' '+disp[sign]+' '+f,'Beide Seiten − '+(a*e)+':  '+co(a-b,'x')+' '+disp[sign]+' '+(f-a*e),'Durch '+(a-b)+' (negativ!) → Zeichen dreht sich um: <b>x '+disp[flipS[sign]]+' '+x0+'</b>'],hint:'Schreibe z. B. x>9'};
+}},
+
+/* ---------- B4 Binomische Formeln ---------- */
+{id:'bin',ic:'🎁',t:'Binomische Formeln',blk:1,
+ex:'<p>Die drei binomischen Formeln brauchst du ständig – beim Ausmultiplizieren <b>und</b> rückwärts beim Faktorisieren.</p>'+
+'<div class="merk"><span class="formel">(a + b)² = a² + 2ab + b²</span><br><span class="formel">(a − b)² = a² − 2ab + b²</span><br><span class="formel">(a + b)(a − b) = a² − b²</span></div>'+
+'<p>Rückwärts: Steht da x² + 6x + 9, frage dich: Ist das (x + 3)²? Prüfe: 2 · x · 3 = 6x ✓</p>',
+exm:[
+ {q:'(x + 3)²',steps:['a = x, b = 3','a² + 2ab + b² = x² + 2·x·3 + 3²','= <b>x² + 6x + 9</b>']},
+ {q:'x² − 10x + 25 faktorisieren',steps:['x² = (x)², 25 = 5² – passt zur 2. Formel?','Prüfe Mittelterm: 2 · x · 5 = 10x ✓ (mit Minus)','= <b>(x − 5)²</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  const a=ri(1,9),plus=pick([true,false]);
+  const inner='(x '+(plus?'+':'−')+' '+a+')²';
+  const mid=plus?2*a:-2*a;
+  return {q:'Multipliziere aus: '+inner,
+   fields:[{l:'Ergebnis:',type:'txt',acc:[polyStr(1,mid,a*a)]}],
+   steps:['Binomische Formel: (a '+(plus?'+':'−')+' b)² = a² '+(plus?'+':'−')+' 2ab + b²','a = x, b = '+a,'x² '+(plus?'+':'−')+' 2·'+a+'·x + '+(a*a)+' = <b>'+polyStr(1,mid,a*a)+'</b>'],
+   hint:'z. B. x^2+6x+9 (nach fallenden Potenzen sortieren)'};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const a=ri(2,3),b=ri(1,5),plus=pick([true,false]);
+   const mid=plus?2*a*b:-2*a*b;
+   return {q:'Multipliziere aus: ('+co(a,'x')+' '+(plus?'+':'−')+' '+b+')²',
+    fields:[{l:'Ergebnis:',type:'txt',acc:[polyStr(a*a,mid,b*b)]}],
+    steps:['a = '+co(a,'x')+', b = '+b,'('+co(a,'x')+')² = '+co(a*a,'x²')+',  2 · '+co(a,'x')+' · '+b+' = '+co(2*a*b,'x')+',  '+b+'² = '+(b*b),'Ergebnis: <b>'+polyStr(a*a,mid,b*b)+'</b>'],hint:'z. B. 4x^2+4x+1'};}
+  const a=ri(1,9),v=pick(['x','m','a']);
+  return {q:'Multipliziere aus: ('+v+' + '+a+')('+v+' − '+a+')',
+   fields:[{l:'Ergebnis:',type:'txt',acc:[v+'^2-'+(a*a)]}],
+   steps:['3. binomische Formel: (a + b)(a − b) = a² − b²','= <b>'+v+'² − '+(a*a)+'</b>'],hint:'z. B. x^2-16'};
+ }
+ const v=pick([0,1,2]);
+ if(v===0){
+  const a=ri(1,9),plus=pick([true,false]);
+  const mid=plus?2*a:-2*a;
+  const acc=plus?['(x+'+a+')^2','('+a+'+x)^2']:['(x-'+a+')^2','('+a+'-x)^2'];
+  return {q:'Faktorisiere mit einer binomischen Formel: '+polyStr(1,mid,a*a),
+   fields:[{l:'Ergebnis:',type:'txt',acc:acc}],
+   steps:['x² = (x)² und '+(a*a)+' = '+a+'²','Prüfe Mittelterm: 2 · x · '+a+' = '+(2*a)+'x ✓','= <b>(x '+(plus?'+':'−')+' '+a+')²</b>'],hint:'z. B. (x+3)^2'};}
+ if(v===1){
+  const c=pick([2,3,4,5]),b=ri(1,7),v2=pick(['y','x']);
+  return {q:'Faktorisiere: '+co(c*c,v2+'²')+' − '+(b*b),
+   fields:[{l:'Ergebnis:',type:'txt',acc:['('+c+v2+'+'+b+')('+c+v2+'-'+b+')','('+c+v2+'-'+b+')('+c+v2+'+'+b+')']}],
+   steps:[co(c*c,v2+'²')+' = ('+co(c,v2)+')² und '+(b*b)+' = '+b+'²','3. binomische Formel rückwärts: a² − b² = (a + b)(a − b)','= <b>('+co(c,v2)+' + '+b+')('+co(c,v2)+' − '+b+')</b>'],hint:'z. B. (3y+4)(3y-4)'};}
+ const a=ri(2,3),b=ri(1,6),v2=pick(['m','x']);
+ return {q:'Multipliziere aus: ('+co(a,v2)+' − '+b+')('+co(a,v2)+' + '+b+')',
+  fields:[{l:'Ergebnis:',type:'txt',acc:[co(a*a,v2+'^2')+'-'+(b*b)]}],
+  steps:['3. binomische Formel: a² − b²','a = '+co(a,v2)+', b = '+b,'= <b>'+co(a*a,v2+'²')+' − '+(b*b)+'</b>'],hint:'z. B. 4m^2-25'};
+}},
+
+/* ---------- B5 Faktorisieren ---------- */
+{id:'fak',ic:'✂️',t:'Faktorisieren',blk:1,
+ex:'<p>Faktorisieren heißt: eine Summe in ein <b>Produkt</b> verwandeln. Das ist das Gegenteil vom Ausmultiplizieren – und der Schlüssel zum Lösen quadratischer Gleichungen.</p>'+
+'<div class="merk"><b>Drei Werkzeuge:</b><br>1. <b>Gemeinsamen Faktor ausklammern:</b> 6x + 12 = 6(x + 2)<br>2. <b>Binomische Formeln rückwärts</b><br>3. <b>Trinom zerlegen:</b> x² + 5x + 6 = (x + 2)(x + 3) – suche zwei Zahlen mit Produkt 6 und Summe 5.</div>',
+exm:[
+ {q:'2x² + 6x',steps:['Gemeinsamer Faktor: 2x','= <b>2x(x + 3)</b>','Probe: 2x · x + 2x · 3 = 2x² + 6x ✓']},
+ {q:'x² − 2x − 8',steps:['Suche zwei Zahlen: Produkt −8, Summe −2','−4 und +2 passen: (−4)·2 = −8, −4+2 = −2','= <b>(x − 4)(x + 2)</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  let g2=pick([2,3,4,5,6,7]),a=ri(1,5),b=ri(1,7),tries=0;
+  while(gcd(a,b)!==1&&tries<20){a=ri(1,5);b=ri(1,7);tries++;}
+  if(gcd(a,b)!==1){a=1;}
+  const minus=pick([true,false]);const ib=minus?-b:b;
+  const inner=linStr(a,ib)+'';
+  const shown=co(g2*a,'x')+(g2*ib<0?' − '+Math.abs(g2*ib):' + '+(g2*ib));
+  const acc=linAcc(a,ib).map(s=>g2+'('+s+')');
+  return {q:'Klammere den größten gemeinsamen Faktor aus: '+shown,
+   fields:[{l:'Ergebnis:',type:'txt',acc:acc}],
+   steps:['ggT von '+(g2*a)+' und '+Math.abs(g2*ib)+' ist '+g2,'= <b>'+g2+'('+inner+')</b>','Probe durch Ausmultiplizieren!'],hint:'z. B. 4(2x+3)'};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const a=ri(2,9),v=pick(['x','a']);
+   return {q:'Faktorisiere: '+v+'² + '+co(a,v),
+    fields:[{l:'Ergebnis:',type:'txt',acc:[v+'('+v+'+'+a+')','('+v+'+'+a+')'+v,'('+v+'+'+a+')·'+v]}],
+    steps:['Beide Terme enthalten '+v,'= <b>'+v+'('+v+' + '+a+')</b>'],hint:'z. B. x(x+5)'};}
+  const k=ri(2,4),a=ri(2,6),v=pick(['x','m']);
+  return {q:'Faktorisiere vollständig: '+co(k,v+'²')+' − '+co(k*a,v),
+   fields:[{l:'Ergebnis:',type:'txt',acc:[k+v+'('+v+'-'+a+')','('+v+'-'+a+')'+k+v]}],
+   steps:['Gemeinsamer Faktor: '+k+v,'= <b>'+k+v+'('+v+' − '+a+')</b>'],hint:'z. B. 4m(m-2)'};
+ }
+ let a=ri(-6,6),b=ri(-6,6),g=0;
+ while((a===0||b===0||a===b||a+b===0)&&g<40){a=ri(-6,6);b=ri(-6,6);g++;}
+ if(a===0||b===0||a===b||a+b===0){a=2;b=5;}
+ const p=a+b,q2=a*b;
+ return {q:'Faktorisiere das Trinom: '+polyStr(1,p,q2),
+  fields:[{l:'Ergebnis:',type:'txt',acc:[facR(a)+facR(b),facR(b)+facR(a)]}],
+  steps:['Suche zwei Zahlen mit <b>Produkt '+q2+'</b> und <b>Summe '+p+'</b>','Das sind '+a+' und '+b,'= <b>'+facR(a)+facR(b)+'</b>','Probe: Ausmultiplizieren ergibt wieder '+polyStr(1,p,q2)+' ✓'],hint:'z. B. (x+2)(x-3)'};
+}},
+
+/* ---------- B6 Bruchterme ---------- */
+{id:'brt',ic:'🍰',t:'Bruchterme & Bruchgleichungen',blk:1,
+ex:'<p>Bruchterme sind Brüche mit Variablen. Es gelten dieselben Regeln wie bei Zahlbrüchen – plus eine neue: Der <b>Nenner darf nie 0 werden</b> (Definitionsmenge!).</p>'+
+'<div class="merk"><b>Merke:</b><br>• Gleiche Nenner: nur Zähler verrechnen: '+frac(2,'x')+' + '+frac(3,'x')+' = '+frac(5,'x')+'<br>• Verschiedene Nenner: erst Hauptnenner bilden.<br>• Bruchgleichungen: mit dem Hauptnenner multiplizieren – aber vorher notieren, welche x verboten sind.</div>',
+exm:[
+ {q:frac(1,'x')+' + '+frac(1,'2x'),steps:['Hauptnenner: 2x','Erweitern: '+frac(1,'x')+' = '+frac(2,'2x'),frac(2,'2x')+' + '+frac(1,'2x')+' = <b>'+frac(3,'2x')+'</b>']},
+ {q:frac(3,'x − 1')+' = 6 lösen',steps:['Definitionsmenge: x ≠ 1 (sonst Nenner = 0)','Mal (x − 1): 3 = 6(x − 1) = 6x − 6','+6, dann :6: 9 = 6x → <b>x = 1,5</b> ✓ (erlaubt, da ≠ 1)']}],
+gen:function(lvl){
+ if(lvl===1){
+  const c2=pick([2,3,4]),mult=ri(2,4);
+  return {q:'Kürze: '+frac((c2*mult)+'x²',c2+'x'),
+   fields:[{l:'Ergebnis:',type:'txt',acc:coAcc(mult,'x')}],
+   steps:['Zahlen kürzen: '+(c2*mult)+' : '+c2+' = '+mult,'x² : x = x','= <b>'+co(mult,'x')+'</b>'],hint:'z. B. 2x'};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){const a=ri(1,7),b=ri(1,7);
+   return {q:'Fasse zusammen: '+frac(a,'x')+' + '+frac(b,'x'),
+    fields:[{l:'Ergebnis:',type:'txt',acc:[(a+b)+'/x']}],
+    steps:['Gleiche Nenner → Zähler addieren','= <b>'+frac(a+b,'x')+'</b>'],hint:'z. B. 5/x'};}
+  if(v===1){const k=pick([2,3,4]);
+   return {q:'Fasse zusammen: '+frac(1,'x')+' + '+frac(1,k+'x'),
+    fields:[{l:'Ergebnis:',type:'txt',acc:[(k+1)+'/('+k+'x)',(k+1)+'/'+k+'x']}],
+    steps:['Hauptnenner: '+k+'x','Erweitern: '+frac(1,'x')+' = '+frac(k,k+'x'),frac(k,k+'x')+' + '+frac(1,k+'x')+' = <b>'+frac(k+1,k+'x')+'</b>'],hint:'z. B. 3/(2x)'};}
+  let c=ri(2,7),d=ri(1,5),g=0;while(2*c-d<=0&&g<10){c=ri(2,7);g++;}
+  const num=2*c-d;
+  return {q:'Fasse zusammen: '+frac(c,'a')+' − '+frac(d,'2a'),
+   fields:[{l:'Ergebnis:',type:'txt',acc:[num+'/(2a)',num+'/2a']}],
+   steps:['Hauptnenner: 2a','Erweitern: '+frac(c,'a')+' = '+frac(2*c,'2a'),frac(2*c,'2a')+' − '+frac(d,'2a')+' = <b>'+frac(num,'2a')+'</b>'],hint:'z. B. 5/(2a)'};
+ }
+ const v=pick([0,1,2]);
+ if(v===0){const a=ri(2,12),b=pick([2,3,4,6]);
+  return {q:'Löse (beachte: x ≠ 0): '+frac(a,'x')+' = '+b,
+   fields:[{l:'x = (Bruch oder Dezimalzahl)',a:a/b}],
+   steps:['Definitionsmenge: x ≠ 0','Beide Seiten · x:  '+a+' = '+co(b,'x'),'Beide Seiten : '+b+':  <b>x = '+fracTxt(a,b)+'</b>']};}
+ if(v===1){const d=pick([2,3,4]),c=ri(1,9),b=d*ri(1,3),a=ri(1,8),x=c*b/d-a;
+  return {q:'Löse: '+frac('x + '+a,b)+' = '+frac(c,d),
+   fields:[{l:'x =',a:x}],
+   steps:['Über Kreuz multiplizieren: '+d+'(x + '+a+') = '+c+' · '+b,linStr(d,d*a)+' = '+(c*b),'− '+(d*a)+', dann : '+d+':  <b>x = '+x+'</b>']};}
+ const k=pick([2,3]),s=3*ri(1,4),x=2*k*s/3;
+ return {q:'Löse: '+frac('x',k)+' + '+frac('x',2*k)+' = '+s,
+  fields:[{l:'x =',a:x}],
+  steps:['Hauptnenner: '+(2*k)+' → beide Seiten · '+(2*k),'2x + x = '+(2*k*s),'3x = '+(2*k*s)+' → <b>x = '+fmt(x)+'</b>']};
+}},
+
+/* ---------- B7 Quadratische Gleichungen ---------- */
+{id:'qua',ic:'🎯',t:'Quadratische Gleichungen',blk:1,
+ex:'<p>Quadratische Gleichungen (mit x²) haben meist <b>zwei Lösungen</b>. Die schnellsten Wege:</p>'+
+'<div class="merk"><b>Werkzeugkasten:</b><br>1. <b>Ausklammern</b> (wenn kein konstantes Glied): x² − 5x = 0 → x(x − 5) = 0 → x = 0 oder x = 5<br>2. <b>Faktorisieren</b>: x² − 2x − 8 = 0 → (x − 4)(x + 2) = 0<br>3. <b>Wurzel ziehen</b>: x² = 9 → x = ±3<br><br><b>Nullprodukt-Regel:</b> Ein Produkt ist 0, wenn (mindestens) ein Faktor 0 ist.</div>',
+exm:[
+ {q:'x² − 5x = 0',steps:['x ausklammern: x(x − 5) = 0','Nullprodukt: x = 0 oder x − 5 = 0','<b>x₁ = 0, x₂ = 5</b>']},
+ {q:'x² + 6x + 8 = 0',steps:['Zwei Zahlen mit Produkt 8, Summe 6: → 2 und 4','(x + 2)(x + 4) = 0','<b>x₁ = −2, x₂ = −4</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  const a=ri(2,9),neg=pick([true,false]);
+  const p2=neg?-a:a;
+  return {q:'Löse: x² '+(neg?'−':'+')+' '+co(a,'x')+' = 0',
+   fields:[{l:'x₁ =',a:0},{l:'x₂ =',a:-p2}],setAns:true,
+   steps:['x ausklammern: x(x '+(neg?'−':'+')+' '+a+') = 0','Nullprodukt-Regel: x = 0 oder x '+(neg?'−':'+')+' '+a+' = 0','<b>x₁ = 0, x₂ = '+(-p2)+'</b>']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const c=ri(2,9);
+   return {q:'Löse: x² − '+(c*c)+' = 0',
+    fields:[{l:'x₁ =',a:c},{l:'x₂ =',a:-c}],setAns:true,
+    steps:['+ '+(c*c)+':  x² = '+(c*c),'Wurzel ziehen (zwei Lösungen!): <b>x = ±'+c+'</b>','Oder: 3. binomische Formel (x−'+c+')(x+'+c+') = 0']};}
+  let r1=ri(-6,6),r2=ri(-6,6),g=0;
+  while((r1===0||r2===0||r1===r2)&&g<30){r1=ri(-6,6);r2=ri(-6,6);g++;}
+  if(r1===0||r2===0||r1===r2){r1=2;r2=-3;}
+  const p2=-(r1+r2),q2=r1*r2;
+  return {q:'Löse: '+polyStr(1,p2,q2)+' = 0',
+   fields:[{l:'x₁ =',a:r1},{l:'x₂ =',a:r2}],setAns:true,
+   steps:['Suche zwei Zahlen mit Produkt '+q2+' und Summe '+p2+': → '+(-r1)+' und '+(-r2),'Faktorisieren: '+facR(-r1)+facR(-r2)+' = 0','Nullprodukt: <b>x₁ = '+r1+', x₂ = '+r2+'</b>','Alternative: pq-Formel mit p = '+p2+', q = '+q2]};
+ }
+ if(pick([0,1])===0){
+  const k=pick([2,3]),a=ri(2,7);
+  return {q:'Löse: '+co(k,'x²')+' − '+co(k*a,'x')+' = 0',
+   fields:[{l:'x₁ =',a:0},{l:'x₂ =',a:a}],setAns:true,
+   steps:['Durch '+k+' teilen: x² − '+co(a,'x')+' = 0','x ausklammern: x(x − '+a+') = 0','<b>x₁ = 0, x₂ = '+a+'</b>']};}
+ let r1=ri(-6,6),r2=ri(-6,6),g=0;
+ while((r1===0||r2===0||r1===r2||r1+r2===0)&&g<30){r1=ri(-6,6);r2=ri(-6,6);g++;}
+ if(r1===0||r2===0||r1===r2||r1+r2===0){r1=2;r2=-7;}
+ const B=-(r1+r2),C=-r1*r2;
+ return {q:'<b>Anders als gewohnt:</b> Löse x² '+(B<0?'− '+(-B):'+ '+B)+'x = '+C,
+  fields:[{l:'x₁ =',a:r1},{l:'x₂ =',a:r2}],setAns:true,
+  steps:['Erst alles auf eine Seite: '+polyStr(1,B,-C)+' = 0','Zwei Zahlen mit Produkt '+(-C)+' und Summe '+B+': → '+(-r1)+' und '+(-r2),facR(-r1)+facR(-r2)+' = 0','<b>x₁ = '+r1+', x₂ = '+r2+'</b>'],
+  hint:'Bringe die Gleichung zuerst in die Form ... = 0'};
+}},
+
+/* ---------- B8 Textaufgaben ---------- */
+{id:'txt',ic:'📖',t:'Textaufgaben übersetzen',blk:1,
+ex:'<p>Textaufgaben sind Übersetzungsarbeit: Deutsch → Mathematik. Genau diese Fähigkeit brauchst du bei <b>unbekannten Aufgaben</b> in Klausuren.</p>'+
+'<div class="merk"><b>Strategie in 4 Schritten:</b><br>1. <b>Was ist gesucht?</b> Nenne es x.<br>2. <b>Übersetze</b> den Text Stück für Stück in eine Gleichung.<br>3. <b>Löse</b> die Gleichung.<br>4. <b>Antworte im Satz</b> und prüfe, ob das Ergebnis sinnvoll ist.</div>'+
+'<p>Übersetzungshilfen: „das Dreifache" → 3x · „um 5 mehr" → +5 · „die Summe" → + · „ergibt" → =</p>',
+exm:[
+ {q:'Das Dreifache einer Zahl minus 4 ist 11. Welche Zahl?',steps:['Gesucht: die Zahl x','Übersetzen: 3x − 4 = 11','+4: 3x = 15 → :3: <b>x = 5</b>','Probe: 3·5 − 4 = 11 ✓']},
+ {q:'Die Summe zweier aufeinanderfolgender Zahlen ist 31.',steps:['Kleinere Zahl: x, größere: x + 1','x + (x + 1) = 31','2x + 1 = 31 → 2x = 30 → <b>x = 15</b>','Die Zahlen sind 15 und 16.']}],
+gen:function(lvl){
+ if(lvl===1){
+  const x=ri(3,30),a=ri(3,20),plus=pick([true,false]);
+  const b=plus?x+a:x-a;
+  return {q:'Eine Zahl '+(plus?'plus':'minus')+' '+a+' ergibt '+b+'. Wie heißt die Zahl?',
+   fields:[{l:'Die Zahl:',a:x}],
+   steps:['Gleichung: x '+(plus?'+':'−')+' '+a+' = '+b,(plus?'− ':'+ ')+a+' auf beiden Seiten','<b>x = '+x+'</b>']};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){const k=pick([2,3,4,5]),x=ri(2,12),a=ri(1,10),b=k*x-a;
+   return {q:'Das '+['','','Doppelte','Dreifache','Vierfache','Fünffache'][k]+' einer Zahl minus '+a+' ist '+b+'. Welche Zahl?',
+    fields:[{l:'Die Zahl:',a:x}],
+    steps:['Gleichung: '+k+'x − '+a+' = '+b,'+ '+a+':  '+k+'x = '+(b+a),': '+k+':  <b>x = '+x+'</b>']};}
+  if(v===1){const n=ri(5,40),S=2*n+1;
+   return {q:'Die Summe zweier aufeinanderfolgender natürlicher Zahlen ist '+S+'. Wie heißt die <b>kleinere</b> Zahl?',
+    fields:[{l:'Kleinere Zahl:',a:n}],
+    steps:['Kleinere Zahl x, größere x + 1','x + (x + 1) = '+S,'2x + 1 = '+S+' → 2x = '+(S-1)+' → <b>x = '+n+'</b>']};}
+  const net=ri(2,10)*100;
+  return {q:'Ein Laptop kostet mit 19 % Mehrwertsteuer '+fmt(net*1.19)+' €. Wie hoch ist der <b>Nettopreis</b> (ohne MwSt.)?',
+   fields:[{l:'Nettopreis (€):',a:net}],
+   steps:['Brutto = Netto · 1,19','Netto = '+fmt(net*1.19)+' : 1,19','<b>= '+net+' €</b>'],
+   hint:'Nicht einfach 19 % abziehen – die MwSt. wurde auf den Nettopreis gerechnet!'};
+ }
+ if(pick([0,1])===0){
+  const x=ri(3,15),a=ri(2,8),U=2*(2*x+a);
+  return {q:'Ein Rechteck ist '+a+' cm länger als breit. Sein Umfang beträgt '+U+' cm. Wie breit ist es?',
+   fields:[{l:'Breite (cm):',a:x}],
+   steps:['Breite x, Länge x + '+a,'Umfang: 2 · (x + x + '+a+') = '+U,'2 · (2x + '+a+') = '+U+'  →  4x + '+(2*a)+' = '+U,'4x = '+(U-2*a)+'  →  <b>x = '+x+' cm</b>']};}
+ const k=pick([2,3,4]),s=ri(8,16),S=(k+1)*s;
+ return {q:'Ein Vater ist '+k+'-mal so alt wie sein Sohn. Zusammen sind sie '+S+' Jahre alt. Wie alt ist der Sohn?',
+  fields:[{l:'Alter des Sohnes:',a:s}],
+  steps:['Sohn: x Jahre, Vater: '+k+'x Jahre','x + '+k+'x = '+S,co(k+1,'x')+' = '+S+'  →  <b>x = '+s+'</b>','Der Vater ist '+(k*s)+' Jahre alt. Probe: '+s+' + '+(k*s)+' = '+S+' ✓']};
+}},
+/* ============ Module: Block C + D ============ */
+
+/* ---------- C1 Funktionsbegriff ---------- */
+{id:'fun',ic:'🔗',t:'Funktionsbegriff',blk:2,
+ex:'<p>Eine Funktion ist eine Zuordnung, die <b>jedem x genau einen y-Wert</b> zuordnet. f(3) = 5 heißt: Setze 3 ein, es kommt 5 heraus.</p>'+
+'<div class="merk"><b>Merke:</b><br>• f(x) = 2x + 1: „Nimm x, verdopple es, addiere 1."<br>• <b>Einsetzen:</b> f(3) = 2 · 3 + 1 = 7<br>• Keine Funktion: wenn einem x <b>zwei</b> y-Werte zugeordnet werden (z. B. x ↦ ±x).<br>• y-Achsenabschnitt: f(0) berechnen. Nullstelle: f(x) = 0 lösen.</div>',
+exm:[
+ {q:'f(x) = x + 2: Wertetabelle für x = −1, 0, 1, 2',steps:['f(−1) = −1 + 2 = 1','f(0) = 2, f(1) = 3, f(2) = 4','Jedem x gehört <b>genau ein</b> y → Funktion ✓']},
+ {q:'Nullstelle von f(x) = 2x − 6',steps:['Nullstelle: f(x) = 0 setzen','2x − 6 = 0 → 2x = 6','<b>x = 3</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  const v1=pick([0,1,2]);
+  if(v1===2){
+   let m=pick([-2,-1,1,2]),b=ri(-3,3),x0=0,y0=99,g=0;
+   while((Math.abs(y0)>4||x0===0)&&g<40){x0=ri(-3,3);y0=m*x0+b;g++;}
+   if(Math.abs(y0)>4||x0===0){m=1;b=0;x0=2;y0=2;}
+   return {q:'Der Graph zeigt eine Funktion f. Lies ab: f('+x0+') = ?'+
+    graphSVG([{f:x=>m*x+b},{dot:[x0,y0],col:'#e8590c'}]),
+    fields:[{l:'f('+x0+') =',a:y0}],
+    steps:['Gehe auf der x-Achse zu x = '+x0,'Der markierte Punkt liegt auf Höhe y = '+y0,'<b>f('+x0+') = '+y0+'</b>']};}
+  if(v1===0){
+   let m=ri(-4,4);if(m===0)m=2;const b=ri(-6,8),x0=ri(-4,6);
+   return {q:'f(x) = '+linStr(m,b)+'. Berechne f('+x0+').',
+    fields:[{l:'f('+x0+') =',a:m*x0+b}],
+    steps:['Einsetzen: f('+x0+') = '+m+' · '+(x0<0?'('+x0+')':x0)+(b>=0?' + '+b:' − '+(-b)),'= '+(m*x0)+(b>=0?' + '+b:' − '+(-b))+' = <b>'+(m*x0+b)+'</b>']};}
+  const c=ri(-6,6),x0=ri(-4,5);
+  return {q:'f(x) = x² '+(c>=0?'+ '+c:'− '+(-c))+'. Berechne f('+x0+').',
+   fields:[{l:'f('+x0+') =',a:x0*x0+c}],
+   steps:['Einsetzen: ('+x0+')² = '+(x0*x0)+' (Quadrat ist nie negativ!)',(x0*x0)+(c>=0?' + '+c:' − '+(-c))+' = <b>'+(x0*x0+c)+'</b>']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const mc=shufMC(['x ↦ 2x + 1 (jedem x genau ein Wert)','x ↦ ±'+wz('x')+' (zwei Werte pro x)','Jeder Zahl werden ihre beiden Nachbarzahlen zugeordnet'],0);
+   return {q:'Welche Zuordnung ist eine <b>Funktion</b>?',mc:mc,
+    steps:['Funktion = jedem x wird <b>genau ein</b> y zugeordnet','Bei ± gibt es zwei Werte → keine Funktion','x ↦ 2x + 1 ist eine Funktion ✓']};}
+  const m=ri(2,5),b=ri(-6,6),x0=ri(-4,7),v=m*x0+b;
+  return {q:'f(x) = '+linStr(m,b)+'. Für welches x gilt f(x) = '+v+'?',
+   fields:[{l:'x =',a:x0}],
+   steps:['Gleichung aufstellen: '+linStr(m,b)+' = '+v,(b>=0?'− '+b:'+ '+(-b))+':  '+co(m,'x')+' = '+(v-b),': '+m+':  <b>x = '+x0+'</b>']};
+ }
+ const m=ri(2,5),z=ri(-5,6)||2,b=-m*z;
+ return {q:'f(x) = '+linStr(m,b)+'. Bestimme den <b>y-Achsenabschnitt</b> und die <b>Nullstelle</b>.',
+  fields:[{l:'y-Achsenabschnitt:',a:b},{l:'Nullstelle x =',a:z}],
+  steps:['y-Achsenabschnitt: f(0) = '+b,'Nullstelle: '+linStr(m,b)+' = 0','<b>x = '+z+'</b>']};
+}},
+
+/* ---------- C2 Lineare Funktionen ---------- */
+{id:'lin',ic:'📈',t:'Lineare Funktionen',blk:2,
+ex:'<p>Lineare Funktionen haben die Form <span class="formel">y = mx + b</span> – ihr Graph ist eine Gerade.</p>'+
+'<div class="merk"><b>Merke:</b><br>• <b>m = Steigung</b>: um wie viel y steigt, wenn x um 1 wächst. m = '+frac('y₂ − y₁','x₂ − x₁')+'<br>• <b>b = y-Achsenabschnitt</b>: dort schneidet die Gerade die y-Achse.<br>• <b>Schnittpunkt zweier Geraden:</b> Terme gleichsetzen, nach x auflösen, y berechnen.</div>'+
+graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#e8590c'},{dot:[1,3],col:'#2b8a3e'}])+
+'<p class="hint" style="text-align:center">y = 2x + 1: Start bei b = 1 (orange), pro Schritt nach rechts geht es m = 2 nach oben (grün).</p>',
+exm:[
+ {q:'Gerade durch (0, 2) und (2, 6)',steps:['m = '+frac('6 − 2','2 − 0')+' = '+frac(4,2)+' = 2','b: bei x = 0 ist y = 2 → b = 2','<b>y = 2x + 2</b>']},
+ {q:'Schnittpunkt von y = 2x + 1 und y = x + 4',steps:['Gleichsetzen: 2x + 1 = x + 4','− x: x + 1 = 4 → <b>x = 3</b>','Einsetzen: y = 2·3 + 1 = <b>7</b> → Schnittpunkt (3, 7)']}],
+gen:function(lvl){
+ if(lvl===1){
+  const v1=pick([0,1,2]);
+  if(v1===2){
+   let m=pick([-3,-2,-1,1,2,3]),b=ri(-3,3),g=0;
+   while(Math.abs(m+b)>4&&g<20){b=ri(-3,3);g++;}
+   if(Math.abs(m+b)>4){m=1;b=1;}
+   return {q:'Lies aus dem Graphen die Steigung m und den y-Achsenabschnitt b ab. (Die Punkte bei x = 0 und x = 1 sind markiert.)'+
+    graphSVG([{f:x=>m*x+b},{dot:[0,b],col:'#e8590c'},{dot:[1,m+b],col:'#2b8a3e'}]),
+    fields:[{l:'m =',a:m},{l:'b =',a:b}],
+    steps:['b: Wo schneidet die Gerade die y-Achse? Beim orangen Punkt (0 | '+b+') → b = '+b,'m: Von x = 0 zu x = 1 geht es um '+(m>0?m+' nach oben':(-m)+' nach unten')+' → m = '+m,'<b>y = '+linStr(m,b)+'</b>'],
+    hint:'1 nach rechts – wie viele Kästchen nach oben/unten?'};}
+  if(v1===0){
+   let m=ri(-4,4);if(m===0)m=3;const b=ri(-5,5),x1=ri(-4,2),x2=x1+ri(1,4);
+   const y1=m*x1+b,y2=m*x2+b;
+   return {q:'Eine Gerade geht durch ('+x1+' | '+y1+') und ('+x2+' | '+y2+'). Bestimme die Steigung m.',
+    fields:[{l:'m =',a:m}],
+    steps:['m = '+frac('y₂ − y₁','x₂ − x₁')+' = '+frac(y2+' − ('+y1+')',x2+' − ('+x1+')'),'= '+frac(y2-y1,x2-x1)+' = <b>'+m+'</b>']};}
+  let m=ri(-5,5);if(m===0)m=-2;const b=ri(-8,8);
+  return {q:'y = '+linStr(m,b)+'. Lies ab: Steigung und y-Achsenabschnitt.',
+   fields:[{l:'Steigung m =',a:m},{l:'y-Achsenabschnitt b =',a:b}],
+   steps:['Form y = mx + b','m = '+m+' (Zahl vor dem x)','b = '+b+' (Zahl ohne x)']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   let m=ri(-4,4);if(m===0)m=2;const b=ri(-6,6);
+   return {q:'Stelle die Geradengleichung auf: m = '+m+', b = '+b,
+    fields:[{l:'y =',type:'txt',acc:linAcc(m,b).map(s=>'y='+s).concat(linAcc(m,b))}],
+    steps:['In y = mx + b einsetzen','<b>y = '+linStr(m,b)+'</b>'],hint:'z. B. y=2x+1'};}
+  let m=ri(-3,3);if(m===0)m=2;const b=ri(-5,5),x1=ri(-3,1),x2=x1+ri(1,4);
+  const y1=m*x1+b,y2=m*x2+b;
+  return {q:'Bestimme die Gleichung der Geraden durch ('+x1+' | '+y1+') und ('+x2+' | '+y2+').',
+   fields:[{l:'y =',type:'txt',acc:linAcc(m,b).map(s=>'y='+s).concat(linAcc(m,b))}],
+   steps:['m = '+frac(y2+' − ('+y1+')',x2+' − ('+x1+')')+' = '+m,'b über Punkt ('+x1+' | '+y1+'): '+y1+' = '+m+' · ('+x1+') + b → b = '+b,'<b>y = '+linStr(m,b)+'</b>'],hint:'z. B. y=2x+1'};
+ }
+ let m1=ri(-3,4),m2=ri(-3,4),g=0;
+ while((m1===m2||m1===0||m2===0)&&g<30){m1=ri(-3,4);m2=ri(-3,4);g++;}
+ if(m1===m2||m1===0||m2===0){m1=2;m2=-1;}
+ const xs=ri(-4,6),b1=ri(-5,5),ys=m1*xs+b1,b2=ys-m2*xs;
+ return {q:'Bestimme den Schnittpunkt der Geraden y = '+linStr(m1,b1)+' und y = '+linStr(m2,b2)+'.',
+  fields:[{l:'x =',a:xs},{l:'y =',a:ys}],
+  steps:['Gleichsetzen: '+linStr(m1,b1)+' = '+linStr(m2,b2),'x-Terme auf eine Seite: '+co(m1-m2,'x')+' = '+(b2-b1),'x = '+xs,'Einsetzen: y = '+m1+' · ('+xs+')'+(b1>=0?' + '+b1:' − '+(-b1))+' = <b>'+ys+'</b>']};
+}},
+
+/* ---------- C3 Quadratische Funktionen ---------- */
+{id:'qfk',ic:'🌉',t:'Quadratische Funktionen',blk:2,
+ex:'<p>Der Graph einer quadratischen Funktion ist eine <b>Parabel</b>. Die Scheitelpunktform verrät fast alles:</p>'+
+'<div class="merk"><span class="formel">f(x) = a(x − d)² + e</span><br>• Scheitelpunkt: <b>S(d | e)</b> – Achtung: bei (x − 2)² ist d = +2!<br>• a &gt; 0: nach <b>oben</b> geöffnet (Minimum), a &lt; 0: nach <b>unten</b> (Maximum).<br>• Nullstellen: f(x) = 0 setzen und lösen (0, 1 oder 2 Lösungen).</div>'+
+graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#e8590c'}])+
+'<p class="hint" style="text-align:center">f(x) = (x − 2)² − 1: Scheitel S(2 | −1), nach oben geöffnet, Nullstellen bei 1 und 3.</p>',
+exm:[
+ {q:'f(x) = (x − 2)² + 3',steps:['Vergleich mit a(x − d)² + e: d = 2, e = 3','Scheitelpunkt <b>S(2 | 3)</b>','a = 1 &gt; 0 → nach oben geöffnet, S ist Minimum']},
+ {q:'Nullstellen von f(x) = (x − 1)² − 4',steps:['(x − 1)² − 4 = 0 → (x − 1)² = 4','Wurzel: x − 1 = ±2','x = 1 + 2 = <b>3</b> oder x = 1 − 2 = <b>−1</b>']}],
+gen:function(lvl){
+ const dStr=d=>d>=0?'(x − '+d+')²':'(x + '+(-d)+')²';
+ const eStr=e=>e>=0?' + '+e:' − '+(-e);
+ if(lvl===1){
+  const v1=pick([0,1,2]);
+  if(v1===2){
+   const a=pick([1,-1]),d=ri(-3,3),e=a>0?ri(-3,1):ri(-1,3);
+   return {q:'Der Graph zeigt eine Parabel. Lies den <b>Scheitelpunkt</b> ab (er ist markiert).'+
+    graphSVG([{f:x=>a*(x-d)*(x-d)+e},{dot:[d,e],col:'#e8590c'}]),
+    fields:[{l:'x-Wert des Scheitels:',a:d},{l:'y-Wert des Scheitels:',a:e}],
+    steps:['Der Scheitel ist der '+(a>0?'tiefste':'höchste')+' Punkt der Parabel','Markierter Punkt: <b>S('+d+' | '+e+')</b>']};}
+  if(v1===0){
+   const d=ri(-5,6),e=ri(-8,8);
+   return {q:'f(x) = '+dStr(d)+eStr(e)+'. Bestimme den Scheitelpunkt S(d | e).',
+    fields:[{l:'d =',a:d},{l:'e =',a:e}],
+    steps:['Scheitelpunktform: a(x − d)² + e → S(d | e)','Achtung Vorzeichen: '+dStr(d)+' bedeutet d = '+d,'<b>S('+d+' | '+e+')</b>']};}
+  let a=ri(-3,3);if(a===0)a=-1;const c=ri(-5,5);
+  const mc=shufMC(['nach oben geöffnet','nach unten geöffnet'],a>0?0:1);
+  return {q:'f(x) = '+polyStr(a,0,c)+'. Wie ist die Parabel geöffnet?',mc:mc,
+   steps:['Entscheidend ist die Zahl vor x²: a = '+a,a>0?'a &gt; 0 → <b>nach oben</b>':'a &lt; 0 → <b>nach unten</b>']};
+ }
+ if(lvl===2){
+  const v2=pick([0,1,2]);
+  if(v2===2){
+   const a=pick([1,-1]),d=ri(-2,2),e=pick([-3,-2,-1,0,1,2,3]);
+   const zeros=(a>0?(e<0?2:e===0?1:0):(e>0?2:e===0?1:0));
+   const mc=shufMC(['keine Nullstelle','genau eine Nullstelle','zwei Nullstellen'],zeros);
+   return {q:'Wie viele <b>Nullstellen</b> hat die abgebildete Parabel?'+
+    graphSVG([{f:x=>a*(x-d)*(x-d)+e}]),mc:mc,
+    steps:['Nullstellen = Schnittpunkte mit der <b>x-Achse</b>','Die Parabel '+(zeros===2?'schneidet die x-Achse zweimal':zeros===1?'berührt die x-Achse genau im Scheitel':'schneidet die x-Achse gar nicht'),'→ <b>'+['keine','genau eine','zwei'][zeros]+' Nullstelle'+(zeros===2?'n':'')+'</b>']};}
+  if(v2===0){
+   const d=ri(-4,5),k=ri(1,5);
+   return {q:'Bestimme die Nullstellen von f(x) = '+dStr(d)+' − '+(k*k)+'.',
+    fields:[{l:'x₁ =',a:d+k},{l:'x₂ =',a:d-k}],setAns:true,
+    steps:[dStr(d)+' − '+(k*k)+' = 0 → '+dStr(d)+' = '+(k*k),'Wurzel ziehen: x − ('+d+') = ±'+k,'<b>x₁ = '+(d+k)+', x₂ = '+(d-k)+'</b>']};}
+  let r1=ri(-5,5),r2=ri(-5,5),g=0;while((r1===r2)&&g<20){r2=ri(-5,5);g++;}if(r1===r2)r2=r1+2;
+  return {q:'f(x) = '+facR(r1)+' · '+facR(r2)+'. Lies die Nullstellen ab.',
+   fields:[{l:'x₁ =',a:r1},{l:'x₂ =',a:r2}],setAns:true,
+   steps:['Nullprodukt: ein Faktor muss 0 sein',facR(r1)+' = 0 → x = '+r1,facR(r2)+' = 0 → x = '+r2]};
+ }
+ const p=2*ri(1,5)*pick([-1,1]);
+ const xs=-p/2,ys=-p*p/4;
+ return {q:'Bestimme den Scheitelpunkt von f(x) = '+polyStr(1,p,0)+' <b>ohne</b> zu zeichnen.',
+  fields:[{l:'x-Wert des Scheitels:',a:xs},{l:'y-Wert des Scheitels:',a:ys}],
+  steps:['Nullstellen: x(x '+(p>=0?'+ '+p:'− '+(-p))+') = 0 → x = 0 und x = '+(-p),'Der Scheitel liegt in der <b>Mitte</b> der Nullstellen: x = '+xs,'y-Wert: f('+xs+') = '+(xs*xs)+' '+(p*xs>=0?'+ '+(p*xs):'− '+(-p*xs))+' = <b>'+ys+'</b>'],
+  hint:'Die Parabel ist symmetrisch – der Scheitel liegt genau zwischen den Nullstellen.'};
+}},
+
+/* ---------- C4 Exponentialfunktionen ---------- */
+{id:'exp',ic:'🦠',t:'Exponentialfunktionen',blk:2,
+ex:'<p>Exponentielles Wachstum heißt: Der Bestand wird in jedem Schritt <b>mit demselben Faktor multipliziert</b> (nicht addiert!).</p>'+
+'<div class="merk"><b>Merke:</b><br>• Wachstum um p %: Faktor <b>1 + p/100</b> (z. B. +10 % → · 1,1)<br>• Abnahme um p %: Faktor <b>1 − p/100</b> (z. B. −20 % → · 0,8)<br>• Nach n Schritten: Startwert · Faktorⁿ<br>• Exponentialfunktionen überholen <b>jede</b> Potenzfunktion – irgendwann.</div>',
+exm:[
+ {q:'100 € wachsen jährlich um 10 %. Kontostand nach 2 Jahren?',steps:['Faktor: 1,1','Nach 1 Jahr: 100 · 1,1 = 110 €','Nach 2 Jahren: 110 · 1,1 = <b>121 €</b> (nicht 120!)']},
+ {q:'200 g halbieren sich jedes Jahr. Nach 3 Jahren?',steps:['Faktor: 0,5','200 · 0,5 · 0,5 · 0,5 = 200 · 0,5³','= 200 · '+frac(1,8)+' = <b>25 g</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const a=pick([2,3,5]),n=a===5?ri(2,4):ri(2,5);
+   return {q:'Berechne: '+a+'<sup>'+n+'</sup>',
+    fields:[{l:'Ergebnis:',a:Math.pow(a,n)}],
+    steps:[a+' wird '+n+'-mal mit sich selbst multipliziert','= <b>'+Math.pow(a,n)+'</b>']};}
+  const n=ri(1,3);
+  return {q:'100 € wachsen jedes Jahr um 10 %. Wie viel sind es nach '+n+' Jahr'+(n>1?'en':'')+'?',
+   fields:[{l:'Betrag (€):',a:100*Math.pow(1.1,n)}],
+   steps:['Wachstumsfaktor: 1,1','100 · 1,1'+(n>1?'<sup>'+n+'</sup>':'')+' = <b>'+fmt(100*Math.pow(1.1,n))+' €</b>','Zinseszins: Es wird immer vom neuen Betrag gerechnet!']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const S=pick([200,400,800,1000]),n=ri(1,4);
+   return {q:'Von '+S+' g eines Stoffes halbiert sich die Menge jedes Jahr. Wie viel ist nach '+n+' Jahr'+(n>1?'en':'')+' übrig?',
+    fields:[{l:'Menge (g):',a:S/Math.pow(2,n)}],
+    steps:['Faktor 0,5 pro Jahr, '+n+'-mal anwenden',S+' · 0,5'+(n>1?'<sup>'+n+'</sup>':'')+' = '+S+' : '+Math.pow(2,n)+' = <b>'+fmt(S/Math.pow(2,n))+' g</b>']};}
+  const p=pick([5,10,15,20,25,50]),up=pick([true,false]);
+  const f=up?1+p/100:1-p/100;
+  return {q:'Ein Bestand '+(up?'wächst':'schrumpft')+' jedes Jahr um '+p+' %. Mit welchem <b>Faktor</b> wird pro Jahr multipliziert?',
+   fields:[{l:'Faktor:',a:f}],
+   steps:[p+' % = '+fmt(p/100),(up?'Wachstum: 1 + ':'Abnahme: 1 − ')+fmt(p/100)+' = <b>'+fmt(f)+'</b>'],hint:'z. B. 1,15 oder 0,8'};
+ }
+ if(pick([0,1])===0){
+  const a=ri(2,6),n=ri(2,6),b=a*Math.pow(2,n);
+  return {q:'Eine Bakterienkultur startet mit '+a+' Zellen und <b>verdoppelt</b> sich jede Stunde. Nach wie vielen Stunden sind es '+b+' Zellen?',
+   fields:[{l:'Stunden:',a:n}],
+   steps:['Gleichung: '+a+' · 2<sup>n</sup> = '+b,': '+a+':  2<sup>n</sup> = '+Math.pow(2,n),'2 hoch wie viel ergibt '+Math.pow(2,n)+'? → <b>n = '+n+'</b>']};}
+ const mc=shufMC(['y = 2<sup>x</sup> (exponentiell)','y = x² (Potenzfunktion)','y = 100x (linear)'],0);
+ return {q:'Welche Funktion wächst <b>langfristig</b> am schnellsten?',mc:mc,
+  steps:['Exponentialfunktionen multiplizieren immer wieder mit 2','Vergleich bei x = 20: 2²⁰ ≈ 1 000 000, aber 20² = 400 und 100 · 20 = 2000','<b>Exponentiell schlägt am Ende alles.</b>']};
+}},
+
+/* ---------- C5 Logarithmen ---------- */
+{id:'log',ic:'🔑',t:'Logarithmen',blk:2,
+ex:'<p>Der Logarithmus stellt die Frage: <b>„Hoch wie viel?"</b> – er ist die Umkehrung des Potenzierens.</p>'+
+'<div class="merk"><span class="formel">log<sub>2</sub>(8) = 3, weil 2³ = 8</span><br>• log<sub>a</sub>(a<sup>k</sup>) = k<br>• log<sub>a</sub>(1) = 0, denn a⁰ = 1<br>• Gleichung a<sup>x</sup> = b lösen heißt: x = log<sub>a</sub>(b)</div>',
+exm:[
+ {q:'log<sub>10</sub>(1000)',steps:['Frage: 10 hoch wie viel ergibt 1000?','10³ = 1000','→ <b>log<sub>10</sub>(1000) = 3</b>']},
+ {q:'3<sup>x</sup> = 81 lösen',steps:['3 hoch wie viel ergibt 81?','3¹=3, 3²=9, 3³=27, 3⁴=81','<b>x = 4</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  const a=pick([2,3,5,10]),k=a>=5?ri(1,3):ri(1,4);
+  return {q:'Berechne: log<sub>'+a+'</sub>('+Math.pow(a,k)+')',
+   fields:[{l:'Ergebnis:',a:k}],
+   steps:['Frage: '+a+' hoch wie viel ergibt '+Math.pow(a,k)+'?',a+'<sup>'+k+'</sup> = '+Math.pow(a,k)+' → <b>'+k+'</b>']};
+ }
+ if(lvl===2){
+  const a=pick([2,3,5,10]),k=a>=5?ri(1,3):ri(2,4);
+  return {q:'Löse: '+a+'<sup>x</sup> = '+Math.pow(a,k),
+   fields:[{l:'x =',a:k}],
+   steps:['Frage: '+a+' hoch wie viel ergibt '+Math.pow(a,k)+'?','Probieren: '+a+'¹ = '+a+', '+a+'² = '+(a*a)+' …','<b>x = '+k+'</b> (das ist log<sub>'+a+'</sub>('+Math.pow(a,k)+'))']};
+ }
+ const v=pick([0,1,2]);
+ if(v===0){const a=pick([2,3,10]),k=ri(1,3);
+  return {q:'<b>Vorsicht, Bruch:</b> Berechne log<sub>'+a+'</sub>('+frac(1,Math.pow(a,k))+')',
+   fields:[{l:'Ergebnis:',a:-k}],
+   steps:[frac(1,Math.pow(a,k))+' = '+a+'<sup>−'+k+'</sup> (negativer Exponent = Kehrwert)','log<sub>'+a+'</sub>('+a+'<sup>−'+k+'</sup>) = <b>−'+k+'</b>']};}
+ if(v===1){const a=pick([2,5,7,10]);
+  return {q:'Berechne: log<sub>'+a+'</sub>(1)',
+   fields:[{l:'Ergebnis:',a:0}],
+   steps:['Frage: '+a+' hoch wie viel ergibt 1?','Jede Zahl hoch 0 ergibt 1','→ <b>0</b>']};}
+ const k=ri(2,5);
+ return {q:'Löse: 10<sup>x</sup> = '+('1'+'0'.repeat(k)),
+  fields:[{l:'x =',a:k}],
+  steps:['Zähle die Nullen: '+('1'+'0'.repeat(k))+' hat '+k+' Nullen','10<sup>'+k+'</sup> = '+('1'+'0'.repeat(k))+' → <b>x = '+k+'</b>']};
+}},
+
+/* ---------- D1 Folgen & Grenzwerte ---------- */
+{id:'fol',ic:'♾️',t:'Folgen & Grenzwerte',blk:3,
+ex:'<p>Grenzwerte beschreiben, was passiert, wenn n <b>riesig</b> wird. Das ist die Grundidee der gesamten Analysis.</p>'+
+'<div class="merk"><b>Merke:</b><br>• '+frac(1,'n')+' wird immer kleiner: 1; 0,5; 0,1; 0,001; … → <b>geht gegen 0</b><br>• „Geht gegen 0" heißt: kommt 0 beliebig nahe, ohne sie erreichen zu müssen.<br>• Trick bei Brüchen: '+frac('2n + 3','n')+' = 2 + '+frac(3,'n')+' → geht gegen <b>2</b></div>',
+exm:[
+ {q:'Grenzwert von '+frac('3n + 1','n'),steps:['Aufteilen: '+frac('3n','n')+' + '+frac(1,'n')+' = 3 + '+frac(1,'n'),'Für großes n: '+frac(1,'n')+' → 0','Grenzwert: <b>3</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const s=ri(1,10),d=ri(2,7);
+   const terms=[s,s+d,s+2*d,s+3*d];
+   return {q:'Wie geht die Folge weiter? '+terms.join('; ')+'; …',
+    fields:[{l:'Nächstes Glied:',a:s+4*d}],
+    steps:['Von Glied zu Glied wird immer +'+d+' gerechnet',terms[3]+' + '+d+' = <b>'+(s+4*d)+'</b>']};}
+  const r=pick([2,3]),s=pick([1,2,3]);
+  const terms=[s,s*r,s*r*r,s*r*r*r];
+  return {q:'Wie geht die Folge weiter? '+terms.join('; ')+'; …',
+   fields:[{l:'Nächstes Glied:',a:s*Math.pow(r,4)}],
+   steps:['Jedes Glied wird mit '+r+' multipliziert',terms[3]+' · '+r+' = <b>'+(s*Math.pow(r,4))+'</b>']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const n=pick([100,1000,10000]);
+   return {q:'Berechne das Folgenglied '+frac(1,'n')+' für n = '+n+'.',
+    fields:[{l:'Wert:',a:1/n}],
+    steps:[frac(1,n)+' = '+fmt(1/n),'Je größer n, desto näher kommt der Wert an <b>0</b>']};}
+  const mc=shufMC(['Sie geht gegen 0','Sie wächst über alle Grenzen','Sie geht gegen 1'],0);
+  return {q:'Was passiert mit der Folge '+frac(1,'n')+', wenn n immer größer wird?',mc:mc,
+   steps:[frac(1,2)+' = 0,5; '+frac(1,100)+' = 0,01; '+frac(1,'1 Mio.')+' = 0,000001','Die Werte kommen 0 beliebig nahe → <b>Grenzwert 0</b>']};
+ }
+ if(pick([0,1])===0){
+  const k=ri(2,7),c=ri(1,9);
+  return {q:'Bestimme den Grenzwert von '+frac(k+'n + '+c,'n')+' für n → ∞.',
+   fields:[{l:'Grenzwert:',a:k}],
+   steps:['Aufteilen: '+frac(k+'n','n')+' + '+frac(c,'n')+' = '+k+' + '+frac(c,'n'),frac(c,'n')+' geht gegen 0','Grenzwert: <b>'+k+'</b>'],
+   hint:'Teile den Bruch in zwei Brüche auf.'};}
+ const k=ri(2,9);
+ return {q:'Bestimme den Grenzwert von '+k+' − '+frac(1,'n')+' für n → ∞.',
+  fields:[{l:'Grenzwert:',a:k}],
+  steps:[frac(1,'n')+' geht gegen 0','Also bleibt: '+k+' − 0 = <b>'+k+'</b>']};
+}},
+
+/* ---------- D2 Ableitungen ---------- */
+{id:'abl',ic:'🎢',t:'Ableitungen',blk:3,
+ex:'<p>Die Ableitung f′(x) gibt die <b>Steigung</b> des Graphen an jeder Stelle an – bei Kurven ändert sie sich von Punkt zu Punkt.</p>'+
+'<div class="merk"><b>Regeln:</b><br><span class="formel">(x<sup>n</sup>)′ = n · x<sup>n−1</sup></span> (Potenzregel: Exponent nach vorn, dann um 1 verringern)<br><span class="formel">(a · f)′ = a · f′</span> (Faktor bleibt stehen)<br><span class="formel">(f + g)′ = f′ + g′</span> (Summand für Summand)<br>• Konstanten fallen weg: (5)′ = 0<br>• (x)′ = 1</div>',
+exm:[
+ {q:'f(x) = x³',steps:['Potenzregel: Exponent 3 nach vorn','Exponent um 1 verringern: 3 − 1 = 2','<b>f′(x) = 3x²</b>']},
+ {q:'f(x) = 2x⁵ − 4x² + 7',steps:['(2x⁵)′ = 2 · 5x⁴ = 10x⁴','(−4x²)′ = −8x','(7)′ = 0','<b>f′(x) = 10x⁴ − 8x</b>']}],
+gen:function(lvl){
+ const powS=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x^'+e);
+ const powH=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x<sup>'+e+'</sup>');
+ if(lvl===1){
+  const n=ri(2,7);
+  return {q:'Leite ab: f(x) = x<sup>'+n+'</sup>',
+   fields:[{l:'f′(x) =',type:'txt',acc:[powS(n,n-1)]}],
+   steps:['Potenzregel: Exponent nach vorn, dann um 1 verringern','f′(x) = '+n+' · x<sup>'+n+'−1</sup> = <b>'+powH(n,n-1)+'</b>'],
+   hint:'z. B. 3x^2'};
+ }
+ if(lvl===2){
+  const v=pick([0,1,2]);
+  if(v===0){
+   const a=ri(2,7),n=ri(2,5);
+   return {q:'Leite ab: f(x) = '+powH(a,n),
+    fields:[{l:'f′(x) =',type:'txt',acc:[powS(a*n,n-1)]}],
+    steps:['Faktor '+a+' bleibt stehen, Potenzregel für x<sup>'+n+'</sup>','f′(x) = '+a+' · '+n+' · x<sup>'+(n-1)+'</sup> = <b>'+powH(a*n,n-1)+'</b>'],hint:'z. B. 10x^4'};}
+  if(v===1){
+   const n=ri(2,5),b=ri(2,9);
+   const t1=powS(n,n-1);
+   return {q:'Leite ab: f(x) = x<sup>'+n+'</sup> + '+co(b,'x'),
+    fields:[{l:'f′(x) =',type:'txt',acc:[t1+'+'+b,b+'+'+t1]}],
+    steps:['Summand für Summand ableiten','(x<sup>'+n+'</sup>)′ = '+powH(n,n-1)+' und ('+co(b,'x')+')′ = '+b,'<b>f′(x) = '+powH(n,n-1)+' + '+b+'</b>'],hint:'z. B. 3x^2+5'};}
+  const x0=ri(-4,5);
+  return {q:'f(x) = x². Wie groß ist die <b>Steigung</b> des Graphen an der Stelle x = '+x0+'?',
+   fields:[{l:'Steigung:',a:2*x0}],
+   steps:['Ableitung bilden: f′(x) = 2x','Stelle einsetzen: f′('+x0+') = 2 · ('+x0+')','= <b>'+(2*x0)+'</b>']};
+ }
+ if(pick([0,1])===0){
+  const a=ri(2,5),m=ri(3,5),b=ri(2,6),c=ri(1,9);
+  const t1=powS(a*m,m-1),t2=powS(-2*b,1);
+  return {q:'Leite ab: f(x) = '+powH(a,m)+' − '+powH(b,2)+' + '+c,
+   fields:[{l:'f′(x) =',type:'txt',acc:[t1+t2,(t2.startsWith('-')?t2:'+'+t2)+'+'+t1,t2+'+'+t1]}],
+   steps:['('+powH(a,m)+')′ = '+powH(a*m,m-1),'(−'+powH(b,2)+')′ = −'+co(2*b,'x'),'('+c+')′ = 0 (Konstante fällt weg)','<b>f′(x) = '+powH(a*m,m-1)+' − '+co(2*b,'x')+'</b>'],hint:'z. B. 10x^4-8x'};}
+ const B=2*ri(1,6);
+ return {q:'<b>Anwendung:</b> f(x) = x² − '+B+'x. An welcher Stelle ist die Steigung gleich 0 (Extremstelle)?',
+  fields:[{l:'x =',a:B/2}],
+  steps:['Ableiten: f′(x) = 2x − '+B,'Null setzen: 2x − '+B+' = 0','2x = '+B+' → <b>x = '+(B/2)+'</b>','Dort hat die Parabel ihren Scheitel (Minimum).']};
+}},
+
+/* ---------- D3 Integrale ---------- */
+{id:'int',ic:'📐',t:'Integrale',blk:3,
+ex:'<p>Ein Integral misst die <b>Fläche unter einem Graphen</b>. Die Stammfunktion F ist die „Rückwärts-Ableitung": F′(x) = f(x).</p>'+
+'<div class="merk"><b>Merke:</b><br><span class="formel">∫ x<sup>n</sup> dx = '+frac('x<sup>n+1</sup>','n + 1')+' + C</span> (Exponent +1, dann dadurch teilen)<br>• Kontrolle: Stammfunktion ableiten → es muss wieder f herauskommen!<br>• Bestimmtes Integral: '+'∫<sub>a</sub><sup>b</sup> f(x) dx = F(b) − F(a)</div>',
+exm:[
+ {q:'∫ 3x² dx',steps:['Exponent + 1: aus x² wird x³','Durch neuen Exponenten teilen: 3 · '+frac('x³',3)+' = x³','<b>F(x) = x³ + C</b> — Probe: (x³)′ = 3x² ✓']},
+ {q:'∫₀² x dx (Fläche unter y = x von 0 bis 2)',steps:['Stammfunktion: F(x) = '+frac('x²',2),'F(2) − F(0) = '+frac(4,2)+' − 0','= <b>2</b> (das Dreieck mit Ecken (0|0), (2|0), (2|2))']}],
+gen:function(lvl){
+ if(lvl===1){
+  const n=ri(1,4);
+  const acc=['x^'+(n+1),'x^'+(n+1)+'+c'];
+  return {q:'Bestimme eine Stammfunktion: ∫ '+co(n+1,n===1?'x':'x<sup>'+n+'</sup>')+' dx',
+   fields:[{l:'F(x) =',type:'txt',acc:acc}],
+   steps:['Exponent + 1: aus x<sup>'+n+'</sup> wird x<sup>'+(n+1)+'</sup>','Durch '+(n+1)+' teilen: '+(n+1)+' · '+frac('x<sup>'+(n+1)+'</sup>',n+1)+' = x<sup>'+(n+1)+'</sup>','<b>F(x) = x<sup>'+(n+1)+'</sup> + C</b>','Probe: (x<sup>'+(n+1)+'</sup>)′ = '+co(n+1,'x<sup>'+n+'</sup>')+' ✓'],
+   hint:'z. B. x^3 (das +C darfst du weglassen)'};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const b=2*ri(1,4);
+   return {q:'Berechne die Fläche unter y = x von 0 bis '+b+':  ∫₀'+'<sup>'+b+'</sup> x dx',
+    fields:[{l:'Fläche:',a:b*b/2}],
+    steps:['Stammfunktion: F(x) = '+frac('x²',2),'F('+b+') − F(0) = '+frac(b+'²',2)+' − 0 = '+(b*b/2),'Kontrolle: Dreieck mit Breite '+b+' und Höhe '+b+' → ½ · '+b+' · '+b+' = <b>'+(b*b/2)+'</b> ✓']};}
+  const c=ri(2,6),b=ri(2,6);
+  return {q:'Berechne: ∫₀<sup>'+b+'</sup> '+c+' dx',
+   fields:[{l:'Ergebnis:',a:c*b}],
+   steps:['Fläche unter der waagerechten Linie y = '+c,'Rechteck: Breite '+b+' · Höhe '+c+' = <b>'+(c*b)+'</b>']};
+ }
+ if(pick([0,1])===0){
+  const b=pick([3,6]);
+  return {q:'Berechne: ∫₀<sup>'+b+'</sup> x² dx',
+   fields:[{l:'Ergebnis:',a:b*b*b/3}],
+   steps:['Stammfunktion: F(x) = '+frac('x³',3),'F('+b+') − F(0) = '+frac(b+'³',3)+' − 0','= '+frac(b*b*b,3)+' = <b>'+(b*b*b/3)+'</b>']};}
+ const mc=shufMC(['Unter y = 2x (doppelt so hoch wie y = x)','Unter y = x','Beide Flächen sind gleich groß'],0);
+ return {q:'Welche Fläche auf [0; 2] ist größer: unter y = x oder unter y = 2x?',mc:mc,
+  steps:['∫₀² x dx = '+frac(4,2)+' = 2','∫₀² 2x dx = [x²]₀² = 4','<b>y = 2x liefert die doppelte Fläche.</b>']};
+}},
+
+/* ---------- D4 Trigonometrie ---------- */
+{id:'tri',ic:'📡',t:'Trigonometrie',blk:3,
+ex:'<p>Im <b>rechtwinkligen</b> Dreieck verbinden Sinus, Cosinus und Tangens die Winkel mit den Seiten.</p>'+
+'<div class="merk"><b>GAGA-Hühnerhof:</b><br><span class="formel">sin(α) = '+frac('Gegenkathete','Hypotenuse')+'</span> <span class="formel">cos(α) = '+frac('Ankathete','Hypotenuse')+'</span> <span class="formel">tan(α) = '+frac('Gegenkathete','Ankathete')+'</span><br>• Hypotenuse: die längste Seite (gegenüber vom rechten Winkel)<br>• Gegenkathete: liegt dem Winkel α <b>gegenüber</b><br>• Pythagoras: a² + b² = c² · Winkelsumme: 180°<br>• Wichtige Werte: sin(30°) = 0,5 · cos(60°) = 0,5 · tan(45°) = 1</div>',
+exm:[
+ {q:'Katheten 3 cm und 4 cm – wie lang ist die Hypotenuse?',steps:['Pythagoras: c² = 3² + 4² = 9 + 16 = 25','c = '+wz(25),'<b>c = 5 cm</b>']},
+ {q:'sin(30°) = 0,5 und Hypotenuse = 8 cm. Gegenkathete?',steps:['sin(α) = Gegenkathete : Hypotenuse','0,5 = G : 8','G = 8 · 0,5 = <b>4 cm</b>']}],
+gen:function(lvl){
+ if(lvl===1){
+  if(pick([0,1])===0){
+   const w=pick([['sin(30°)',0.5],['cos(60°)',0.5],['tan(45°)',1],['sin(90°)',1],['cos(0°)',1],['sin(0°)',0]]);
+   return {q:'Gib den Wert an: '+w[0],
+    fields:[{l:w[0]+' =',a:w[1]}],
+    steps:['Auswendig-Werte (kommen ständig vor):','sin(30°) = 0,5 · cos(60°) = 0,5 · tan(45°) = 1','sin(0°) = 0 · sin(90°) = 1 · cos(0°) = 1'],hint:'z. B. 0,5 oder 1/2'};}
+  return {q:'Wie groß ist die Summe der Innenwinkel in <b>jedem</b> Dreieck?',
+   fields:[{l:'Grad:',a:180}],
+   steps:['In jedem Dreieck: α + β + γ = <b>180°</b>']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const t=pick([[3,4,5],[6,8,10],[5,12,13],[9,12,15],[8,15,17],[7,24,25]]);
+   if(pick([0,1])===0){
+    return {q:'Ein rechtwinkliges Dreieck hat die Katheten '+t[0]+' cm und '+t[1]+' cm. Wie lang ist die Hypotenuse?',
+     fields:[{l:'Hypotenuse (cm):',a:t[2]}],
+     steps:['Pythagoras: c² = '+t[0]+'² + '+t[1]+'² = '+(t[0]*t[0])+' + '+(t[1]*t[1])+' = '+(t[2]*t[2]),'c = '+wz(t[2]*t[2])+' = <b>'+t[2]+' cm</b>']};}
+   return {q:'Hypotenuse '+t[2]+' cm, eine Kathete '+t[0]+' cm. Wie lang ist die andere Kathete?',
+    fields:[{l:'Kathete (cm):',a:t[1]}],
+    steps:['Pythagoras umstellen: b² = c² − a²','b² = '+(t[2]*t[2])+' − '+(t[0]*t[0])+' = '+(t[1]*t[1]),'b = <b>'+t[1]+' cm</b>']};}
+  const H=2*ri(2,10);
+  return {q:'Im rechtwinkligen Dreieck ist α = 30° und die Hypotenuse '+H+' cm lang. Berechne die Gegenkathete von α.',
+   fields:[{l:'Gegenkathete (cm):',a:H/2}],
+   steps:['sin(30°) = '+frac('Gegenkathete','Hypotenuse'),'0,5 = G : '+H,'G = '+H+' · 0,5 = <b>'+(H/2)+' cm</b>']};
+ }
+ if(pick([0,1])===0){
+  let a=ri(20,80),b=ri(20,80),g=0;while(a+b>150&&g<20){b=ri(20,80);g++;}if(a+b>150)b=150-a;
+  return {q:'In einem Dreieck sind α = '+a+'° und β = '+b+'°. Wie groß ist γ?',
+   fields:[{l:'γ (Grad):',a:180-a-b}],
+   steps:['Winkelsumme: α + β + γ = 180°','γ = 180° − '+a+'° − '+b+'° = <b>'+(180-a-b)+'°</b>']};}
+ const t=pick([[3,4,5],[5,12,13]]),s=ri(2,4);
+ return {q:'<b>Transfer:</b> Im rechtwinkligen Dreieck gilt sin(α) = '+frac(t[0],t[2])+' und die Hypotenuse ist '+(t[2]*s)+' cm lang. Wie lang ist die Gegenkathete von α?',
+  fields:[{l:'Gegenkathete (cm):',a:t[0]*s}],
+  steps:['sin(α) = G : Hypotenuse','G = sin(α) · Hypotenuse = '+frac(t[0],t[2])+' · '+(t[2]*s),'= <b>'+(t[0]*s)+' cm</b>']};
+}},
+
+/* ---------- D5 Vektoren ---------- */
+{id:'vek',ic:'🧭',t:'Vektoren',blk:3,
+ex:'<p>Ein Vektor beschreibt eine <b>Verschiebung</b>: wie weit nach rechts/links und wie weit nach oben/unten.</p>'+
+'<div class="merk"><b>Merke:</b><br>• Addition: komponentenweise. (1|2) + (3|4) = (4|6)<br>• Länge (Pythagoras!): |(3|4)| = '+wz('3² + 4²')+' = '+wz(25)+' = 5<br>• Vielfaches: (2|4) = 2 · (1|2) → die Vektoren sind <b>parallel</b>.<br>• Gerade in Parameterform: Startpunkt + t · Richtungsvektor</div>',
+exm:[
+ {q:'(2|−1) + (−3|5)',steps:['x-Komponenten: 2 + (−3) = −1','y-Komponenten: −1 + 5 = 4','Ergebnis: <b>(−1|4)</b>']},
+ {q:'Länge von (3|4)',steps:['Pythagoras: |v| = '+wz('3² + 4²'),'= '+wz('9 + 16')+' = '+wz(25),'= <b>5</b>']}],
+gen:function(lvl){
+ const vs=(x,y)=>'('+x+' | '+y+')';
+ if(lvl===1){
+  const a=ri(-9,9),b=ri(-9,9),c=ri(-9,9),d=ri(-9,9);
+  if(pick([0,1])===0){
+   return {q:'Berechne: '+vs(a,b)+' + '+vs(c,d),
+    fields:[{l:'x-Komponente:',a:a+c},{l:'y-Komponente:',a:b+d}],
+    steps:['Komponentenweise addieren','x: '+a+' + ('+c+') = '+(a+c)+',  y: '+b+' + ('+d+') = '+(b+d),'Ergebnis: <b>'+vs(a+c,b+d)+'</b>']};}
+  return {q:'Berechne: '+vs(a,b)+' − '+vs(c,d),
+   fields:[{l:'x-Komponente:',a:a-c},{l:'y-Komponente:',a:b-d}],
+   steps:['Komponentenweise subtrahieren','x: '+a+' − ('+c+') = '+(a-c)+',  y: '+b+' − ('+d+') = '+(b-d),'Ergebnis: <b>'+vs(a-c,b-d)+'</b>']};
+ }
+ if(lvl===2){
+  if(pick([0,1])===0){
+   const t=pick([[3,4,5],[6,8,10],[5,12,13],[8,6,10],[12,5,13],[8,15,17],[9,12,15]]);
+   const x=t[0]*pick([-1,1]),y=t[1]*pick([-1,1]);
+   return {q:'Berechne die Länge des Vektors '+vs(x,y)+'.',
+    fields:[{l:'Länge:',a:t[2]}],
+    steps:['|v| = '+wz('x² + y²')+' (Pythagoras)','= '+wz(x+'² + ('+y+')²')+' = '+wz((x*x)+' + '+(y*y))+' = '+wz(t[2]*t[2]),'= <b>'+t[2]+'</b>']};}
+  const a=ri(1,5),b=ri(1,5),k=ri(2,4),isMult=pick([true,false]);
+  const w=isMult?[k*a,k*b]:[k*a,k*b+ri(1,3)];
+  const mc=shufMC(['Ja','Nein'],isMult?0:1);
+  return {q:'Ist '+vs(w[0],w[1])+' ein Vielfaches von '+vs(a,b)+'?',mc:mc,
+   steps:['Prüfe: '+w[0]+' : '+a+' = '+fmt(w[0]/a)+' und '+w[1]+' : '+b+' = '+fmt(w[1]/b),isMult?'Beide Male Faktor '+k+' → <b>ja, Vielfaches (parallel)</b>':'Verschiedene Faktoren → <b>kein Vielfaches</b>']};
+ }
+ if(pick([0,1])===0){
+  const p1=ri(-4,4),p2=ri(-4,4),r1=ri(1,4),r2=ri(1,4),t0=ri(1,3);
+  return {q:'Gerade g: <b>x</b> = '+vs(p1,p2)+' + t · '+vs(r1,r2)+'. Welcher Punkt ergibt sich für t = '+t0+'?',
+   fields:[{l:'x-Koordinate:',a:p1+t0*r1},{l:'y-Koordinate:',a:p2+t0*r2}],
+   steps:['t = '+t0+' einsetzen','x: '+p1+' + '+t0+' · '+r1+' = '+(p1+t0*r1)+',  y: '+p2+' + '+t0+' · '+r2+' = '+(p2+t0*r2),'Punkt: <b>'+vs(p1+t0*r1,p2+t0*r2)+'</b>']};}
+ const p1=ri(-3,3),p2=ri(-3,3),r1=ri(1,3),r2=ri(1,3),t0=ri(1,3),on=pick([true,false]);
+ const q1=p1+t0*r1,q2=on?p2+t0*r2:p2+t0*r2+1;
+ const mc=shufMC(['Ja','Nein'],on?0:1);
+ return {q:'Liegt der Punkt P'+vs(q1,q2)+' auf der Geraden g: <b>x</b> = '+vs(p1,p2)+' + t · '+vs(r1,r2)+'?',mc:mc,
+  steps:['x-Gleichung: '+p1+' + t · '+r1+' = '+q1+' → t = '+t0,'Mit t = '+t0+' die y-Koordinate prüfen: '+p2+' + '+t0+' · '+r2+' = '+(p2+t0*r2),on?'Stimmt mit '+q2+' überein → <b>P liegt auf g</b>':'Ergibt '+(p2+t0*r2)+', aber P hat y = '+q2+' → <b>P liegt nicht auf g</b>']};
+}}
+];
+
+function shufMC(opts,correctIdx){
+ const idx=opts.map((_,i)=>i);
+ for(let i=idx.length-1;i>0;i--){const j=ri(0,i);const tmp=idx[i];idx[i]=idx[j];idx[j]=tmp;}
+ return {opts:idx.map(i=>opts[i]),a:idx.indexOf(correctIdx)};}
+
+/* ============ Start ============ */
+load();updHeader();renderHome();
+/* ============ App-Installation (PWA) ============ */
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+ navigator.serviceWorker.register('./sw.js').catch(function(){});
+}
+let defPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+ e.preventDefault();defPrompt=e;
+ if(document.getElementById('instBtn'))return;
+ const b=document.createElement('button');
+ b.id='instBtn';b.className='btn';b.textContent='📲 Als App installieren';
+ b.style.cssText='position:fixed;bottom:18px;right:18px;z-index:110;box-shadow:0 6px 20px rgba(0,0,0,.3)';
+ b.onclick=function(){if(defPrompt){defPrompt.prompt();defPrompt=null;}b.remove();};
+ document.body.appendChild(b);
+});
+</script>
+</body>
+</html>

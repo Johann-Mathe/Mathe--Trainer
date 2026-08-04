@@ -1,8 +1,11 @@
 /* Mathe-Basis-Trainer – Offline-Cache */
-const C='mbt-v1';
+const C='mbt-v2';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-512-maskable.png','./icon-180.png'];
 self.addEventListener('install',e=>{
- e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));
+ e.waitUntil(caches.open(C).then(c=>
+  /* jede Datei einzeln: fehlt eine, bricht nicht die ganze Installation ab */
+  Promise.all(FILES.map(f=>c.add(f).catch(()=>null)))
+ ).then(()=>self.skipWaiting()));
 });
 self.addEventListener('activate',e=>{
  e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
