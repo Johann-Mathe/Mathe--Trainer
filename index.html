@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mathe-Basis-Trainer</title>
-<meta name="theme-color" content="#131f24">
+<meta name="theme-color" content="#0c0e1b">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -13,365 +13,670 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mathe-Trainer">
 <style>
+/* ==========================================================================
+   DESIGN-SYSTEM
+   Marke: Indigo → Violett mit Amber-Akzent (abgeleitet aus dem App-Icon).
+   Grün ist ausschließlich „richtig", Rosé ausschließlich „falsch".
+   ========================================================================== */
 :root{
-  --bg:#131f24; --card:#1a272e; --card2:#202f36; --ink:#f1f7fb; --mut:#8fa3ad;
-  --line:#37464f; --rad:16px;
-  --grn:#58cc02; --grnD:#46a302; --grnT:#79b933;
-  --blu:#1cb0f6; --bluD:#1899d6;
-  --red:#ff4b4b; --redD:#d63b3b; --badbg:#3a2026;
-  --gold:#ffc800; --goldD:#e0a500;
-  --org:#ff9600; --orgD:#cc7a00;
-  --pur:#ce82ff;
-  --ok:#7fe030; --okbg:#20321c;
-  --pri:#1cb0f6; --pri2:#4ac3ff; --warn:#ff9600;
-  --sh:0 2px 0 rgba(0,0,0,.25);
+ /* -- Marke & Semantik -- */
+ --brand:#6b6cf6;   --brand-2:#9061f9; --brand-d:#4c4ddb; --brand-ink:#fff;
+ --brand-soft:rgba(107,108,246,.15); --brand-line:rgba(122,124,255,.45);
+ --accent:#ffc233;  --accent-d:#d2960f; --accent-ink:#3a2900; --accent-soft:rgba(255,194,51,.13);
+ --ok:#35d39a;      --ok-d:#1da97a;     --ok-ink:#04291d;    --ok-soft:rgba(53,211,154,.13);
+ --bad:#ff5c7a;     --bad-d:#dd4162;    --bad-ink:#3a0512;   --bad-soft:rgba(255,92,122,.13);
+ --warn:#ffa53d;    --warn-d:#d97d16;   --warn-ink:#3a2200;  --warn-soft:rgba(255,165,61,.13);
+
+ /* -- Flächen & Text -- */
+ --bg:#0c0e1b; --surface:#151932; --surface-2:#1d2242; --surface-3:#272d55;
+ --line:#2b3159; --line-2:#3a4172;
+ --ink:#eceefb; --ink-2:#b6bce0; --ink-3:#8b93bd;
+
+ /* -- Radien -- */
+ --r1:10px; --r2:14px; --r3:18px; --r4:26px; --rp:999px;
+ /* -- Abstände (4er-Raster) -- */
+ --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:22px; --s6:30px;
+ /* -- Schriftgrößen -- */
+ --t-xs:.75rem; --t-sm:.875rem; --t-md:1rem; --t-lg:1.125rem; --t-xl:1.35rem; --t-2xl:1.7rem;
+ /* -- Tiefe & Zeit -- */
+ --sh1:0 1px 2px rgba(0,0,0,.3);
+ --sh2:0 6px 18px rgba(0,0,0,.32);
+ --sh3:0 14px 40px rgba(0,0,0,.45);
+ --dur:.16s; --ease:cubic-bezier(.2,.7,.3,1);
+
+ /* -- Layout-Messwerte (per JS gesetzt) -- */
+ --hdrh:58px; --dockh:0px; --tabh:64px;
+
+ /* -- Kompatibilität: alte Variablennamen zeigen auf die neuen Tokens -- */
+ --card:var(--surface); --card2:var(--surface-2); --mut:var(--ink-3); --rad:var(--r3);
+ --grn:var(--ok); --grnD:var(--ok-d); --blu:var(--brand); --bluD:var(--brand-d);
+ --red:var(--bad); --redD:var(--bad-d); --gold:var(--accent); --goldD:var(--accent-d);
+ --org:var(--warn); --orgD:var(--warn-d); --pur:var(--brand-2); --pri:var(--brand);
+ --badbg:var(--bad-soft); --okbg:var(--ok-soft);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{background:var(--bg)}
-body{font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:16.5px;line-height:1.55;font-weight:500}
-button{font-family:inherit;font-size:1rem;cursor:pointer;border:none;border-radius:14px;color:inherit;background:none}
-input,textarea,select{font-family:inherit;font-size:1.05rem;border:2px solid var(--line);border-radius:12px;padding:9px 13px;background:var(--card2);color:var(--ink)}
-input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blu)}
-::placeholder{color:var(--mut)}
-/* ---------- Kopfleiste ---------- */
-header{position:sticky;top:0;z-index:50;background:rgba(19,31,36,.94);backdrop-filter:blur(8px);padding:10px 14px 8px;border-bottom:2px solid #1d2b32}
-.hrow{display:flex;align-items:center;gap:12px;max-width:640px;margin:0 auto;flex-wrap:wrap}
-.logo{font-weight:800;font-size:1.05rem;cursor:pointer;white-space:nowrap;letter-spacing:.2px}
-.hstat{display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:wrap}
-.chip{border-radius:999px;padding:3px 8px;font-size:1.02rem;font-weight:800;white-space:nowrap}
-#hStreak{color:var(--org)}
-#hJoker{color:var(--blu)}
-#hLvl{color:var(--pur);font-size:.85rem}
-.xpwrap{display:flex;align-items:center;gap:8px;min-width:150px}
-.xpbar{flex:1;height:12px;background:var(--card2);border-radius:99px;overflow:hidden;min-width:70px}
-.xpbar>div{height:100%;background:var(--gold);border-radius:99px;transition:width .4s}
-#hXpTxt{color:var(--gold);font-size:.85rem}
-main{max-width:640px;margin:0 auto;padding:18px 14px 110px}
-body.intask main{padding-bottom:210px}
-main>*{animation:viewin .25s ease}
-@keyframes viewin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-/* ---------- Karten & Basis ---------- */
-.card{background:var(--card);border:2px solid #22323a;border-radius:var(--rad);padding:18px;margin-bottom:14px}
-h1{font-size:1.45rem;margin-bottom:6px;font-weight:800}
-h2{font-size:1.15rem;margin-bottom:10px;font-weight:800}
-h3{font-size:1.02rem;margin:14px 0 6px;font-weight:800}
-.mut{color:var(--mut);font-size:.95rem}
-.hint{font-size:.87rem;color:var(--mut);margin-top:4px}
-/* ---------- 3D-Buttons ---------- */
-.btn{background:var(--grn);color:#0d2a00;padding:12px 20px;font-weight:800;letter-spacing:.4px;border-bottom:4px solid var(--grnD);transition:filter .12s;text-transform:none}
-.btn:hover{filter:brightness(1.06)}
-.btn:active{transform:translateY(3px);border-bottom-width:1px}
-.btn.big{font-size:1.08rem;padding:14px 26px;width:100%}
-.btn.sec{background:var(--card2);color:var(--blu);border:2px solid var(--line);border-bottom:4px solid var(--line)}
-.btn.ghost{background:transparent;color:var(--blu);border:2px solid var(--line);border-bottom:4px solid var(--line)}
-.btn.warn{background:var(--org);color:#3a2000;border-bottom-color:var(--orgD)}
-.btn.blue{background:var(--blu);color:#04283a;border-bottom-color:var(--bluD)}
-.btn:disabled{opacity:.4;cursor:default}
-.btnrow{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-.crumb{background:none;color:var(--blu);font-weight:800;padding:6px 2px}
-/* ---------- Aufgaben ---------- */
-.q{font-size:1.24rem;margin:14px 0;line-height:1.95;font-weight:600}
-.lvlb{display:inline-block;border-radius:999px;padding:3px 12px;font-size:.8rem;font-weight:800}
-.lvl1{background:#1d3323;color:#7fe030}
-.lvl2{background:#3a2c14;color:#ffb84d}
-.lvl3{background:#31223f;color:#ce82ff}
-.fieldrow{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
-.fieldrow label{font-weight:700;min-width:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+ background:var(--bg);color:var(--ink);font-size:16.5px;line-height:1.55;font-weight:500;
+ -webkit-font-smoothing:antialiased}
+button{font-family:inherit;font-size:var(--t-md);cursor:pointer;border:none;color:inherit;background:none}
+input,textarea,select{font-family:inherit;font-size:1.05rem;border:2px solid var(--line);
+ border-radius:var(--r1);padding:10px 13px;background:var(--surface-2);color:var(--ink);transition:border-color var(--dur)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--brand)}
+input.is-ok{border-color:var(--ok)}
+input.is-bad{border-color:var(--bad)}
+::placeholder{color:var(--ink-3)}
+:focus-visible{outline:2px solid var(--brand-line);outline-offset:2px}
+
+/* ---------- Icons (ein durchgehender Strich-Stil) ---------- */
+.ico{width:1.25em;height:1.25em;display:inline-block;vertical-align:-.22em;
+ fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ico.sm{width:1em;height:1em}
+.ico.lg{width:1.6em;height:1.6em}
+#sprite{display:none}
+
+/* ==========================================================================
+   KOPFZEILE  –  eine Zeile, bricht nie um
+   ========================================================================== */
+header{position:sticky;top:0;z-index:50;background:rgba(12,14,27,.88);
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:var(--s2);max-width:640px;margin:0 auto;padding:9px var(--s4) 8px}
+.brand{display:flex;align-items:center;gap:7px;font-weight:800;font-size:.98rem;
+ letter-spacing:-.01em;white-space:nowrap;color:var(--ink);padding:2px 0}
+.brand .ico{color:var(--brand);width:1.4em;height:1.4em}
+.hstat{display:flex;align-items:center;gap:6px;margin-left:auto}
+.stat{display:flex;align-items:center;gap:4px;border-radius:var(--rp);padding:4px 10px 4px 8px;
+ font-size:.86rem;font-weight:800;white-space:nowrap;background:var(--surface-2);
+ border:1px solid var(--line);line-height:1.2}
+.stat .ico{width:1.05em;height:1.05em}
+#hStreak{color:var(--warn)}
+#hJoker{color:var(--brand)}
+#hLvl{color:var(--accent)}
+/* dünner XP-Faden unter der Kopfzeile – ersetzt den alten Balken-Chip */
+.xpline{height:3px;background:var(--surface-2)}
+.xpline>div{height:100%;background:linear-gradient(90deg,var(--brand),var(--accent));
+ width:0;transition:width .45s var(--ease)}
+/* Alt-Klassen aus dem JS bleiben nutzbar */
+.chip{border-radius:var(--rp);font-weight:800}
+.xpwrap{display:flex;align-items:center;gap:var(--s2)}
+.xpbar{flex:1;height:8px;background:var(--surface-2);border-radius:var(--rp);overflow:hidden}
+.xpbar>div{height:100%;background:var(--accent);border-radius:var(--rp);transition:width .45s var(--ease)}
+
+main{max-width:640px;margin:0 auto;padding:var(--s5) var(--s4) calc(var(--tabh) + var(--s6))}
+body.intask main{padding-bottom:calc(var(--dockh) + var(--s5))}
+main>*{animation:viewin .2s var(--ease)}
+@keyframes viewin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ==========================================================================
+   KARTEN & TYPOGRAFIE
+   ========================================================================== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);
+ padding:var(--s5);margin-bottom:var(--s4);box-shadow:var(--sh1)}
+h1{font-size:var(--t-xl);line-height:1.25;margin-bottom:var(--s1);font-weight:800;letter-spacing:-.015em}
+h2{font-size:var(--t-lg);line-height:1.3;margin-bottom:var(--s3);font-weight:800;letter-spacing:-.01em;
+ display:flex;align-items:center;gap:var(--s2)}
+h2 .ico{color:var(--brand)}
+h3{font-size:var(--t-md);margin:var(--s4) 0 var(--s2);font-weight:800}
+p+p{margin-top:var(--s2)}
+.mut{color:var(--ink-2);font-size:var(--t-sm)}
+.hint{font-size:var(--t-sm);color:var(--ink-3);margin-top:var(--s1)}
+b,strong{font-weight:800}
+
+/* ==========================================================================
+   BUTTONS  –  ein System, fünf Varianten. Keine Großbuchstaben.
+   ========================================================================== */
+.btn{--btn-bg:var(--brand);--btn-ink:var(--brand-ink);--btn-edge:var(--brand-d);
+ display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+ background:var(--btn-bg);color:var(--btn-ink);border-radius:var(--r2);
+ padding:12px 20px;font-weight:750;font-size:var(--t-md);letter-spacing:-.005em;
+ box-shadow:0 2px 0 var(--btn-edge),var(--sh1);
+ transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease),filter var(--dur)}
+.btn:hover{filter:brightness(1.07)}
+.btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--btn-edge)}
+.btn.big{font-size:1.05rem;padding:14px 24px;width:100%}
+.btn.sec{--btn-bg:var(--surface-2);--btn-ink:var(--ink);--btn-edge:var(--line-2)}
+.btn.ghost{--btn-bg:transparent;--btn-ink:var(--ink-2);--btn-edge:transparent;
+ box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn.ghost:active{transform:translateY(1px)}
+.btn.warn{--btn-bg:var(--warn);--btn-ink:var(--warn-ink);--btn-edge:var(--warn-d)}
+.btn.blue{--btn-bg:var(--brand);--btn-ink:var(--brand-ink);--btn-edge:var(--brand-d)}
+.btn.okbtn{--btn-bg:var(--ok);--btn-ink:var(--ok-ink);--btn-edge:var(--ok-d)}
+.btn:disabled{opacity:.42;cursor:default;transform:none}
+.btnrow{display:flex;gap:var(--s2);margin-top:var(--s3);flex-wrap:wrap}
+.btnrow .btn{flex:1 1 auto}
+.crumb{display:inline-flex;align-items:center;gap:6px;color:var(--ink-2);font-weight:700;
+ font-size:var(--t-sm);padding:var(--s2) 0;margin-bottom:var(--s2)}
+.crumb:hover{color:var(--ink)}
+
+/* ==========================================================================
+   AUFGABEN
+   ========================================================================== */
+.lvlb{display:inline-flex;align-items:center;border-radius:var(--rp);padding:3px 11px;
+ font-size:var(--t-xs);font-weight:800;letter-spacing:.01em}
+.lvl1{background:var(--ok-soft);color:var(--ok)}
+.lvl2{background:var(--accent-soft);color:var(--accent)}
+.lvl3{background:var(--brand-soft);color:var(--brand-2)}
+.q{font-size:1.2rem;margin:var(--s3) 0 var(--s4);line-height:1.9;font-weight:600;letter-spacing:-.005em}
+.fieldrow{display:flex;align-items:center;gap:var(--s2);margin:var(--s3) 0;flex-wrap:wrap}
+.fieldrow label{font-weight:700;font-size:var(--t-sm);color:var(--ink-2);min-width:0}
 .fieldrow input{width:170px}
-.mcopt{display:block;width:100%;text-align:left;background:var(--card2);border:2px solid var(--line);border-bottom:4px solid var(--line);border-radius:14px;padding:12px 16px;margin:8px 0;font-size:1.06rem;font-weight:600;transition:all .12s}
-.mcopt:hover{border-color:#4a5e69}
-.mcopt:active{transform:translateY(2px);border-bottom-width:2px}
-.mcopt.ok{background:#20321c;border-color:var(--grn);color:var(--ok)}
-.mcopt.bad{background:var(--badbg);border-color:var(--red);color:#ff8080}
-.fb{border-radius:14px;padding:13px 16px;margin:12px 0;font-weight:700;display:none}
-.fb.ok{background:#20321c;color:var(--ok);display:block}
-.fb.bad{background:var(--badbg);color:#ff9090;display:block}
-body.intask .fb.ok,body.intask .fb.bad{position:fixed;left:0;right:0;bottom:88px;z-index:62;margin:0;border-radius:0;padding:14px 18px calc(14px + 2px);animation:sheetup .22s ease;box-shadow:0 -6px 24px rgba(0,0,0,.4)}
-@keyframes sheetup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-.btnrow.taskbar{position:fixed;left:0;right:0;bottom:0;z-index:63;background:var(--card);border-top:2px solid var(--line);padding:14px 16px calc(14px + env(safe-area-inset-bottom));margin:0}
-.btnrow.taskbar .btn{flex:1;font-size:1.05rem}
-.steps{background:var(--card2);border-radius:14px;padding:14px 18px;margin:12px 0;display:none}
-.steps.show{display:block}
-.steps .st{padding:5px 0;line-height:1.95}
-.steps .st::before{content:"→ ";color:var(--blu);font-weight:800}
+
+/* Antwort-Optionen */
+.mcopt{display:flex;align-items:center;width:100%;text-align:left;background:var(--surface-2);
+ border-radius:var(--r2);padding:13px 16px;margin:var(--s2) 0;font-size:1.03rem;font-weight:600;
+ box-shadow:inset 0 0 0 1.5px var(--line),0 2px 0 var(--line);
+ transition:box-shadow var(--dur),transform var(--dur) var(--ease),background var(--dur)}
+.mcopt:hover{box-shadow:inset 0 0 0 1.5px var(--line-2),0 2px 0 var(--line)}
+.mcopt:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px var(--line-2)}
+.mcopt.ok{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.mcopt.bad{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.mcopt:disabled{opacity:1}
+
+/* Rückmeldung + Aktionsleiste liegen zusammen im Dock (siehe unten) */
+.fb{border-radius:var(--r2);padding:13px 16px;margin:var(--s3) 0;font-weight:700;display:none;
+ font-size:.97rem;line-height:1.45}
+.fb.ok{background:var(--ok-soft);color:var(--ok);display:block}
+.fb.bad{background:var(--bad-soft);color:#ffa9b9;display:block}
+.fb .ico{color:currentColor}
+
+.steps{background:var(--surface-2);border-radius:var(--r2);padding:var(--s4) var(--s5);
+ margin:var(--s3) 0;display:none;border:1px solid var(--line)}
+.steps.show{display:block;animation:viewin .22s var(--ease)}
+.steps>b{display:block;margin-bottom:var(--s2);color:var(--ink-2);font-size:var(--t-sm)}
+.steps .st{padding:5px 0;line-height:1.9}
+.steps .st::before{content:"→ ";color:var(--brand);font-weight:800}
+
+/* Brüche, Wurzeln, Hochzahlen */
 .fr{display:inline-flex;flex-direction:column;text-align:center;vertical-align:middle;margin:0 3px;line-height:1.25}
 .fr>span:first-child{border-bottom:2px solid currentColor;padding:0 5px}
 .fr>span:last-child{padding:0 5px}
 .ol{text-decoration:overline}
 sup{font-size:.72em}
-/* ---------- Lektions-/Session-Kopf ---------- */
-.lessonhead{position:sticky;top:52px;z-index:45;display:flex;align-items:center;gap:14px;padding:10px 2px;background:var(--bg)}
-.lx{font-size:1.5rem;color:var(--mut);font-weight:700;padding:2px 8px}
-.lx:hover{color:var(--ink)}
-.lprog{flex:1;height:16px;background:var(--card2);border-radius:99px;overflow:hidden}
-.lprog>div{height:100%;background:var(--grn);border-radius:99px;transition:width .35s;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18)}
-.lshield{font-weight:800;color:var(--red);white-space:nowrap;font-size:1.05rem}
-.lmeta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
-.phase{background:#31223f;color:var(--pur);border-radius:999px;padding:4px 14px;font-weight:800;font-size:.85rem;display:inline-block}
-.sesshead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.sessbar{height:12px;background:var(--card2);border-radius:99px;overflow:hidden;margin:10px 0 16px}
-.sessbar>div{height:100%;background:var(--grn);transition:width .3s}
-.sessmeta{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin:-4px 0 10px;flex-wrap:wrap}
-.comboflame{background:linear-gradient(135deg,#ff9600,#ff4b00);color:#fff;border-radius:999px;padding:3px 14px;font-weight:800;font-size:.9rem;animation:flame 1s ease-in-out infinite}
-@keyframes flame{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
+
+/* ==========================================================================
+   DOCK  –  fixe Leiste unten: Rückmeldung + genau eine Hauptaktion
+   ========================================================================== */
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:60;pointer-events:none}
+#dock:empty{display:none}
+#dock>*{pointer-events:auto}
+/* Im Dock deckend: die Einfärbung liegt als Inset über einer festen Fläche,
+   sonst scheint der Aufgabentext durch. */
+#dock .fb{margin:0;border-radius:0;padding:14px var(--s4);animation:sheetup .2s var(--ease);
+ background:var(--surface);border-top:1px solid var(--line)}
+#dock .fb.ok{box-shadow:inset 0 0 0 999px var(--ok-soft)}
+#dock .fb.bad{box-shadow:inset 0 0 0 999px var(--bad-soft)}
+@keyframes sheetup{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+#dock .btnrow.taskbar{margin:0;background:var(--surface);border-top:1px solid var(--line);
+ padding:var(--s3) var(--s4) calc(var(--s3) + env(safe-area-inset-bottom));
+ display:flex;gap:var(--s2);align-items:center;box-shadow:0 -8px 24px rgba(0,0,0,.3)}
+#dock .btnrow.taskbar .btn{flex:1 1 0;min-width:0;font-size:1.02rem}
+/* Nebenaktion (Lösungsweg) tritt zurück – nur eine dominante Aktion pro Screen */
+#dock .btnrow.taskbar .btn.ghost{flex:0 0 auto;padding:12px 13px;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink-3)}
+#dock .btnrow.taskbar .btn.ghost:hover{color:var(--ink-2)}
+#dock .btnrow.taskbar .btn.ghost .ico{width:1.35em;height:1.35em}
+.dockhint{flex:1 1 0;min-width:0;color:var(--ink-3);font-size:var(--t-sm);font-weight:600;text-align:center}
+body.intask .tabbar{display:none}
+
+/* ==========================================================================
+   SESSION-KOPF (Fortschritt, Schilde, Timer)
+   ========================================================================== */
+.lessonhead{position:sticky;top:var(--hdrh);z-index:45;display:flex;align-items:center;gap:var(--s3);
+ padding:var(--s3) 0;background:var(--bg);margin-bottom:var(--s1)}
+.lx{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;
+ border-radius:var(--rp);color:var(--ink-3);background:var(--surface-2)}
+.lx:hover{color:var(--ink);background:var(--surface-3)}
+.lprog{flex:1;height:12px;background:var(--surface-2);border-radius:var(--rp);overflow:hidden}
+.lprog>div{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2));
+ border-radius:var(--rp);transition:width .4s var(--ease)}
+.lshield{display:flex;align-items:center;gap:5px;font-weight:800;color:var(--ink-2);
+ white-space:nowrap;font-size:.95rem;font-variant-numeric:tabular-nums}
+.lshield.shields{color:var(--bad)}   /* nur die Schilde signalisieren Gefahr, nicht die Uhr */
+.lmeta{display:flex;justify-content:space-between;align-items:center;gap:var(--s2);
+ margin-bottom:var(--s3);flex-wrap:wrap}
+.phase{background:var(--brand-soft);color:var(--brand-2);border-radius:var(--rp);padding:4px 13px;
+ font-weight:800;font-size:var(--t-xs);display:inline-flex;align-items:center;gap:6px}
+.phase.hot{background:var(--warn-soft);color:var(--warn)}
+.phase.grow{background:var(--ok-soft);color:var(--ok)}
+.sessmeta{display:flex;justify-content:flex-end;align-items:center;gap:var(--s2);margin:0 0 var(--s2)}
+.comboflame{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,var(--warn),var(--bad));
+ color:#fff;border-radius:var(--rp);padding:3px 10px;font-weight:800;font-size:var(--t-sm);
+ white-space:nowrap;animation:pop .25s var(--ease)}
+.sessbar{height:10px;background:var(--surface-2);border-radius:var(--rp);overflow:hidden;margin:var(--s3) 0 var(--s4)}
+.sessbar>div{height:100%;background:var(--ok);transition:width .3s var(--ease)}
 .shieldrow{font-size:1.1rem;letter-spacing:2px}
-/* ---------- Pfad ---------- */
-.path{position:relative;max-width:420px;margin:0 auto;padding:8px 0 20px}
-.pblock{text-align:center;margin:26px 0 18px}
-.pblock span{display:block;background:var(--card2);border:2px solid var(--line);border-bottom:4px solid var(--line);color:var(--ink);border-radius:16px;padding:12px 18px;font-weight:800;font-size:.95rem}
-.pblock small{display:block;color:var(--mut);font-weight:600;margin-top:2px}
-.prow{position:relative;display:flex;justify-content:center;margin:26px 0}
-.prow.o0{transform:translateX(-72px)}
-.prow.o1{transform:translateX(-36px)}
+.blitztime{display:flex;align-items:center;gap:5px;font-size:1.15rem;font-weight:800;color:var(--warn);
+ font-variant-numeric:tabular-nums}
+
+/* ---------- Tagesfortschritt (Startseite) ---------- */
+.today{background:var(--surface);border:1px solid var(--line);border-radius:var(--r3);
+ padding:var(--s4);margin-bottom:var(--s4);box-shadow:var(--sh1)}
+.todayrow{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3);margin-bottom:var(--s2)}
+.todaynum{font-size:1.5rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.todaynum span{font-size:var(--t-sm);font-weight:700;color:var(--ink-3);letter-spacing:0}
+.todaystreak{display:flex;align-items:center;gap:5px;color:var(--warn);font-weight:800;font-size:1.05rem}
+.today .hint{margin-top:6px}
+
+/* ==========================================================================
+   LERNPFAD
+   ========================================================================== */
+.path{position:relative;max-width:420px;margin:0 auto;padding:var(--s2) 0 var(--s5);overflow:hidden}
+.pblock{text-align:center;margin:var(--s6) 0 var(--s5);display:flex;align-items:center;gap:var(--s3)}
+.pblock::before,.pblock::after{content:'';flex:1 0 16px;height:1px;background:var(--line)}
+.pblock span{display:block;color:var(--ink-2);font-weight:800;font-size:var(--t-sm);
+ letter-spacing:-.01em;line-height:1.3}
+.pblock small{display:block;color:var(--ink-3);font-weight:600;font-size:var(--t-xs);margin-top:1px}
+.prow{position:relative;display:flex;justify-content:center;margin:34px 0}
+.prow.bub{margin-top:62px}   /* Platz für die START-Sprechblase */
+.prow.o0{transform:translateX(-70px)}
+.prow.o1{transform:translateX(-35px)}
 .prow.o2{transform:none}
-.prow.o3{transform:translateX(36px)}
-.prow.o4{transform:translateX(72px)}
-.nwrap{position:relative;text-align:center;width:110px}
-.node{width:74px;height:74px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:1.9rem;cursor:pointer;position:relative;border-bottom:7px solid rgba(0,0,0,.35);transition:transform .1s}
-.node:active{transform:translateY(4px);border-bottom-width:3px}
-.node.avail{background:var(--blu);border-bottom-color:var(--bluD)}
-.node.cur{background:var(--grn);border-bottom-color:var(--grnD)}
-.node.done{background:var(--gold);border-bottom-color:var(--goldD)}
-.node.lock{background:#2b3a42;border-bottom-color:#22303a;filter:grayscale(.4);color:#5d707b}
-.node .ck{position:absolute;font-size:1.9rem;color:#7a5a00;font-weight:800}
-.nring{position:absolute;left:50%;top:-9px;transform:translateX(-50%);width:92px;height:92px;border-radius:50%;z-index:0}
+.prow.o3{transform:translateX(35px)}
+.prow.o4{transform:translateX(70px)}
+.nwrap{position:relative;text-align:center;width:112px}
+.node{width:72px;height:72px;border-radius:50%;margin:0 auto;display:flex;align-items:center;
+ justify-content:center;font-size:1.85rem;cursor:pointer;position:relative;
+ box-shadow:0 5px 0 var(--nedge,rgba(0,0,0,.35)),var(--sh2);
+ transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
+.node:active{transform:translateY(4px);box-shadow:0 1px 0 var(--nedge,rgba(0,0,0,.35))}
+.node.avail{background:var(--surface-2);--nedge:var(--line);box-shadow:0 5px 0 var(--line),inset 0 0 0 1.5px var(--line-2)}
+.node.cur{background:linear-gradient(150deg,var(--brand),var(--brand-2));--nedge:var(--brand-d)}
+.node.done{background:var(--ok);--nedge:var(--ok-d)}
+.node.lock{background:var(--surface);--nedge:#1a1f3c;filter:grayscale(.5);opacity:.6}
+.node .ck{position:absolute;display:flex;color:var(--ok-ink)}
+.node .ck .ico{width:34px;height:34px;stroke-width:2.6}
+.nring{position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:88px;height:88px;
+ border-radius:50%;z-index:0}
 .node.z{position:relative;z-index:1}
-.nlab{margin-top:8px;font-size:.78rem;font-weight:700;color:var(--mut);line-height:1.25;cursor:pointer}
-.nflag{position:absolute;top:-8px;right:-4px;font-size:1rem;background:var(--card);border-radius:999px;padding:2px 6px;border:2px solid var(--line);z-index:2}
-.startbub{position:absolute;left:50%;top:-46px;transform:translateX(-50%);background:#fff;color:var(--grn);font-weight:800;letter-spacing:1px;font-size:.85rem;border-radius:12px;padding:7px 16px;z-index:3;animation:bob2 1.6s ease-in-out infinite;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-.startbub::after{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:8px solid transparent;border-top-color:#fff;border-bottom:none}
-@keyframes bob2{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-6px)}}
-.sidefig{position:absolute;top:4px;font-size:2.6rem;animation:bossbob 3s ease-in-out infinite;filter:drop-shadow(0 6px 8px rgba(0,0,0,.35))}
-.sidefig.l{left:-4px}
-.sidefig.r{right:-4px}
-.chestnode{width:78px;height:64px;margin:0 auto;font-size:2.9rem;display:flex;align-items:center;justify-content:center;cursor:pointer;animation:chpulse2 1.8s infinite;filter:drop-shadow(0 8px 10px rgba(0,0,0,.4))}
-@keyframes chpulse2{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
-/* ---------- Tab-Leiste ---------- */
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--card);border-top:2px solid var(--line);display:flex;justify-content:space-around;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
-.tabbar button{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:1.55rem;padding:6px 4px;border-radius:14px;border:2px solid transparent}
-.tabbar button small{font-size:.62rem;font-weight:800;color:var(--mut);letter-spacing:.3px}
-.tabbar button.on{background:#182f3a;border-color:var(--blu)}
-.tabbar button.on small{color:var(--blu)}
-/* ---------- Boxen ---------- */
-.merk{background:#152a36;border-left:5px solid var(--blu);border-radius:12px;padding:12px 16px;margin:12px 0}
-.merk b{color:var(--blu)}
-.exbox{background:#2b2617;border-left:5px solid var(--gold);border-radius:12px;padding:12px 16px;margin:12px 0}
-.exbox .stp{padding:6px 0;border-bottom:1px dashed #4a4126}
+.nlab{margin-top:var(--s2);font-size:var(--t-xs);font-weight:700;color:var(--ink-2);line-height:1.3;cursor:pointer}
+.nflag{position:absolute;top:-4px;right:2px;display:flex;align-items:center;gap:2px;
+ background:var(--surface);border-radius:var(--rp);padding:3px 6px;border:1px solid var(--line);z-index:2}
+.nflag .ico{width:13px;height:13px}
+.nflag .f-due{color:var(--accent)}
+.nflag .f-boss{color:var(--bad)}
+.startbub{position:absolute;left:50%;top:-42px;transform:translateX(-50%);background:var(--ink);
+ color:var(--bg);font-weight:800;letter-spacing:.04em;font-size:var(--t-xs);border-radius:var(--r1);
+ padding:6px 14px;z-index:3;box-shadow:var(--sh2);white-space:nowrap}
+.startbub::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+ border:7px solid transparent;border-top-color:var(--ink);border-bottom:none}
+.sidefig{position:absolute;top:6px;font-size:2.3rem;opacity:.85;
+ filter:drop-shadow(0 6px 8px rgba(0,0,0,.4))}
+.sidefig.l{left:-2px}
+.sidefig.r{right:-2px}
+.chestnode{width:78px;height:64px;margin:0 auto;font-size:2.7rem;display:flex;align-items:center;
+ justify-content:center;cursor:pointer;filter:drop-shadow(0 8px 10px rgba(0,0,0,.4))}
+
+/* ==========================================================================
+   TAB-LEISTE  –  einheitliche Strich-Icons statt Emoji
+   ========================================================================== */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(12,14,27,.94);
+ backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);
+ display:flex;justify-content:space-around;padding:6px var(--s1) calc(6px + env(safe-area-inset-bottom))}
+.tabbar button{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:2px;
+ padding:6px var(--s1) 5px;border-radius:var(--r2);color:var(--ink-3);
+ transition:color var(--dur),background var(--dur)}
+.tabbar button .ico{width:23px;height:23px;stroke-width:1.8}
+.tabbar button small{font-size:.66rem;font-weight:700;letter-spacing:.01em}
+.tabbar button.on{color:var(--brand);background:var(--brand-soft)}
+
+/* ==========================================================================
+   INHALTS-BOXEN  –  eine Grundform, vier Akzente
+   ========================================================================== */
+.merk,.exbox,.bossbox,.duebar,.boostbar,.quest,.jentry{
+ border-radius:var(--r2);padding:var(--s3) var(--s4);margin:var(--s3) 0;
+ background:var(--surface-2);border:1px solid var(--line);border-left:4px solid var(--accent-line,var(--line))}
+.merk{--accent-line:var(--brand);background:var(--brand-soft);border-color:transparent;border-left-color:var(--brand)}
+.merk b{color:var(--brand-2)}
+.exbox{--accent-line:var(--accent);background:var(--accent-soft);border-color:transparent;border-left-color:var(--accent)}
+.exbox .stp{padding:6px 0;border-bottom:1px dashed rgba(255,194,51,.25)}
 .exbox .stp:last-child{border-bottom:none}
-.formel{background:var(--card2);border-radius:10px;padding:8px 14px;margin:6px 0;font-size:1.08rem;display:inline-block}
-.tabs{display:flex;gap:8px;margin-bottom:16px}
-.tab{flex:1;padding:11px;text-align:center;border-radius:14px;background:var(--card2);font-weight:800;cursor:pointer;color:var(--mut);border:2px solid var(--line);border-bottom:4px solid var(--line)}
-.tab.on{background:#182f3a;color:var(--blu);border-color:var(--blu)}
-.pbar{height:9px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}
-.pbar>div{height:100%;background:var(--grn);border-radius:99px;transition:width .4s}
-.stars{color:var(--gold);font-size:.95rem;letter-spacing:2px}
-.bigemoji{font-size:3.2rem;text-align:center;margin:10px 0}
-.statrow{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.statbox{flex:1;min-width:120px;background:var(--card2);border-radius:14px;padding:14px;text-align:center;border:2px solid #26363e}
-.statbox .v{font-size:1.5rem;font-weight:800;color:var(--gold)}
-.statbox .l{font-size:.82rem;color:var(--mut);font-weight:700}
-.jentry{border-left:4px solid var(--blu);background:var(--card2);border-radius:10px;padding:10px 14px;margin:10px 0}
-.cheer{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}
-.cheer span{position:absolute;top:-40px;font-size:1.8rem;animation:fall 1.6s ease-in forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(340deg);opacity:.2}}
-.badgewrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.badge{background:#2b2617;border:2px solid var(--gold);border-radius:999px;padding:4px 12px;font-size:.85rem;font-weight:700}
-.duebar{background:#2b2617;border:2px solid #7a6210;border-radius:14px;padding:10px 14px;margin:0 0 14px}
-.toast{position:fixed;bottom:96px;left:50%;transform:translate(-50%,90px);background:#f1f7fb;color:#131f24;padding:12px 22px;border-radius:14px;font-weight:700;z-index:120;opacity:0;transition:all .35s;box-shadow:0 8px 30px rgba(0,0,0,.5);max-width:92%;text-align:center}
-.toast.on{opacity:1;transform:translate(-50%,0)}
+.duebar{--accent-line:var(--accent);background:var(--accent-soft);border-color:transparent;border-left-color:var(--accent)}
+.boostbar{--accent-line:var(--accent);background:var(--accent-soft);border-color:transparent;
+ border-left-color:var(--accent);font-weight:700;margin-bottom:var(--s4)}
+.quest{--accent-line:var(--brand)}
+.quest.done{--accent-line:var(--ok);background:var(--ok-soft);border-color:transparent;border-left-color:var(--ok)}
+.jentry{--accent-line:var(--brand)}
+.bossbox{background:linear-gradient(140deg,rgba(144,97,249,.16),rgba(255,92,122,.13));
+ border-color:var(--line);border-left-color:var(--bad);padding:var(--s4)}
+.formel{background:var(--surface-3);border-radius:var(--r1);padding:7px 13px;margin:5px 0;
+ font-size:1.04rem;display:inline-block}
+.qtop{display:flex;justify-content:space-between;gap:var(--s2);font-size:var(--t-sm);
+ margin-bottom:6px;font-weight:700}
+
+.tabs{display:flex;gap:var(--s2);margin-bottom:var(--s4);background:var(--surface-2);
+ padding:4px;border-radius:var(--r2)}
+.tab{flex:1;padding:10px;text-align:center;border-radius:var(--r1);font-weight:750;cursor:pointer;
+ color:var(--ink-3);font-size:.95rem;display:flex;align-items:center;justify-content:center;gap:6px;
+ transition:color var(--dur),background var(--dur)}
+.tab.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh1)}
+
+.pbar{height:8px;background:var(--surface-3);border-radius:var(--rp);overflow:hidden;margin-top:var(--s2)}
+.pbar>div{height:100%;background:var(--brand);border-radius:var(--rp);transition:width .4s var(--ease)}
+.stars{display:inline-flex;gap:2px;color:var(--accent);vertical-align:-.15em}
+.stars .ico{width:14px;height:14px;stroke-width:1.6}
+.stars .off{color:var(--line-2)}
+.bigemoji{font-size:3rem;text-align:center;margin:var(--s3) 0}
+
+.statrow{display:flex;gap:var(--s2);flex-wrap:wrap;margin:var(--s4) 0}
+.statbox{flex:1 1 100px;min-width:100px;background:var(--surface-2);border-radius:var(--r2);
+ padding:var(--s3);text-align:center;border:1px solid var(--line)}
+.statbox .v{font-size:1.4rem;font-weight:800;color:var(--ink);line-height:1.2;
+ display:flex;align-items:center;justify-content:center;gap:5px;font-variant-numeric:tabular-nums}
+.statbox .v .ico{color:var(--accent);width:1.05em;height:1.05em}
+.statbox .l{font-size:var(--t-xs);color:var(--ink-3);font-weight:700;margin-top:2px}
+
+.badgewrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:var(--s2)}
+.badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);
+ border:1px solid var(--line);border-radius:var(--rp);padding:5px 12px;font-size:var(--t-sm);font-weight:700}
+.badge.has{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.badge.off{opacity:.4}
+
+/* ==========================================================================
+   MELDUNGEN
+   ========================================================================== */
+#toasts{position:fixed;left:0;right:0;bottom:calc(var(--tabh) + var(--s4));z-index:120;
+ display:flex;flex-direction:column;align-items:center;gap:var(--s2);pointer-events:none;padding:0 var(--s4)}
+body.intask #toasts{bottom:calc(var(--dockh) + var(--s3))}
+.toast{background:var(--surface-3);color:var(--ink);padding:11px 18px;border-radius:var(--r2);
+ font-weight:700;font-size:.94rem;box-shadow:var(--sh3);max-width:100%;text-align:center;
+ border:1px solid var(--line-2);opacity:0;transform:translateY(14px);
+ transition:opacity .25s var(--ease),transform .25s var(--ease)}
+.toast.on{opacity:1;transform:none}
+.savechip{position:fixed;top:calc(var(--hdrh) + 8px);right:var(--s4);z-index:118;
+ display:flex;align-items:center;gap:5px;background:var(--surface-3);border:1px solid var(--ok);
+ color:var(--ok);border-radius:var(--rp);padding:5px 13px;font-size:var(--t-xs);font-weight:800;
+ opacity:0;transform:translateY(-8px);transition:all .3s var(--ease);pointer-events:none}
+.savechip.on{opacity:1;transform:none}
+.savebox{display:flex;align-items:center;gap:var(--s3);background:var(--ok-soft);
+ border:1px solid var(--ok);border-radius:var(--r2);padding:var(--s3) var(--s4);margin:var(--s2) 0}
+.savedot{width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--ok);color:var(--ok-ink);
+ display:flex;align-items:center;justify-content:center}
 .filebtn input{display:none}
-/* ---------- Mentor & Boss ---------- */
-.mentorarena{background:linear-gradient(135deg,#182f3a,#251d38);border:2px solid var(--line);border-radius:16px;padding:14px 16px;margin:10px 0 16px;display:flex;gap:14px;align-items:flex-start}
-.mentorfig{font-size:3rem;display:inline-block;animation:bossbob 2.6s ease-in-out infinite}
-.mentorfig.happy{animation:mhappy .7s ease}
-.mentorfig.think{animation:mthink .7s ease}
-@keyframes mhappy{0%,100%{transform:scale(1)}40%{transform:translateY(-14px) scale(1.18) rotate(8deg)}70%{transform:translateY(0) scale(1.05)}}
-@keyframes mthink{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg)}60%{transform:rotate(10deg)}}
-.mname{font-weight:800;font-size:.82rem;margin-top:4px;color:var(--pur)}
-.bubble{position:relative;background:var(--card2);border:2px solid var(--line);color:var(--ink);border-radius:14px;padding:10px 14px;font-weight:600}
-.bubble::before{content:'';position:absolute;left:-9px;top:16px;border:8px solid transparent;border-right-color:var(--line)}
-.tafel{background:#20361f;color:#eef7ea;border:2px solid #33502f;border-radius:16px;padding:14px 20px;margin:12px 0;font-size:1.12rem;line-height:2.1}
+
+/* ==========================================================================
+   MENTOR & BOSS
+   ========================================================================== */
+.mentorarena{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r3);
+ padding:var(--s4);margin:var(--s3) 0 var(--s4);display:flex;gap:var(--s3);align-items:flex-start}
+.mentorfig{font-size:2.7rem;display:inline-block;line-height:1.1}
+.mentorfig.happy{animation:mhappy .7s var(--ease)}
+.mentorfig.think{animation:mthink .7s var(--ease)}
+@keyframes mhappy{0%,100%{transform:scale(1)}40%{transform:translateY(-12px) scale(1.16) rotate(7deg)}70%{transform:none}}
+@keyframes mthink{0%,100%{transform:rotate(0)}25%{transform:rotate(-11deg)}60%{transform:rotate(9deg)}}
+.mname{font-weight:800;font-size:var(--t-xs);margin-top:var(--s1);color:var(--ink-3)}
+.bubble{position:relative;background:var(--surface);border:1px solid var(--line);color:var(--ink);
+ border-radius:var(--r2);padding:11px 14px;font-weight:600;font-size:.97rem;line-height:1.5}
+.bubble::before{content:'';position:absolute;left:-8px;top:16px;border:7px solid transparent;
+ border-right-color:var(--line)}
+.tafel{background:var(--surface-3);color:var(--ink);border:1px solid var(--line-2);
+ border-radius:var(--r3);padding:var(--s4) var(--s5);margin:var(--s3) 0;font-size:1.08rem;line-height:2.05}
 .tafel .tl{padding:3px 0}
-.tafel .tl.neu{animation:tlin .5s ease}
-@keyframes tlin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.bossarena{background:linear-gradient(135deg,#241a2e,#301426);border:2px solid #4a2a3f;border-radius:16px;padding:14px 16px;margin:10px 0 16px;display:flex;gap:14px;align-items:center}
-.bossfig{font-size:3rem;display:inline-block;animation:bossbob 2.4s ease-in-out infinite}
-.bossfig.hit{animation:bosshit .55s ease}
-.bossfig.mock{animation:bossmock .65s ease}
-.bossfig.dead{animation:bossdead 1.4s ease forwards}
-@keyframes bossbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes bosshit{0%{transform:translateX(0)}20%{transform:translateX(-10px) rotate(-9deg);filter:brightness(1.8)}40%{transform:translateX(9px) rotate(7deg)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}100%{transform:translateX(0)}}
-@keyframes bossmock{0%,100%{transform:scale(1)}30%{transform:scale(1.28) rotate(-7deg)}60%{transform:scale(1.15) rotate(7deg)}}
-@keyframes bossdead{0%{transform:rotate(0) translateY(0);opacity:1}100%{transform:rotate(180deg) translateY(46px);opacity:.12}}
-.bossname{font-weight:800;font-size:.85rem;margin-top:4px}
-.bossmeta{font-size:.82rem;opacity:.92}
-.bosshp{height:12px;background:rgba(255,255,255,.18);border-radius:99px;overflow:hidden;margin-top:4px}
-.bosshp>div{height:100%;background:linear-gradient(90deg,#ff8787,#fa5252);border-radius:99px;transition:width .5s}
-.bossbox{background:linear-gradient(135deg,#241a2e,#301426);border:2px solid #4a2a3f;border-radius:16px;padding:14px 16px;margin:10px 0}
-/* ---------- Spiele ---------- */
-.gslots{min-height:54px;background:#152a36;border:2px dashed #2e5468;border-radius:14px;padding:10px 12px;margin:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.ghint{color:var(--mut);font-size:.9rem}
-.slotchip{background:var(--blu);color:#04283a;border-radius:10px;padding:5px 13px;font-weight:800;animation:pop .25s ease}
-@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
-.steprow{display:block;width:100%;text-align:left;background:var(--card2);border:2px solid var(--line);border-bottom:4px solid var(--line);border-radius:14px;padding:12px 16px;margin:8px 0;font-size:1.02rem;position:relative;font-weight:600}
-.steprow.sel{background:#182f3a;border-color:var(--blu);padding-left:46px}
-.steprow.sel::before{content:attr(data-pos);position:absolute;left:12px;top:50%;transform:translateY(-50%);background:var(--blu);color:#04283a;width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem}
-.chip-tap{background:var(--card2);border:2px solid var(--line);border-bottom:4px solid var(--line);border-radius:12px;padding:10px 16px;margin:5px;font-size:1.1rem;font-weight:700}
-.chip-tap:active{transform:translateY(2px);border-bottom-width:2px}
-.chip-tap.sel{background:var(--blu);color:#04283a;border-color:var(--bluD)}
-.chip-tap.used{transform:scale(.88)}
-.errline{display:block;width:100%;text-align:left;background:var(--card2);border:2px solid var(--line);border-bottom:4px solid var(--line);border-radius:14px;padding:12px 16px;margin:8px 0;font-size:1.06rem;font-weight:600}
-.errline .lnum{display:inline-block;min-width:64px;color:var(--mut);font-size:.8rem;font-weight:800}
-.errline.ok{background:#20321c;border-color:var(--grn);color:var(--ok)}
-.errline.miss{background:var(--badbg);border-color:var(--red);color:#ff9090}
-.waage{display:flex;align-items:center;justify-content:center;gap:14px;background:#152a36;border:2px solid var(--line);border-radius:16px;padding:20px 12px;margin:12px 0}
-.waage.tilt{animation:tilt .5s ease}
-@keyframes tilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-2.2deg)}65%{transform:rotate(1.6deg)}}
-.wside{background:var(--card);border:2px solid var(--blu);border-radius:14px;padding:12px 20px;font-size:1.25rem;font-weight:800;min-width:92px;text-align:center}
-.weq{font-size:1.6rem;font-weight:800;color:var(--mut)}
-.wmoves{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px}
-.gbtn{background:var(--card2);color:var(--blu);border:2px solid var(--line);border-bottom:4px solid var(--line);border-radius:12px;padding:11px 18px;font-weight:800;font-size:1.05rem}
-.gbtn:active{transform:translateY(2px);border-bottom-width:2px}
-.gbtn.big{font-size:1.15rem;padding:14px 30px}
-.gbtn.ok{background:#20321c;color:var(--ok);border-color:#2f5426}
-.gbtn.no{background:var(--badbg);color:#ff9090;border-color:#5c2a33}
-.memgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:10px 0}
-.memc{background:linear-gradient(135deg,#1cb0f6,#8054d6);color:transparent;border-radius:14px;padding:18px 6px;font-size:1rem;font-weight:800;min-height:64px;position:relative;border-bottom:4px solid rgba(0,0,0,.3)}
-.memc::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:#fff}
-.memc.open,.memc.found{background:var(--card2);color:var(--ink);border:2px solid var(--blu)}
+.tafel .tl.neu{animation:tlin .45s var(--ease)}
+@keyframes tlin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bossarena{background:linear-gradient(140deg,rgba(144,97,249,.18),rgba(255,92,122,.14));
+ border:1px solid var(--line);border-radius:var(--r3);padding:var(--s4);margin:var(--s3) 0 var(--s4);
+ display:flex;gap:var(--s3);align-items:center}
+.bossfig{font-size:2.7rem;display:inline-block;line-height:1.1}
+.bossfig.hit{animation:bosshit .5s var(--ease)}
+.bossfig.mock{animation:bossmock .6s var(--ease)}
+.bossfig.dead{animation:bossdead 1.2s var(--ease) forwards}
+@keyframes bosshit{0%{transform:none}20%{transform:translateX(-9px) rotate(-8deg);filter:brightness(1.7)}
+ 40%{transform:translateX(8px) rotate(6deg)}70%{transform:translateX(-4px)}100%{transform:none}}
+@keyframes bossmock{0%,100%{transform:scale(1)}30%{transform:scale(1.24) rotate(-6deg)}60%{transform:scale(1.12) rotate(6deg)}}
+@keyframes bossdead{0%{transform:none;opacity:1}100%{transform:rotate(180deg) translateY(40px);opacity:.12}}
+.bossname{font-weight:800;font-size:var(--t-xs);margin-top:var(--s1);color:var(--ink-2)}
+.bossmeta{font-size:var(--t-xs);color:var(--ink-2)}
+.bosshp{height:10px;background:rgba(255,255,255,.14);border-radius:var(--rp);overflow:hidden;margin-top:var(--s1)}
+.bosshp>div{height:100%;background:linear-gradient(90deg,var(--bad),var(--warn));
+ border-radius:var(--rp);transition:width .45s var(--ease)}
+
+/* ==========================================================================
+   MINISPIELE
+   ========================================================================== */
+.gslots{min-height:52px;background:var(--brand-soft);border:1.5px dashed var(--brand-line);
+ border-radius:var(--r2);padding:10px 12px;margin:var(--s3) 0;display:flex;flex-wrap:wrap;
+ gap:var(--s2);align-items:center}
+.ghint{color:var(--ink-3);font-size:var(--t-sm)}
+.slotchip{background:var(--brand);color:var(--brand-ink);border-radius:var(--r1);padding:5px 12px;
+ font-weight:800;animation:pop .22s var(--ease)}
+@keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.steprow{display:block;width:100%;text-align:left;background:var(--surface-2);border-radius:var(--r2);
+ padding:13px 16px;margin:var(--s2) 0;font-size:1.01rem;position:relative;font-weight:600;
+ box-shadow:inset 0 0 0 1.5px var(--line),0 2px 0 var(--line);transition:box-shadow var(--dur),transform var(--dur)}
+.steprow:active{transform:translateY(2px)}
+.steprow.sel{background:var(--brand-soft);box-shadow:inset 0 0 0 2px var(--brand);padding-left:46px}
+.steprow.sel::before{content:attr(data-pos);position:absolute;left:12px;top:50%;transform:translateY(-50%);
+ background:var(--brand);color:var(--brand-ink);width:24px;height:24px;border-radius:50%;
+ display:flex;align-items:center;justify-content:center;font-weight:800;font-size:var(--t-xs)}
+.chip-tap{background:var(--surface-2);border-radius:var(--r1);padding:10px 16px;margin:5px;
+ font-size:1.08rem;font-weight:700;box-shadow:inset 0 0 0 1.5px var(--line),0 2px 0 var(--line);
+ transition:transform var(--dur),box-shadow var(--dur)}
+.chip-tap:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px var(--line)}
+.chip-tap.sel{background:var(--brand);color:var(--brand-ink);box-shadow:0 2px 0 var(--brand-d)}
+.chip-tap.used{transform:scale(.9)}
+.errline{display:block;width:100%;text-align:left;background:var(--surface-2);border-radius:var(--r2);
+ padding:13px 16px;margin:var(--s2) 0;font-size:1.03rem;font-weight:600;
+ box-shadow:inset 0 0 0 1.5px var(--line),0 2px 0 var(--line)}
+.errline .lnum{display:inline-block;min-width:64px;color:var(--ink-3);font-size:var(--t-xs);font-weight:800}
+.errline.ok{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.errline.miss{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.waage{display:flex;align-items:center;justify-content:center;gap:var(--s3);background:var(--surface-2);
+ border:1px solid var(--line);border-radius:var(--r3);padding:var(--s5) var(--s3);margin:var(--s3) 0}
+.waage.tilt{animation:tilt .45s var(--ease)}
+@keyframes tilt{0%,100%{transform:none}30%{transform:rotate(-2deg)}65%{transform:rotate(1.4deg)}}
+.wside{background:var(--surface);border:1.5px solid var(--brand);border-radius:var(--r2);
+ padding:12px 20px;font-size:1.2rem;font-weight:800;min-width:92px;text-align:center}
+.weq{font-size:1.5rem;font-weight:800;color:var(--ink-3)}
+.wmoves{display:flex;gap:var(--s2);flex-wrap:wrap;justify-content:center;margin-top:var(--s2)}
+.gbtn{background:var(--surface-2);color:var(--ink);border-radius:var(--r1);padding:11px 18px;
+ font-weight:800;font-size:1.02rem;box-shadow:inset 0 0 0 1.5px var(--line),0 2px 0 var(--line);
+ transition:transform var(--dur),box-shadow var(--dur)}
+.gbtn:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px var(--line)}
+.gbtn.big{font-size:1.08rem;padding:14px 26px}
+.gbtn.ok{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 1.5px var(--ok),0 2px 0 var(--ok-d)}
+.gbtn.no{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 1.5px var(--bad),0 2px 0 var(--bad-d)}
+.memgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s2);margin:var(--s3) 0}
+.memc{background:linear-gradient(140deg,var(--brand),var(--brand-2));color:transparent;
+ border-radius:var(--r2);padding:18px 6px;font-size:1rem;font-weight:800;min-height:64px;position:relative;
+ box-shadow:0 3px 0 var(--brand-d);transition:transform var(--dur)}
+.memc::after{content:'?';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+ font-size:1.5rem;color:#fff}
+.memc.open,.memc.found{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 2px var(--brand)}
 .memc.open::after,.memc.found::after{content:''}
-.memc.found{background:#20321c;border-color:var(--grn);color:var(--ok)}
-.memc.wrong{background:var(--badbg);border-color:var(--red);color:#ff9090}
-.wfbox{background:var(--card2);border-radius:16px;padding:24px 16px;margin:12px 0;font-size:1.35rem;text-align:center;font-weight:800}
-input[type=range]{width:190px;padding:0;border:none;accent-color:var(--grn);background:transparent}
-/* ---------- Feel ---------- */
-.floatxp{position:fixed;left:50%;top:36%;transform:translateX(-50%);font-size:1.8rem;font-weight:800;color:var(--gold);z-index:115;pointer-events:none;animation:fxp 1.3s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.6)}
-@keyframes fxp{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
-.combochip{display:inline-block;background:#ff9600;color:#3a2000;border-radius:999px;padding:2px 10px;font-size:.85rem;margin-left:6px;font-weight:800;animation:pop .3s ease}
-.lvlover{position:fixed;inset:0;background:rgba(10,16,20,.85);z-index:130;display:flex;align-items:center;justify-content:center;animation:viewin .3s ease}
-.lvlcard{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:30px 42px;text-align:center;animation:lvlpop .5s cubic-bezier(.2,1.4,.5,1)}
-@keyframes lvlpop{from{transform:scale(.5) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
-.lvlnum{width:90px;height:90px;margin:0 auto 12px;border-radius:50%;background:var(--gold);color:#3a2c00;font-size:2.4rem;font-weight:800;display:flex;align-items:center;justify-content:center;border-bottom:6px solid var(--goldD)}
-.chestbtn{background:linear-gradient(135deg,#ffc800,#ff9600)!important;color:#3a2400!important;border-bottom-color:#cc7a00!important;animation:chpulse 1.6s infinite}
-@keyframes chpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,200,0,.45)}55%{box-shadow:0 0 0 14px rgba(255,200,0,0)}}
-.chestwrap{padding:22px 0;perspective:600px}
-.chestbig{font-size:5.6rem;display:inline-block;cursor:pointer;filter:drop-shadow(0 12px 20px rgba(0,0,0,.5));animation:bossbob 2.6s ease-in-out infinite}
-.chestbig.shake{animation:chshake 1.1s ease}
-.chestbig.burst{animation:chburst .7s cubic-bezier(.2,1.5,.4,1) forwards}
-@keyframes chshake{0%,100%{transform:rotate(0)}12%{transform:rotate(-13deg) scale(1.04)}26%{transform:rotate(13deg)}42%{transform:rotate(-11deg)}58%{transform:rotate(11deg)}74%{transform:rotate(-7deg) scale(1.08)}88%{transform:rotate(6deg)}}
-@keyframes chburst{0%{transform:scale(1)}45%{transform:scale(1.45) rotate(6deg)}100%{transform:scale(1.15)}}
-.rewcard{background:#2b2617;border:2px solid var(--gold);border-radius:16px;padding:18px;margin:14px 0;font-size:1.15rem;font-weight:800;animation:lvlpop .5s cubic-bezier(.2,1.4,.5,1)}
-.boostbar{background:#2b2617;border:2px solid var(--gold);border-radius:14px;padding:10px 14px;margin:0 0 14px;font-weight:700}
-.quest{background:var(--card2);border-radius:12px;padding:11px 14px;margin:8px 0;border-left:4px solid var(--blu)}
-.quest.done{border-left-color:var(--grn);background:#20321c}
-.qtop{display:flex;justify-content:space-between;gap:10px;font-size:.95rem;margin-bottom:6px;font-weight:700}
-.setrow{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}
-.sw{display:flex;align-items:center;gap:8px;font-size:.95rem;font-weight:700;color:var(--mut);cursor:pointer}
-.sw input{width:19px;height:19px;accent-color:var(--grn)}
-.stickwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin-top:10px}
-.stick{background:#2b2617;border:2px solid var(--gold);border-radius:14px;padding:10px 6px;text-align:center}
-.stick span{font-size:1.9rem;display:block}
-.stick small{font-size:.7rem;color:var(--mut);display:block;margin-top:3px;line-height:1.25;font-weight:700}
-.stick.locked{background:var(--card2);border-color:var(--line);opacity:.55}
-.ringwrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.blitztime{font-size:1.5rem;font-weight:800;color:var(--org)}
-table.wt{border-collapse:collapse;margin:8px 0}
+.memc.found{background:var(--ok-soft);color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.memc.wrong{background:var(--bad-soft);color:var(--bad);box-shadow:inset 0 0 0 2px var(--bad)}
+.wfbox{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r3);
+ padding:var(--s5) var(--s4);margin:var(--s3) 0;font-size:1.3rem;text-align:center;font-weight:800}
+input[type=range]{width:190px;padding:0;border:none;accent-color:var(--brand);background:transparent}
+
+/* ==========================================================================
+   BELOHNUNGEN & FEIER
+   ========================================================================== */
+.cheer{position:fixed;inset:0;pointer-events:none;z-index:99;overflow:hidden}
+.cheer span{position:absolute;top:-40px;font-size:1.7rem;animation:fall 1.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(340deg);opacity:.2}}
+.floatxp{position:fixed;left:50%;top:34%;transform:translateX(-50%);font-size:1.7rem;font-weight:800;
+ color:var(--accent);z-index:115;pointer-events:none;animation:fxp 1.2s var(--ease) forwards;
+ text-shadow:0 2px 14px rgba(0,0,0,.7)}
+@keyframes fxp{0%{opacity:0;transform:translate(-50%,8px) scale(.75)}
+ 20%{opacity:1;transform:translate(-50%,-6px) scale(1.12)}
+ 100%{opacity:0;transform:translate(-50%,-64px) scale(1)}}
+.combochip{display:inline-flex;align-items:center;gap:4px;background:var(--warn);color:var(--warn-ink);
+ border-radius:var(--rp);padding:2px 10px;font-size:var(--t-xs);margin-left:6px;font-weight:800;
+ animation:pop .28s var(--ease)}
+.lvlover{position:fixed;inset:0;background:rgba(8,10,20,.88);z-index:130;display:flex;
+ align-items:center;justify-content:center;animation:viewin .28s var(--ease);padding:var(--s4)}
+.lvlcard{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r4);
+ padding:var(--s6) var(--s6);text-align:center;animation:lvlpop .45s cubic-bezier(.2,1.4,.5,1);
+ box-shadow:var(--sh3)}
+@keyframes lvlpop{from{transform:scale(.6) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+.lvlnum{width:84px;height:84px;margin:0 auto var(--s3);border-radius:50%;
+ background:linear-gradient(150deg,var(--brand),var(--brand-2));color:#fff;font-size:2.2rem;
+ font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 var(--brand-d)}
+.chestbtn{--btn-bg:linear-gradient(120deg,var(--accent),var(--warn));--btn-ink:var(--accent-ink);
+ --btn-edge:var(--accent-d)}
+.chestwrap{padding:var(--s5) 0}
+.chestbig{font-size:5rem;display:inline-block;cursor:pointer;filter:drop-shadow(0 12px 20px rgba(0,0,0,.5))}
+.chestbig.shake{animation:chshake 1.1s var(--ease)}
+.chestbig.burst{animation:chburst .65s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes chshake{0%,100%{transform:none}12%{transform:rotate(-12deg) scale(1.04)}26%{transform:rotate(12deg)}
+ 42%{transform:rotate(-10deg)}58%{transform:rotate(10deg)}74%{transform:rotate(-6deg) scale(1.07)}88%{transform:rotate(5deg)}}
+@keyframes chburst{0%{transform:scale(1)}45%{transform:scale(1.4) rotate(5deg)}100%{transform:scale(1.12)}}
+.rewcard{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r3);
+ padding:var(--s4);margin:var(--s4) 0;font-size:1.1rem;font-weight:800;
+ animation:lvlpop .45s cubic-bezier(.2,1.4,.5,1)}
+.setrow{display:flex;gap:var(--s5);flex-wrap:wrap;margin-top:var(--s3)}
+.sw{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-sm);font-weight:700;
+ color:var(--ink-2);cursor:pointer}
+.sw input{width:19px;height:19px;accent-color:var(--brand)}
+.stickwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:var(--s2);margin-top:var(--s3)}
+.stick{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r2);
+ padding:var(--s3) 6px;text-align:center}
+.stick span{font-size:1.8rem;display:block;line-height:1.2}
+.stick small{font-size:var(--t-xs);color:var(--ink-2);display:block;margin-top:3px;line-height:1.25;font-weight:700}
+.stick.locked{background:var(--surface-2);border-color:var(--line);opacity:.5}
+.ringwrap{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
+
+/* ==========================================================================
+   SERIEN-SEITE
+   ========================================================================== */
+.flamezone{position:relative;text-align:center;padding:var(--s6) 0 var(--s2)}
+.flameglow{position:absolute;left:50%;top:24px;transform:translateX(-50%);width:150px;height:150px;
+ border-radius:50%;background:radial-gradient(circle,rgba(255,165,61,.42),transparent 68%);pointer-events:none}
+.flamebig{position:relative;font-size:4.8rem;display:inline-block;
+ filter:drop-shadow(0 8px 20px rgba(255,120,0,.5))}
+.strknum{font-size:3.3rem;font-weight:800;color:var(--warn);line-height:1.05;
+ animation:drop .55s cubic-bezier(.2,1.5,.4,1);font-variant-numeric:tabular-nums}
+@keyframes drop{from{transform:translateY(-40px) scale(.5);opacity:0}}
+.strksub{color:var(--warn);font-weight:800;font-size:1.15rem}
+.cal{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r3);padding:var(--s4)}
+.calnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--s3)}
+.calnav b{font-size:1.08rem}
+.calnav button{display:flex;align-items:center;justify-content:center;width:34px;height:34px;
+ border-radius:var(--rp);color:var(--ink-2);background:var(--surface-2)}
+.calnav button:disabled{opacity:.3}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:6px}
+.calgrid .hd{text-align:center;font-size:.7rem;color:var(--ink-3);font-weight:800;padding-bottom:var(--s1)}
+.cd{height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;
+ color:var(--ink-3);font-size:.9rem}
+.cd.p{background:linear-gradient(180deg,var(--warn),var(--bad));color:#fff}
+.cd.rs{border-radius:var(--rp) 0 0 var(--rp)}
+.cd.re{border-radius:0 var(--rp) var(--rp) 0}
+.cd.rs.re{border-radius:var(--rp)}
+.cd.td{box-shadow:inset 0 0 0 2px var(--accent);border-radius:var(--rp)}
+.perfbadge{background:var(--accent);color:var(--accent-ink);border-radius:var(--r1);padding:3px 12px;
+ font-weight:800;font-size:var(--t-xs);display:inline-block}
+.strkstat{display:flex;gap:var(--s2);margin:var(--s3) 0}
+.strkstat>div{flex:1;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r2);
+ padding:var(--s3);text-align:center}
+.strkstat b{font-size:1.25rem;color:var(--warn);display:flex;align-items:center;justify-content:center;gap:5px}
+.strkstat small{display:block;color:var(--ink-3);font-weight:700;font-size:var(--t-xs)}
+
+table.wt{border-collapse:collapse;margin:var(--s2) 0}
 table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align:center}
+
+/* ==========================================================================
+   ANIMATIONS-AKZENTE  –  sparsam, nur wo sie Rückmeldung geben
+   ========================================================================== */
+.tin{animation:tslide .26s var(--ease)}
+@keyframes tslide{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
+.node.cur{animation:curpulse 2.4s ease-in-out infinite}
+@keyframes curpulse{0%,100%{box-shadow:0 5px 0 var(--brand-d),0 0 0 0 rgba(107,108,246,.5)}
+ 55%{box-shadow:0 5px 0 var(--brand-d),0 0 0 14px rgba(107,108,246,0)}}
+.mcopt.ok,.chip-tap.sel,.errline.ok,.memc.found{animation:okpop .32s var(--ease)}
+@keyframes okpop{40%{transform:scale(1.035)}}
+.mcopt.bad,.errline.miss{animation:badshake .42s var(--ease)}
+@keyframes badshake{20%{transform:translateX(-7px)}40%{transform:translateX(6px)}
+ 60%{transform:translateX(-4px)}80%{transform:translateX(2px)}}
+.bigemoji{animation:drop .55s cubic-bezier(.2,1.5,.4,1)}
+.statrow .statbox{animation:viewin .35s var(--ease) both}
+.statrow .statbox:nth-child(2){animation-delay:.05s}
+.statrow .statbox:nth-child(3){animation-delay:.1s}
+.statrow .statbox:nth-child(4){animation-delay:.15s}
+.statrow .statbox:nth-child(5){animation-delay:.2s}
+.statrow .statbox:nth-child(6){animation-delay:.25s}
+.quest{animation:viewin .3s var(--ease) both}
+
 @media(max-width:560px){
+ :root{--s5:18px;--s6:24px}
  .fieldrow input{width:140px}
- .q{font-size:1.12rem}
+ .q{font-size:1.1rem}
  .memgrid{grid-template-columns:repeat(2,1fr)}
  input[type=range]{width:150px}
+ .card{padding:var(--s4)}
  .prow.o0{transform:translateX(-52px)}
  .prow.o1{transform:translateX(-26px)}
  .prow.o3{transform:translateX(26px)}
  .prow.o4{transform:translateX(52px)}
+ .brand span{display:none}
 }
-/* ---------- Politur & Animationen ---------- */
-.btn{text-transform:uppercase}
-.tin{animation:tslide .3s ease}
-@keyframes tslide{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
-.prow{animation:nodein .5s ease both}
-@keyframes nodein{from{opacity:0;transform:translateY(16px) scale(.85)}to{opacity:1;transform:none}}
-.node.cur{animation:curpulse 2s infinite}
-@keyframes curpulse{0%,100%{box-shadow:0 0 0 0 rgba(88,204,2,.45)}50%{box-shadow:0 0 0 13px rgba(88,204,2,0)}}
-.mcopt.ok,.chip-tap.sel,.errline.ok,.memc.found{animation:okpop .35s ease}
-@keyframes okpop{40%{transform:scale(1.045)}}
-.mcopt.bad,.errline.miss{animation:badshake .45s ease}
-@keyframes badshake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
-.fb.ok::before{content:'✓ ';font-weight:800}
-.lprog>div{position:relative;overflow:hidden}
-.lprog>div::after{content:'';position:absolute;top:0;bottom:0;width:40px;left:-42px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shine 1.9s infinite}
-@keyframes shine{to{left:110%}}
-.tabbar button.on{animation:pop .28s ease}
-.bigemoji{animation:drop .6s cubic-bezier(.2,1.5,.4,1)}
-@keyframes drop{from{transform:translateY(-46px) scale(.4);opacity:0}}
-.statrow .statbox{animation:nodein .45s ease both}
-.statrow .statbox:nth-child(2){animation-delay:.06s}
-.statrow .statbox:nth-child(3){animation-delay:.12s}
-.statrow .statbox:nth-child(4){animation-delay:.18s}
-.statrow .statbox:nth-child(5){animation-delay:.24s}
-.statrow .statbox:nth-child(6){animation-delay:.3s}
-.bubble{animation:pop .3s ease}
-.quest{animation:nodein .4s ease both}
-.quest:nth-child(3){animation-delay:.07s}
-.quest:nth-child(4){animation-delay:.14s}
-/* ---------- Streak-Seite ---------- */
-.flamezone{position:relative;text-align:center;padding:30px 0 6px}
-.flameglow{position:absolute;left:50%;top:26px;transform:translateX(-50%);width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,140,0,.5),transparent 68%);animation:glow 2s ease-in-out infinite;pointer-events:none}
-@keyframes glow{0%,100%{transform:translateX(-50%) scale(1);opacity:.75}50%{transform:translateX(-50%) scale(1.2);opacity:1}}
-.flamebig{position:relative;font-size:5.4rem;display:inline-block;animation:flamewob 2.2s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(255,110,0,.6))}
-@keyframes flamewob{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.08)}}
-.strknum{font-size:3.6rem;font-weight:800;color:var(--org);line-height:1.05;animation:drop .6s cubic-bezier(.2,1.5,.4,1)}
-.strksub{color:var(--org);font-weight:800;font-size:1.25rem}
-.cal{background:var(--card2);border:2px solid var(--line);border-radius:16px;padding:14px}
-.calnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.calnav b{font-size:1.12rem}
-.calnav button{font-size:1.4rem;color:var(--mut);padding:2px 14px;font-weight:800}
-.calnav button:disabled{opacity:.3}
-.calgrid{display:grid;grid-template-columns:repeat(7,1fr);row-gap:7px}
-.calgrid .hd{text-align:center;font-size:.74rem;color:var(--mut);font-weight:800;padding-bottom:4px}
-.cd{height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--mut)}
-.cd.p{background:linear-gradient(180deg,#ff9600,#ff4b4b);color:#fff}
-.cd.rs{border-radius:99px 0 0 99px}
-.cd.re{border-radius:0 99px 99px 0}
-.cd.rs.re{border-radius:99px}
-.cd.td{box-shadow:inset 0 0 0 3px var(--gold);border-radius:99px}
-.perfbadge{background:var(--gold);color:#3a2c00;border-radius:10px;padding:3px 14px;font-weight:800;font-size:.8rem;display:inline-block;animation:pop .4s ease}
-.strkstat{display:flex;gap:10px;margin:12px 0}
-.strkstat>div{flex:1;background:var(--card2);border:2px solid var(--line);border-radius:14px;padding:12px;text-align:center}
-.strkstat b{font-size:1.3rem;color:var(--org)}
-.strkstat small{display:block;color:var(--mut);font-weight:700;font-size:.78rem}
-.savechip{position:fixed;top:64px;right:14px;z-index:118;background:var(--card2);border:2px solid var(--grn);color:var(--ok);border-radius:999px;padding:5px 14px;font-size:.82rem;font-weight:800;opacity:0;transform:translateY(-10px);transition:all .3s;pointer-events:none}
-.savechip.on{opacity:1;transform:none}
-.savebox{display:flex;align-items:center;gap:12px;background:#20321c;border:2px solid var(--grn);border-radius:14px;padding:12px 14px;margin:6px 0}
-.savedot{width:30px;height:30px;min-width:30px;border-radius:50%;background:var(--grn);color:#0d2a00;display:flex;align-items:center;justify-content:center;font-weight:800}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;
+  transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
 <body>
-<header>
+<header id="hdr">
   <div class="hrow">
-    <div class="logo" onclick="go('home')">🧮 Mathe-Trainer</div>
+    <button class="brand" onclick="go('home')">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-logo"/></svg><span>Mathe-Trainer</span>
+    </button>
     <div class="hstat">
-      <span class="chip" id="hStreak" onclick="go('streak')" style="cursor:pointer">🔥 0</span>
-      <span class="chip" id="hJoker">🃏 2</span>
-      <span class="chip" id="hLvl">Lv. 1</span>
-      <div class="xpwrap"><div class="xpbar"><div id="hXp" style="width:0%"></div></div><span class="chip" id="hXpTxt">0 XP</span></div>
+      <button class="stat" id="hStreak" onclick="go('streak')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-flame"/></svg><span>0</span></button>
+      <button class="stat" id="hJoker" onclick="go('streak')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg><span>2</span></button>
+      <button class="stat" id="hLvl" onclick="go('profil')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg><span>Lv. 1</span></button>
     </div>
   </div>
+  <div class="xpline"><div id="hXp"></div></div>
 </header>
 <div id="saveDot" class="savechip"></div>
 <main id="app"></main>
+<div id="dock"></div>
 <nav class="tabbar" id="tabbar">
-  <button data-t="home" onclick="go('home')">🗺️<small>PFAD</small></button>
-  <button data-t="hub" onclick="go('hub')">🏋️<small>ÜBEN</small></button>
-  <button data-t="quests" onclick="go('quests')">🎯<small>QUESTS</small></button>
-  <button data-t="log" onclick="go('log')">🏅<small>ALBUM</small></button>
-  <button data-t="profil" onclick="go('profil')">👤<small>PROFIL</small></button>
+  <button data-t="home" onclick="go('home')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-path"/></svg><small>Pfad</small></button>
+  <button data-t="hub" onclick="go('hub')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-train"/></svg><small>Üben</small></button>
+  <button data-t="quests" onclick="go('quests')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-target"/></svg><small>Ziele</small></button>
+  <button data-t="log" onclick="go('log')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-medal"/></svg><small>Album</small></button>
+  <button data-t="profil" onclick="go('profil')"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-user"/></svg><small>Profil</small></button>
 </nav>
+<div id="toasts"></div>
+
+<svg id="sprite" xmlns="http://www.w3.org/2000/svg"><defs>
+<g id="i-logo"><path d="M3.8 7.2 12.4 17.6M12.4 7.2 3.8 17.6"/><circle cx="18.4" cy="6.8" r="2.6"/></g>
+<g id="i-path"><circle cx="6" cy="19" r="2.6"/><circle cx="18" cy="5" r="2.6"/><path d="M8.6 19H14a3.5 3.5 0 0 0 0-7h-4a3.5 3.5 0 0 1 0-7h5.4"/></g>
+<g id="i-train"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></g>
+<g id="i-target"><circle cx="12" cy="12" r="8.2"/><circle cx="12" cy="12" r="3.6"/><circle cx="12" cy="12" r=".6" fill="currentColor"/></g>
+<g id="i-medal"><path d="M8.4 3.2 11 9.4M15.6 3.2 13 9.4"/><circle cx="12" cy="14.8" r="5.4"/></g>
+<g id="i-user"><circle cx="12" cy="8" r="3.6"/><path d="M4.8 20c0-3.4 3.2-6.1 7.2-6.1s7.2 2.7 7.2 6.1"/></g>
+<g id="i-flame"><path d="M12 2.8c.6 3 2.2 4.1 3.4 5.5A6.6 6.6 0 0 1 17.2 13a5.2 5.2 0 0 1-10.4 0c0-1.7.6-3 1.6-4 .2.9.7 1.6 1.4 1.9-.3-2.7.6-5.7 2.2-8.1z"/></g>
+<g id="i-shield"><path d="M12 3.2 5.6 5.8v5.4c0 4 2.7 7.3 6.4 8.6 3.7-1.3 6.4-4.6 6.4-8.6V5.8L12 3.2z"/><path d="m9.6 11.8 1.8 1.8 3.4-3.6"/></g>
+<g id="i-bolt"><path d="M13.2 2.8 5.8 13.4h5L10.6 21l7.6-10.6h-5l.6-7.6z"/></g>
+<g id="i-check"><path d="m4.8 12.6 4.8 4.8L19.2 6.6"/></g>
+<g id="i-close"><path d="M6.4 6.4 17.6 17.6M17.6 6.4 6.4 17.6"/></g>
+<g id="i-right"><path d="M4.5 12h14m-5.5-5.5L18.5 12 13 17.5"/></g>
+<g id="i-left"><path d="M19.5 12h-14M11 6.5 5.5 12 11 17.5"/></g>
+<g id="i-eye"><path d="M2.6 12S6.2 5.8 12 5.8 21.4 12 21.4 12 17.8 18.2 12 18.2 2.6 12 2.6 12z"/><circle cx="12" cy="12" r="2.9"/></g>
+<g id="i-cal"><rect x="3.4" y="5" width="17.2" height="15.4" rx="3"/><path d="M3.4 10h17.2M8.2 3v4M15.8 3v4"/></g>
+<g id="i-star"><path d="M12 3.4 14.3 8.9 20.2 9.3 15.7 13.2 17.1 19 12 15.9 6.9 19 8.3 13.2 3.8 9.3 9.7 8.9Z"/></g>
+<g id="i-gift"><rect x="3.4" y="8.6" width="17.2" height="11.4" rx="2.6"/><path d="M2.6 8.6h18.8M12 8.6V20"/><path d="M12 8.6S9.8 3.8 7.6 5.2 8.9 8.6 12 8.6zm0 0s2.2-4.8 4.4-3.4S15.1 8.6 12 8.6z"/></g>
+<g id="i-clock"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2V12l3.2 2"/></g>
+<g id="i-book"><path d="M4.4 5.4A2.6 2.6 0 0 1 7 2.8h12.6v14.4H7a2.6 2.6 0 0 0-2.6 2.6z"/><path d="M4.4 19.8A2.6 2.6 0 0 1 7 17.2h12.6v4H7a2.6 2.6 0 0 1-2.6-2.6z"/></g>
+<g id="i-pencil"><path d="M4 20.2h4.2L20 8.4a2.7 2.7 0 0 0-3.8-3.8L4.4 16.4z"/><path d="m15 5.8 3.2 3.2"/></g>
+<g id="i-sword"><path d="M20.8 3.2h-4.4L6.2 13.8l4.4 4.4L20.8 7.6z"/><path d="m7.4 15 -4.2 4.2 1.8 1.8L9.2 16.8"/></g>
+<g id="i-repeat"><path d="M4 11.2a7.6 7.6 0 0 1 13-5.4l2.4 2.2"/><path d="M20 12.8a7.6 7.6 0 0 1-13 5.4L4.6 16"/><path d="M19.6 3.4V8h-4.4M4.4 20.6V16h4.4"/></g>
+<g id="i-save"><path d="M5.4 3.4h10.2L20.6 8.4v10.2a2.4 2.4 0 0 1-2.4 2.4H5.4A2.4 2.4 0 0 1 3 18.6V5.8a2.4 2.4 0 0 1 2.4-2.4z"/><path d="M7.6 3.4v6h8.4v-6M7.6 20.6v-6h8.8v6"/></g>
+<g id="i-down"><path d="M12 4.4v12m-5-5 5 5 5-5M4.6 20.4h14.8"/></g>
+<g id="i-up"><path d="M12 20v-12m-5 5 5-5 5 5M4.6 3.6h14.8"/></g>
+<g id="i-compass"><circle cx="12" cy="12" r="8.6"/><path d="m15.4 8.6-2 4.8-4.8 2 2-4.8z"/></g>
+<g id="i-spark"><path d="M12 3.2 13.8 9 19.6 10.8 13.8 12.6 12 18.4 10.2 12.6 4.4 10.8 10.2 9z"/><path d="M18.6 3.4v3M17.1 4.9h3"/></g>
+<g id="i-lock"><rect x="4.6" y="10.4" width="14.8" height="10.2" rx="2.8"/><path d="M8.2 10.4V7.8a3.8 3.8 0 0 1 7.6 0v2.6"/></g>
+<g id="i-chart"><path d="M4 20V9.5M10 20V4.5M16 20v-7M22 20H2"/></g>
+</defs></svg>
 <script>
 /* ============ Hilfsfunktionen ============ */
 const $=s=>document.querySelector(s);
+/* Ein einziger Icon-Stil für die ganze Oberfläche (Strich-Icons aus dem Sprite). */
+function ico(n,cls){return '<svg class="ico'+(cls?' '+cls:'')+'" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-'+n+'"/></svg>';}
 const ri=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
 const pick=a=>a[ri(0,a.length-1)];
 const gcd=(a,b)=>b?gcd(b,Math.abs(a%b)):Math.abs(a);
@@ -411,21 +716,21 @@ function graphSVG(items,opts){
  const X=x=>W/2+x*u, Y=y=>W/2-y*u;
  let g='';
  for(let i=-R;i<=R;i++){
-  g+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+W+'" stroke="#26363e" stroke-width="1"/>';
-  g+='<line x1="0" y1="'+Y(i)+'" x2="'+W+'" y2="'+Y(i)+'" stroke="#26363e" stroke-width="1"/>';
+  g+='<line x1="'+X(i)+'" y1="0" x2="'+X(i)+'" y2="'+W+'" stroke="#242a4d" stroke-width="1"/>';
+  g+='<line x1="0" y1="'+Y(i)+'" x2="'+W+'" y2="'+Y(i)+'" stroke="#242a4d" stroke-width="1"/>';
  }
- g+='<line x1="0" y1="'+Y(0)+'" x2="'+W+'" y2="'+Y(0)+'" stroke="#5d707b" stroke-width="1.6"/>';
- g+='<line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+W+'" stroke="#5d707b" stroke-width="1.6"/>';
- g+='<polygon points="'+W+','+Y(0)+' '+(W-8)+','+(Y(0)-4)+' '+(W-8)+','+(Y(0)+4)+'" fill="#5d707b"/>';
- g+='<polygon points="'+X(0)+',0 '+(X(0)-4)+',8 '+(X(0)+4)+',8" fill="#5d707b"/>';
- g+='<text x="'+(W-10)+'" y="'+(Y(0)+14)+'" font-size="10" fill="#8fa3ad">x</text>';
- g+='<text x="'+(X(0)+6)+'" y="10" font-size="10" fill="#8fa3ad">y</text>';
+ g+='<line x1="0" y1="'+Y(0)+'" x2="'+W+'" y2="'+Y(0)+'" stroke="#5a628f" stroke-width="1.6"/>';
+ g+='<line x1="'+X(0)+'" y1="0" x2="'+X(0)+'" y2="'+W+'" stroke="#5a628f" stroke-width="1.6"/>';
+ g+='<polygon points="'+W+','+Y(0)+' '+(W-8)+','+(Y(0)-4)+' '+(W-8)+','+(Y(0)+4)+'" fill="#5a628f"/>';
+ g+='<polygon points="'+X(0)+',0 '+(X(0)-4)+',8 '+(X(0)+4)+',8" fill="#5a628f"/>';
+ g+='<text x="'+(W-10)+'" y="'+(Y(0)+14)+'" font-size="10" fill="#8b93bd">x</text>';
+ g+='<text x="'+(X(0)+6)+'" y="10" font-size="10" fill="#8b93bd">y</text>';
  [-4,-2,2,4].forEach(i=>{
-  g+='<text x="'+(X(i)-3)+'" y="'+(Y(0)+13)+'" font-size="9" fill="#8fa3ad">'+i+'</text>';
-  g+='<text x="'+(X(0)+4)+'" y="'+(Y(i)+3)+'" font-size="9" fill="#8fa3ad">'+i+'</text>';
+  g+='<text x="'+(X(i)-3)+'" y="'+(Y(0)+13)+'" font-size="9" fill="#8b93bd">'+i+'</text>';
+  g+='<text x="'+(X(0)+4)+'" y="'+(Y(i)+3)+'" font-size="9" fill="#8b93bd">'+i+'</text>';
  });
  (items||[]).forEach(it=>{
-  const col=it.col||'#1cb0f6';
+  const col=it.col||'#6b6cf6';
   if(it.f){
    let seg=[];const segs=[];
    for(let x=-R;x<=R+0.001;x+=0.05){
@@ -436,9 +741,9 @@ function graphSVG(items,opts){
    if(seg.length>1)segs.push(seg);
    segs.forEach(s=>{g+='<polyline points="'+s.join(' ')+'" fill="none" stroke="'+col+'" stroke-width="2.6"/>';});
   }
-  if(it.dot){g+='<circle cx="'+X(it.dot[0])+'" cy="'+Y(it.dot[1])+'" r="4.5" fill="'+(it.col||'#e8590c')+'" stroke="#fff" stroke-width="1.5"/>';}
+  if(it.dot){g+='<circle cx="'+X(it.dot[0])+'" cy="'+Y(it.dot[1])+'" r="4.5" fill="'+(it.col||'#ffc233')+'" stroke="#11142a" stroke-width="1.8"/>';}
  });
- return '<div style="text-align:center;margin:8px 0"><svg width="'+W+'" height="'+W+'" viewBox="0 0 '+W+' '+W+'" style="max-width:100%;background:#101d24;border:2px solid var(--line);border-radius:12px">'+g+'</svg></div>';
+ return '<div style="text-align:center;margin:12px 0"><svg width="'+W+'" height="'+W+'" viewBox="0 0 '+W+' '+W+'" style="max-width:100%;background:#11142a;border:1px solid var(--line);border-radius:14px">'+g+'</svg></div>';
 }
 
 /* ============ Zustand ============ */
@@ -447,15 +752,18 @@ const IVL=[1,3,7,14,30];
 let state={xp:0,streak:0,lastDay:null,journal:[],mods:{},sessions:0,errors:[],
  dayXP:{d:'',xp:0},jokers:2,jokerWeek:'',goalDone:'',badges:[],blitzBest:0,blitzRuns:0,
  snd:true,vib:true,chests:[],stickers:[],boost:0,quests:null,miles:[],bestCombo:0};
+/* Speichern wird gebündelt: pro Antwort rufen mehrere Stellen save() auf –
+   geschrieben wird aber nur einmal, kurz danach. saveNow() erzwingt sofortiges Schreiben. */
 function save(){
  state.savedAt=Date.now();
- try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
- /* zweite Kopie gebündelt schreiben, damit es flüssig bleibt */
- if(typeof idbPut==='function'){
-  _dirty=true;
-  if(_saveT)clearTimeout(_saveT);
-  _saveT=setTimeout(()=>{idbPut(state);_dirty=false;},900);
- }
+ _dirty=true;
+ if(_saveT)clearTimeout(_saveT);
+ _saveT=setTimeout(()=>{
+  _saveT=null;
+  try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
+  if(typeof idbPut==='function')idbPut(state);
+  _dirty=false;
+ },400);
 }
 function load(){try{const s=localStorage.getItem('mbtState');if(s){const p=JSON.parse(s);
  state=Object.assign(state,p);
@@ -486,7 +794,7 @@ function noteResult(id,lvl,ok){
  }
  save();}
 function stars(s){return s.boss||0;}
-function starStr(n){return '★'.repeat(n)+'<span style="color:#d8dbe2">'+'★'.repeat(3-n)+'</span>';}
+function starStr(n){let s='';for(let i=0;i<3;i++)s+=ico('star',i<n?'':'off');return s;}
 function dstr(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function addDays(n){return dstr(new Date(Date.now()+n*864e5));}
 function weekKey(){const d=new Date();const off=(d.getDay()+6)%7;return dstr(new Date(Date.now()-off*864e5));}
@@ -502,7 +810,7 @@ function touchDay(){
  if(state.lastDay==null){state.streak=1;}
  else{const diff=dayDiff(state.lastDay,today);
   if(diff===1)state.streak++;
-  else if(diff===2&&state.jokers>0){state.jokers--;state.streak++;toast('🃏 Joker eingesetzt – deine Serie lebt weiter! ('+state.jokers+' übrig)');}
+  else if(diff===2&&state.jokers>0){state.jokers--;state.streak++;toast(ico('shield','sm')+' Joker eingesetzt – deine Serie lebt weiter ('+state.jokers+' übrig).');}
   else state.streak=1;}
  state.lastDay=today;}
 
@@ -518,7 +826,7 @@ function addXP(n,noBoost){
  if(state.dayXP.xp>=GOAL&&state.goalDone!==dstr()){
   state.goalDone=dstr();cheer();
   if(typeof sfx!=='undefined')sfx.finish();
-  toast('🎯 Tagesziel erreicht – stark! Alles ab jetzt ist Bonus.');
+  toast(ico('target','sm')+' Tagesziel erreicht. Alles ab jetzt ist Bonus.');
   if(typeof addChest==='function')addChest('gold','Tagesziel erreicht');
   if(typeof questProg==='function')questProg('goal',1);
  }
@@ -527,19 +835,36 @@ function addXP(n,noBoost){
  const after=lvlOf(state.xp);
  if(after>before&&typeof levelUp==='function')levelUp(after);
 }
+/* Kopfzeile: nur die Zahl im Chip – der volle Titel steht im Profil.
+   So bleibt die Zeile auf jedem Handy einzeilig. */
+function setStat(id,txt){const el=$(id);if(!el)return;const s=el.querySelector('span');
+ if(s)s.textContent=txt;else el.textContent=txt;}
 function updHeader(){
- $('#hStreak').textContent='🔥 '+state.streak;
- $('#hJoker').textContent='🃏 '+state.jokers;
- const l=lvlOf(state.xp);$('#hLvl').textContent='Lv. '+l+' · '+titleOf(l);
- $('#hXpTxt').textContent=state.xp+' XP';
+ setStat('#hStreak',state.streak);
+ setStat('#hJoker',state.jokers);
+ const l=lvlOf(state.xp);
+ setStat('#hLvl','Lv. '+l);
+ $('#hLvl').title=titleOf(l)+' · '+state.xp+' XP';
  $('#hXp').style.width=Math.round((state.xp%150)/150*100)+'%';}
+/* Höhe von Kopfzeile und Aktionsleiste messen, damit nichts überlappt
+   (früher waren 52 px / 88 px / 210 px fest verdrahtet). */
+function syncChrome(){
+ const h=document.getElementById('hdr'),d=document.getElementById('dock');
+ const rs=document.documentElement.style;
+ if(h)rs.setProperty('--hdrh',Math.round(h.offsetHeight)+'px');
+ if(d)rs.setProperty('--dockh',Math.round(d.offsetHeight)+'px');
+}
 function cheer(){const c=document.createElement('div');c.className='cheer';
  const em=['🎉','⭐','🎊','✨','🏆','💪'];let h='';
- for(let i=0;i<26;i++)h+='<span style="left:'+ri(2,96)+'%;animation-delay:'+(Math.random()*0.5)+'s">'+pick(em)+'</span>';
+ for(let i=0;i<22;i++)h+='<span style="left:'+ri(2,96)+'%;animation-delay:'+(Math.random()*0.5)+'s">'+pick(em)+'</span>';
  c.innerHTML=h;document.body.appendChild(c);setTimeout(()=>c.remove(),2300);}
-function toast(msg){const t=document.createElement('div');t.className='toast';t.innerHTML=msg;
- document.body.appendChild(t);setTimeout(()=>t.classList.add('on'),30);
- setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),400);},3500);}
+/* Meldungen stapeln sich, statt sich gegenseitig zu überdecken. */
+function toast(msg){
+ const wrap=document.getElementById('toasts');if(!wrap)return;
+ while(wrap.children.length>2)wrap.firstChild.remove();
+ const t=document.createElement('div');t.className='toast';t.innerHTML=msg;
+ wrap.appendChild(t);requestAnimationFrame(()=>t.classList.add('on'));
+ setTimeout(()=>{t.classList.remove('on');setTimeout(()=>t.remove(),320);},3400);}
 
 /* ============ Wiederholungs-Termine (Spaced Repetition) ============ */
 function scheduleStart(id){const s=st(id);if(s.stage<0){s.stage=0;s.due=addDays(1);save();}}
@@ -580,10 +905,10 @@ const BADGES=[
  {id:'b_xp3000',e:'👑',n:'XP-König',d:'3000 XP erreicht',c:()=>state.xp>=3000}];
 function checkBadges(){let neu=false;
  BADGES.forEach(b=>{if(state.badges.indexOf(b.id)<0&&b.c()){state.badges.push(b.id);
-  toast('🏅 Neues Abzeichen: <b>'+b.e+' '+b.n+'</b>');neu=true;}});
+  toast(ico('medal','sm')+' Neues Abzeichen: <b>'+b.e+' '+b.n+'</b>');neu=true;}});
  if(neu)save();}
 
-const praise=['Richtig! 💪','Stark! ⭐','Genau so! 🎯','Sauber gerechnet! ✅','Top! 🚀','Perfekt! 🌟'];
+const praise=['Richtig!','Stark!','Genau so!','Sauber gerechnet!','Top!','Perfekt!','Sitzt!'];
 const retry=['Noch nicht ganz – versuch es noch einmal!','Fast! Schau dir dein Vorzeichen/deine Rechnung nochmal an.','Knapp daneben – du schaffst das, noch ein Versuch!'];
 const wrongMsg=['Kein Problem – Fehler gehören zum Lernen. Schau dir den Lösungsweg genau an!','Schau dir den Lösungsweg an und rechne die Aufgabe im Kopf nach.','Diese Aufgabe kommt später nochmal – dann klappt es!'];
 
@@ -608,17 +933,34 @@ function taskHTML(task,strict){
   task.mc.opts.forEach((o,i)=>{h+='<button class="mcopt" data-i="'+i+'" onclick="mcPick(this,'+i+')">'+o+'</button>';});
  }else{
   task.fields.forEach((f,i)=>{
-   h+='<div class="fieldrow"><label>'+f.l+'</label><input id="fin'+i+'" autocomplete="off"></div>';});
-  if(task.hint)h+='<div class="hint">💡 '+task.hint+'</div>';
+   h+='<div class="fieldrow"><label>'+f.l+'</label><input id="fin'+i+'" autocomplete="off" autocapitalize="off" spellcheck="false"></div>';});
+  if(task.hint)h+='<div class="hint">'+ico('spark','sm')+' '+task.hint+'</div>';
  }
+ h+='<div class="steps" id="tsteps"><b>Lösungsweg</b>'+task.steps.map(s=>'<div class="st">'+s+'</div>').join('')+'</div>';
  h+='<div class="fb" id="tfb"></div>';
- h+='<div class="steps" id="tsteps"><b>Lösungsweg:</b>'+task.steps.map(s=>'<div class="st">'+s+'</div>').join('')+'</div>';
+ /* Aktionsleiste: genau EINE dominante Aktion. Der Lösungsweg tritt als
+    kleiner Nebenknopf zurück, „Weiter" ersetzt später alles andere. */
+ const manual=task.game?!!GAMES[task.game].manual:!task.mc;
  h+='<div class="btnrow taskbar">';
- if(task.game){if(GAMES[task.game].manual)h+='<button class="btn" id="bCheck" onclick="gameCheck()">Prüfen ✔</button>';}
- else if(!task.mc)h+='<button class="btn" id="bCheck" onclick="checkTask()">Prüfen ✔</button>';
- if(!strict)h+='<button class="btn ghost" id="bSteps" onclick="showSteps()">Lösungsweg 👀</button>';
- h+='<button class="btn sec" id="bNext" style="display:none" onclick="nextTask()">Weiter ➜</button></div>';
+ if(!strict)h+='<button class="btn ghost" id="bSteps" onclick="showSteps()" title="Lösungsweg zeigen" aria-label="Lösungsweg zeigen">'+ico('eye')+'</button>';
+ if(manual)h+='<button class="btn" id="bCheck" onclick="'+(task.game?'gameCheck()':'checkTask()')+'">Prüfen</button>';
+ else h+='<span class="dockhint" id="bHint">'+(task.mc?'Wähle die richtige Antwort':'Tippe deine Lösung an')+'</span>';
+ h+='<button class="btn okbtn" id="bNext" style="display:none" onclick="nextTask()">Weiter '+ico('right')+'</button></div>';
  return h;
+}
+
+/* Rückmeldung und Aktionsleiste wandern in das feste Dock am unteren Rand.
+   Dadurch können sie sich nicht mehr gegenseitig überdecken. */
+function dockMount(container){
+ const dock=$('#dock');if(!dock)return;
+ dock.textContent='';
+ if(container){
+  const fb=container.querySelector('.fb'),bar=container.querySelector('.btnrow.taskbar');
+  if(fb)dock.appendChild(fb);
+  if(bar)dock.appendChild(bar);
+ }
+ document.body.classList.toggle('intask',!!dock.firstChild);
+ syncChrome();
 }
 
 let cur={task:null,tries:0,done:false,onDone:null,modId:null,strict:false,autoNext:false};
@@ -637,9 +979,12 @@ function mountTask(container,modId,lvl,onDone,opts){
  container.classList.remove('tin');void container.offsetWidth;container.classList.add('tin');
  if(task.game&&GAMES[task.game].init)GAMES[task.game].init(task);
  const inp=container.querySelectorAll('input');
- inp.forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')checkTask();}));
- if(inp[0])inp[0].focus();
- document.body.classList.add('intask');
+ inp.forEach(i=>{
+  i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();checkTask();}});
+  i.addEventListener('input',()=>i.classList.remove('is-ok','is-bad'));
+ });
+ dockMount(container);
+ if(inp[0])inp[0].focus({preventScroll:true});
 }
 
 function fieldOK(f,val){
@@ -655,9 +1000,10 @@ function checkTask(){
   else{const want=t.fields.map(f=>f.a).sort((a,b)=>a-b);
    const got=vals.slice().sort((a,b)=>a-b);
    allOk=want.every((w,i)=>Math.abs(w-got[i])<0.006);}
+  t.fields.forEach((f,i)=>{const el=$('#fin'+i);if(el)el.classList.add(allOk?'is-ok':'is-bad');});
  }else{
   t.fields.forEach((f,i)=>{const el=$('#fin'+i);const okf=fieldOK(f,el.value);
-   el.style.borderColor=okf?'var(--ok)':'var(--bad)';
+   el.classList.add(okf?'is-ok':'is-bad');
    if(!okf)allOk=false;});
  }
  finishAttempt(allOk);
@@ -689,49 +1035,60 @@ function finishAttempt(ok){
   addXP(xp+cbonus);
   if(typeof sfx!=='undefined'){sfx.ok();if(sess&&sess.combo>=3)sfx.combo(sess.combo);}
   const s=st(cur.modId);s.c++;s.a++;if(t.lvl===3)s.t++;
-  noteResult(cur.modId,t.lvl,true);save();
+  noteResult(cur.modId,t.lvl,true);
   if(typeof questProg==='function'){questProg('task',1);if(t.lvl===3)questProg('lvl3',1);if(t.game)questProg('game',1);}
-  let msg=pick(praise)+' <b>+'+((xp+cbonus)*(boosted?2:1))+' XP</b>';
-  if(cbonus)msg+=' <span class="combochip">🔥 Kombo x'+sess.combo+' +'+cbonus+'</span>';
-  if(boosted)msg+=' <span class="combochip" style="background:#ffd43b;color:#5c3d00">⚡ Boost</span>';
+  let msg=ico('check')+' '+pick(praise)+' <b>+'+((xp+cbonus)*(boosted?2:1))+' XP</b>';
+  if(cbonus)msg+=' <span class="combochip">'+ico('flame','sm')+' Kombo x'+sess.combo+' +'+cbonus+'</span>';
+  if(boosted)msg+=' <span class="combochip">'+ico('bolt','sm')+' Boost</span>';
   fb.className='fb ok';fb.innerHTML=msg;
   if(typeof floatXP==='function')floatXP('+'+((xp+cbonus)*(boosted?2:1))+' XP');
-  lockTask();
+  lockTask(true);
   if(sess&&sess.type==='boss')bossReact(true);
-  if(cur.autoNext){const tk=cur.task;setTimeout(()=>{if(cur.task===tk&&cur.done)nextTask();},750);}
+  if(cur.autoNext){const tk=cur.task;setTimeout(()=>{if(cur.task===tk&&cur.done)nextTask();},700);}
  }else{
   cur.tries++;
   if(typeof sfx!=='undefined')sfx.bad();
-  if(sess&&sess.combo>=3){sess.combo=0;toast('🔥 Kombo verloren – neu aufbauen!');}
+  if(sess&&sess.combo>=3)toast(ico('flame','sm')+' Kombo verloren – gleich neu aufbauen!');
   if(sess)sess.combo=0;
   if(cur.tries===1&&!cur.strict){
-   fb.className='fb bad';fb.textContent=pick(retry);
+   /* Erster Fehlversuch: freundlich, ohne Wertung – sofort wieder änderbar. */
+   fb.className='fb bad';fb.innerHTML=ico('repeat')+' '+pick(retry);
+   const bc=$('#bCheck');if(bc)bc.textContent='Nochmal prüfen';
+   syncChrome();
   }else{
    cur.done=true;
    const s=st(cur.modId);s.a++;
    noteResult(cur.modId,t.lvl,false);
    if(sess&&sess.shields!=null){sess.shields--;if(typeof sfx!=='undefined')sfx.shield();}
-   save();
    state.errors.push({m:cur.modId,lvl:t.lvl});
    if(state.errors.length>40)state.errors.shift();
    save();
-   fb.className='fb bad';fb.textContent=pick(wrongMsg);
-   $('#tsteps').classList.add('show');
-   lockTask();
+   fb.className='fb bad';fb.innerHTML=ico('spark')+' '+pick(wrongMsg);
+   revealSteps();
+   lockTask(false);
    if(sess&&sess.type==='boss')bossReact(false);
   }
  }
 }
-function lockTask(){
+function lockTask(ok){
  document.querySelectorAll('#taskarea input').forEach(i=>i.disabled=true);
  document.querySelectorAll('.mcopt').forEach(b=>b.disabled=true);
  document.querySelectorAll('#taskarea .gbtn,#taskarea .chip-tap,#taskarea .memc,#taskarea .steprow,#taskarea .errline').forEach(b=>{b.disabled=true;b.style.pointerEvents='none';});
  if(gTimer){clearInterval(gTimer);gTimer=null;}
- const bc=$('#bCheck');if(bc)bc.style.display='none';
- $('#bNext').style.display='inline-block';$('#bNext').focus();
+ /* Alles außer „Weiter" verschwindet: eine Aktion, kein Zögern. */
+ ['#bCheck','#bSteps','#bHint'].forEach(sel=>{const e=$(sel);if(e)e.style.display='none';});
+ const n=$('#bNext');
+ if(n){n.className='btn '+(ok===false?'sec':'okbtn');n.style.display='';n.focus({preventScroll:true});}
+ syncChrome();
+}
+function revealSteps(){
+ const s=$('#tsteps');if(!s)return;
+ s.classList.add('show');
+ syncChrome();
+ setTimeout(()=>{try{s.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}},60);
 }
 function showSteps(){
- $('#tsteps').classList.add('show');
+ revealSteps();
  if(!cur.done){
   cur.done=true;cur.peeked=true;
   const s=st(cur.modId);s.a++;
@@ -739,8 +1096,8 @@ function showSteps(){
   if(state.errors.length>40)state.errors.shift();
   save();
   const fb=$('#tfb');fb.className='fb bad';
-  fb.innerHTML='👀 Lösungsweg vor der Antwort angeschaut – diese Aufgabe zählt nicht. Lies ihn genau: Eine ähnliche kommt gleich wieder!';
-  lockTask();
+  fb.innerHTML=ico('eye')+' Lösungsweg vorab angeschaut – diese Aufgabe zählt nicht. Lies ihn genau, eine ähnliche kommt gleich wieder.';
+  lockTask(false);
  }
 }
 function nextTask(){if(cur.onDone){const cb=cur.onDone;cur.onDone=null;cb(cur);}}
@@ -748,7 +1105,12 @@ function nextTask(){if(cur.onDone){const cb=cur.onDone;cur.onDone=null;cb(cur);}
 /* ============ Router ============ */
 function setTab(t){document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));}
 function go(view,arg){window.scrollTo(0,0);
- document.body.classList.remove('intask');
+ /* Beim Verlassen sauber aufräumen: sonst liefen Timer weiter und eine
+    abgebrochene Einheit zählte im freien Üben heimlich weiter. */
+ if(timerH){clearInterval(timerH);timerH=null;}
+ if(gTimer){clearInterval(gTimer);gTimer=null;}
+ sess=null;les=null;sessRoot=null;
+ dockMount(null);
  if(view==='home')renderHome();
  else if(view==='mod')renderModule(arg);
  else if(view==='daily')startDaily();
@@ -760,10 +1122,19 @@ function go(view,arg){window.scrollTo(0,0);
  else if(view==='quests')renderQuests();
  else if(view==='profil')renderProfil();
  else if(view==='streak'){strkOff=0;renderStreak();}
- document.body.classList.toggle('intask',!!document.querySelector('.btnrow.taskbar'));
+ syncChrome();
 }
 function toggleSnd(v){state.snd=v;save();if(v){_ac=null;sfx.ok();}}
 function toggleVib(v){state.vib=v;save();if(v)vib(40);}
+
+/* Layout-Maße immer aktuell halten (Tastatur, Drehung, Textumbruch). */
+window.addEventListener('resize',syncChrome);
+window.addEventListener('orientationchange',()=>setTimeout(syncChrome,220));
+if(window.ResizeObserver){try{
+ const ro=new ResizeObserver(()=>syncChrome());
+ ro.observe(document.getElementById('dock'));
+ ro.observe(document.getElementById('hdr'));
+}catch(e){}}
 /* v2 */
 
 /* ============ Spiel-Engine (interaktive Aufgabentypen) ============ */
@@ -851,7 +1222,7 @@ function levelUp(l){
 /* ============ Truhen ============ */
 const CHESTDEF={
  holz:{e:'🪵',n:'Holztruhe',col:'#b08968'},
- silber:{e:'🥈',n:'Silbertruhe',col:'#adb5bd'},
+ silber:{e:'🥈',n:'Silbertruhe',col:'#5a628f'},
  gold:{e:'🏆',n:'Goldtruhe',col:'#f5a623'}
 };
 const STICKERS=[
@@ -893,8 +1264,8 @@ function renderChest(){
  if(c.w)h+='<p class="mut">'+c.w+'</p>';
  h+='<div class="chestwrap"><div class="chestbig" id="chBig" onclick="chestOpen()">'+D.e+'</div></div>';
  h+='<div id="chRes"></div>';
- h+='<button class="btn big" id="chBtn" onclick="chestOpen()">Truhe öffnen 🔓</button>';
- h+='<p class="hint" id="chLeft">'+(state.chests.length>1?'Noch '+(state.chests.length-1)+' weitere Truhe(n) danach':'')+'</p></div>';
+ h+='<button class="btn big" id="chBtn" onclick="chestOpen()">Truhe öffnen</button>';
+ h+='<p class="hint" id="chLeft">'+(state.chests.length>1?'Danach warten noch '+(state.chests.length-1)+' weitere.':'')+'</p></div>';
  $('#app').innerHTML=h;
 }
 function chestOpen(){
@@ -909,7 +1280,7 @@ function chestOpen(){
   sfx.chest();cheer();
   $('#chRes').innerHTML='<div class="rewcard">'+rew.txt+'</div>';
   saveNow('flash');
-  btn.disabled=false;btn.textContent=state.chests.length?'Nächste Truhe ➜':'Weiter ➜';
+  btn.disabled=false;btn.innerHTML=(state.chests.length?'Nächste Truhe ':'Weiter ')+ico('right');
   btn.onclick=()=>{if(state.chests.length)renderChest();else go('home');};
  },1150);
 }
@@ -946,21 +1317,21 @@ function questProg(kind,n){
   if(q.done||q.k!==kind)return;
   q.cur=(kind==='combo')?Math.max(q.cur,n):q.cur+(n||1);
   if(q.cur>=q.goal){q.done=true;changed=true;
-   sfx.quest();toast('✅ Quest geschafft: <b>'+q.txt+'</b>');
-   addChest('silber','Quest erfüllt');}
+   sfx.quest();toast(ico('check','sm')+' Ziel geschafft: <b>'+q.txt+'</b>');
+   addChest('silber','Tagesziel erfüllt');}
  });
  save();
  if(changed&&$('#questBox'))renderHome();
 }
 function questHTML(){
  const list=ensureQuests();
- let h='<div class="card" id="questBox"><h2>🎯 Tages-Quests</h2>';
+ let h='<div class="card" id="questBox"><h2>'+ico('target')+'Tagesaufgaben</h2>';
  list.forEach(q=>{
   const p=Math.min(100,Math.round(q.cur/q.goal*100));
-  h+='<div class="quest'+(q.done?' done':'')+'"><div class="qtop"><span>'+(q.done?'✅ ':'')+q.txt+'</span><b>'+Math.min(q.cur,q.goal)+'/'+q.goal+'</b></div>';
+  h+='<div class="quest'+(q.done?' done':'')+'"><div class="qtop"><span>'+(q.done?ico('check','sm')+' ':'')+q.txt+'</span><b>'+Math.min(q.cur,q.goal)+' / '+q.goal+'</b></div>';
   h+='<div class="pbar"><div style="width:'+p+'%"></div></div></div>';
  });
- h+='<p class="hint">Jede erfüllte Quest bringt eine 🥈 Silbertruhe.</p></div>';
+ h+='<p class="hint">Jede erfüllte Aufgabe bringt eine Silbertruhe.</p></div>';
  return h;
 }
 
@@ -971,8 +1342,8 @@ function checkMiles(){
  MILES.forEach(m=>{
   if(state.streak>=m&&state.miles.indexOf(m)<0){
    state.miles.push(m);save();
-   addChest(m>=30?'gold':'silber','🔥 '+m+' Tage in Folge!');
-   toast('🔥 <b>'+m+ ' Tage in Serie!</b> Weiter so!');
+   addChest(m>=30?'gold':'silber',m+' Tage in Folge');
+   toast(ico('flame','sm')+' <b>'+m+' Tage in Serie.</b> Weiter so!');
   }
  });
 }
@@ -1024,6 +1395,7 @@ function askPersist(){
 
 /* --- Sofortspeicherung an wichtigen Punkten --- */
 function saveNow(reason){
+ if(_saveT){clearTimeout(_saveT);_saveT=null;}   /* gebündelte Speicherung überholen */
  state.savedAt=Date.now();
  try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
  idbPut(state);
@@ -1033,7 +1405,7 @@ function saveNow(reason){
 function flashSaved(){
  const el=document.getElementById('saveDot');
  if(!el)return;
- el.textContent='💾 gespeichert';
+ el.innerHTML=ico('check','sm')+' gespeichert';
  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
  setTimeout(()=>el.classList.remove('on'),1900);
 }
@@ -1058,7 +1430,7 @@ function restoreBest(){
    try{localStorage.setItem('mbtState',JSON.stringify(state));}catch(e){}
    updHeader();
    if(typeof renderHome==='function'&&!sess&&!les)renderHome();
-   toast('💾 Fortschritt wiederhergestellt ('+(state.xp||0)+' XP)');
+   toast(ico('save','sm')+' Fortschritt wiederhergestellt ('+(state.xp||0)+' XP)');
    return true;
   }
   return false;
@@ -1087,25 +1459,38 @@ function ringSVG(){
  const pct=Math.min(1,state.dayXP.xp/GOAL);
  const r=30,C=2*Math.PI*r;
  return '<svg width="84" height="84" viewBox="0 0 84 84">'+
- '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="#26363e" stroke-width="9"/>'+
- '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="'+(pct>=1?'#58cc02':'#1cb0f6')+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'" transform="rotate(-90 42 42)"/>'+
- '<text x="42" y="39" text-anchor="middle" font-size="15" font-weight="800" fill="#f1f7fb">'+state.dayXP.xp+'</text>'+
- '<text x="42" y="54" text-anchor="middle" font-size="9" fill="#8fa3ad">/ '+GOAL+' XP</text></svg>';
+ '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="#242a4d" stroke-width="9"/>'+
+ '<circle cx="42" cy="42" r="'+r+'" fill="none" stroke="'+(pct>=1?'#35d39a':'#6b6cf6')+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C+'" stroke-dashoffset="'+(C*(1-pct))+'" transform="rotate(-90 42 42)"/>'+
+ '<text x="42" y="39" text-anchor="middle" font-size="15" font-weight="800" fill="#eceefb">'+state.dayXP.xp+'</text>'+
+ '<text x="42" y="54" text-anchor="middle" font-size="9" fill="#8b93bd">/ '+GOAL+' XP</text></svg>';
+}
+
+/* Tagesfortschritt – steht ganz oben, damit er ohne Umweg sichtbar ist. */
+function todayStrip(){
+ bumpDay();
+ const pct=Math.min(100,Math.round(state.dayXP.xp/GOAL*100));
+ const rest=Math.max(0,GOAL-state.dayXP.xp);
+ let h='<div class="today">';
+ h+='<div class="todayrow"><div class="todaynum">'+state.dayXP.xp+'<span> / '+GOAL+' XP heute</span></div>';
+ h+='<div class="todaystreak">'+ico('flame')+state.streak+'</div></div>';
+ h+='<div class="pbar"><div style="width:'+pct+'%"></div></div>';
+ h+='<div class="hint">'+(rest?'Noch '+rest+' XP bis zum Tagesziel.':'Tagesziel geschafft – alles Weitere ist Bonus.')+'</div>';
+ return h+'</div>';
 }
 
 function renderHome(){
  setTab('home');
  const rec=recMod();
  const due=dueMods();
- let h='';
+ let h=todayStrip();
  if(state.chests.length){
-  h+='<button class="btn big chestbtn" onclick="go(\'chest\')">'+CHESTDEF[state.chests[0].t].e+' '+state.chests.length+' Truhe'+(state.chests.length>1?'n':'')+' öffnen!</button><div style="height:12px"></div>';
+  h+='<button class="btn big chestbtn" onclick="go(\'chest\')">'+ico('gift')+' '+state.chests.length+' Truhe'+(state.chests.length>1?'n':'')+' öffnen</button><div style="height:12px"></div>';
  }
- if(state.boost>0)h+='<div class="boostbar">⚡ <b>XP-Boost:</b> doppelte XP für die nächsten '+state.boost+' Aufgaben</div>';
+ if(state.boost>0)h+='<div class="boostbar">'+ico('bolt')+' <b>XP-Boost:</b> doppelte XP für die nächsten '+state.boost+' Aufgaben</div>';
  if(due.length){
-  h+='<div class="duebar">📅 <b>Wiederholung fällig:</b><br>';
-  h+=due.map(m=>'<button class="btn ghost" style="padding:5px 12px;margin:4px 4px 0 0" onclick="startReview(\''+m.id+'\')">'+m.ic+' '+m.t+'</button>').join('');
-  h+='</div>';
+  h+='<div class="duebar"><b>'+ico('cal')+' Wiederholung fällig</b><div class="btnrow" style="margin-top:8px">';
+  h+=due.map(m=>'<button class="btn sec" style="flex:0 0 auto;padding:8px 14px;font-size:.9rem" onclick="startReview(\''+m.id+'\')">'+m.ic+' '+m.t+'</button>').join('');
+  h+='</div></div>';
  }
  h+='<div class="path">';
  const recIdx=MODS.findIndex(x=>x.id===rec.id);
@@ -1122,16 +1507,16 @@ function renderHome(){
   const bs=bossState(m.id);
   const isDue=st_.due&&st_.due<=dstr();
   let cls=done?'done':isCur?'cur z':locked?'lock':'avail';
-  let icon=done?'<span class="ck">✓</span>':locked?'🔒':m.ic;
+  let icon=done?'<span class="ck">'+ico('check')+'</span>':locked?ico('lock'):m.ic;
   let flags='';
-  if(isDue)flags+='📅';
-  if(!bs.done&&bs.unlocked)flags+='⚔️';
-  h+='<div class="prow o'+offs[i%8]+'">';
-  if(i%3===1&&MENTORS[m.id])h+='<span class="sidefig '+(offs[i%8]>2?'l':'r')+'">'+MENTORS[m.id].e+'</span>';
+  if(isDue)flags+=ico('cal','f-due');
+  if(!bs.done&&bs.unlocked)flags+=ico('sword','f-boss');
+  h+='<div class="prow o'+offs[i%8]+(isCur?' bub':'')+'">';
+  if(i%5===2&&MENTORS[m.id])h+='<span class="sidefig '+(offs[i%8]>2?'l':'r')+'">'+MENTORS[m.id].e+'</span>';
   h+='<div class="nwrap">';
   if(isCur){
    const pr=Math.min(100,Math.round(st_.c/22*100));
-   h+='<div class="nring" style="background:conic-gradient(var(--gold) '+pr+'%, #26363e '+pr+'%)"></div>';
+   h+='<div class="nring" style="background:conic-gradient(var(--accent) '+pr+'%, transparent '+pr+'%)"></div>';
    h+='<div class="startbub">START</div>';
   }
   h+='<div class="node '+cls+'" onclick="nodeTap(\''+m.id+'\','+(locked?1:0)+','+(isCur?1:0)+')">'+icon;
@@ -1140,7 +1525,7 @@ function renderHome(){
   h+='<div class="nlab" onclick="renderModule(\''+m.id+'\')">'+m.t+'<br><span class="stars">'+starStr(stars(st_))+'</span></div>';
   h+='</div></div>';
  });
- h+='<div class="prow o2"><div class="nwrap"><div class="node lock" onclick="toast(\'🏁 Das Ziel: alle 21 Stationen mit ★★★!\')">🏁</div><div class="nlab">Ziel: Oberstufen-fit</div></div></div>';
+ h+='<div class="prow o2"><div class="nwrap"><div class="node lock" onclick="toast(\'Das Ziel: alle 21 Stationen mit drei Sternen.\')">'+ico('star')+'</div><div class="nlab">Ziel: Oberstufen-fit</div></div></div>';
  h+='</div>';
  $('#app').innerHTML=h;
 }
@@ -1152,7 +1537,7 @@ function nodeTap(id,locked,isCur){
   lastLockTap=id;
   const idx=MODS.findIndex(x=>x.id===id);
   const prev=idx>0?MODS[idx-1].t:'';
-  toast('🔒 Hol dir erst einen Stern in „'+prev+'" – oder tippe nochmal, um trotzdem zu üben.');
+  toast(ico('lock','sm')+' Hol dir erst einen Stern in „'+prev+'" – oder tippe nochmal, um trotzdem zu üben.');
   return;
  }
  if(isCur){go('daily');return;}
@@ -1163,11 +1548,11 @@ function exportState(){
  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(state));
  a.download='mathe-trainer-fortschritt.json';
  document.body.appendChild(a);a.click();a.remove();
- toast('💾 Fortschritt als Datei gespeichert!');}
+ toast(ico('save','sm')+' Fortschritt als Datei gespeichert.');}
 function importState(ev){
  const f=ev.target.files[0];if(!f)return;
  const r=new FileReader();
- r.onload=()=>{try{state=Object.assign(state,JSON.parse(r.result));save();updHeader();go('home');toast('✅ Fortschritt geladen!');}
+ r.onload=()=>{try{state=Object.assign(state,JSON.parse(r.result));saveNow();updHeader();go('home');toast(ico('check','sm')+' Fortschritt geladen.');}
   catch(e){alert('Die Datei konnte nicht gelesen werden.');}};
  r.readAsText(f);}
 
@@ -1200,15 +1585,15 @@ function renderStreak(){
  const lastDay=isCurMonth?now.getDate():dim;
  let perfect=practiced>0&&lastDay>0;
  for(let d=1;d<=lastDay;d++)if(!set[dstr(new Date(y,mo,d))]){perfect=false;break;}
- let h='<div class="lessonhead"><button class="lx" onclick="go(\'home\')">✕</button><b style="flex:1;text-align:center">Serie</b><span style="width:40px"></span></div>';
+ let h='<div class="lessonhead"><button class="lx" onclick="go(\'home\')" aria-label="Zurück">'+ico('close')+'</button><b style="flex:1;text-align:center">Deine Serie</b><span style="width:34px"></span></div>';
  h+='<div class="card"><div class="flamezone"><div class="flameglow"></div><span class="flamebig">🔥</span>';
- h+='<div class="strknum">'+state.streak+'</div><div class="strksub">Tage Serie!</div></div>';
- h+='<div class="bubble" style="margin-top:14px">🃏 Halte deine Serie am Leben: Ein Training pro Tag genügt. Verpasst du einen Tag, springt automatisch ein <b>Joker</b> ein ('+state.jokers+' übrig).</div></div>';
- h+='<div class="card"><div class="calnav"><button onclick="strkNav(-1)">‹</button><b>'+MONATE[mo]+' '+y+(perfect?' <span class="perfbadge">PERFEKT</span>':'')+'</b><button onclick="strkNav(1)" '+(strkOff>=0?'disabled':'')+'>›</button></div>';
- h+='<div class="strkstat"><div><b>🔥 '+practiced+'</b><small>Tage geübt</small></div><div><b>🃏 '+state.jokers+'</b><small>Joker übrig</small></div></div>';
+ h+='<div class="strknum">'+state.streak+'</div><div class="strksub">Tage in Folge</div></div>';
+ h+='<div class="bubble" style="margin-top:14px">Ein Training pro Tag genügt. Verpasst du einen Tag, springt automatisch ein <b>Joker</b> ein – du hast noch '+state.jokers+'.</div></div>';
+ h+='<div class="card"><div class="calnav"><button onclick="strkNav(-1)" aria-label="Vorheriger Monat">'+ico('left')+'</button><b>'+MONATE[mo]+' '+y+(perfect?' <span class="perfbadge">Perfekt</span>':'')+'</b><button onclick="strkNav(1)" '+(strkOff>=0?'disabled':'')+' aria-label="Nächster Monat">'+ico('right')+'</button></div>';
+ h+='<div class="strkstat"><div><b>'+ico('flame')+practiced+'</b><small>Tage geübt</small></div><div><b>'+ico('shield')+state.jokers+'</b><small>Joker übrig</small></div></div>';
  h+='<div class="cal"><div class="calgrid">'+cells+'</div></div></div>';
- h+='<div class="card"><h2>Meilensteine</h2><div class="badgewrap">';
- MILES.forEach(m=>{h+='<span class="badge" style="'+(state.streak>=m?'':'opacity:.4;filter:grayscale(1)')+'">🔥 '+m+' Tage</span>';});
+ h+='<div class="card"><h2>'+ico('star')+'Meilensteine</h2><div class="badgewrap">';
+ MILES.forEach(m=>{h+='<span class="badge '+(state.streak>=m?'has':'off')+'">'+ico('flame','sm')+' '+m+' Tage</span>';});
  h+='</div></div>';
  $('#app').innerHTML=h;
 }
@@ -1216,29 +1601,30 @@ function renderHub(){
  setTab('hub');
  const errN=state.errors.length;
  const due=dueMods();
- let h='<div class="card"><h1>🏋️ Üben</h1><p class="mut">Dein Trainingsbereich – alles, was dich stärker macht.</p></div>';
- h+='<div class="card"><h2>🚀 Tagestraining</h2><p class="mut">Aufwärmen · Fokusthema · Mix. Ca. 60 Minuten, dein Kernprogramm.</p>'+
- '<button class="btn big" onclick="go(\'daily\')">Tagestraining starten</button></div>';
- h+='<div class="card"><h2>⚡ Blitzrunde</h2><p class="mut">5 Minuten, so viele Aufgaben wie möglich. Rekord: <b>'+state.blitzBest+'</b></p>'+
- '<button class="btn warn big" onclick="go(\'blitz\')">Blitzrunde starten</button></div>';
- h+='<div class="card"><h2>🔁 Fehler-Training</h2><p class="mut">'+(errN?errN+' Aufgaben warten auf ihre Revanche.':'Keine offenen Fehler – stark!')+'</p>'+
- (errN?'<button class="btn blue big" onclick="go(\'err\')">Fehler aufarbeiten</button>':'')+'</div>';
- h+='<div class="card"><h2>📅 Wiederholungen</h2>';
+ let h=todayStrip();
+ h+='<div class="card"><h2>'+ico('train')+'Tagestraining</h2><p class="mut">Aufwärmen, Fokusthema, gemischter Abschluss. Dein Kernprogramm.</p>'+
+ '<button class="btn big" style="margin-top:14px" onclick="go(\'daily\')">Tagestraining starten</button></div>';
+ h+='<div class="card"><h2>'+ico('bolt')+'Blitzrunde</h2><p class="mut">5 Minuten, so viele Aufgaben wie möglich. Dein Rekord: <b>'+state.blitzBest+'</b></p>'+
+ '<button class="btn sec big" style="margin-top:14px" onclick="go(\'blitz\')">Blitzrunde starten</button></div>';
+ h+='<div class="card"><h2>'+ico('repeat')+'Fehler-Training</h2><p class="mut">'+(errN?errN+' Aufgaben warten auf ihre Revanche.':'Keine offenen Fehler – stark.')+'</p>'+
+ (errN?'<button class="btn sec big" style="margin-top:14px" onclick="go(\'err\')">Fehler aufarbeiten</button>':'')+'</div>';
+ h+='<div class="card"><h2>'+ico('cal')+'Wiederholungen</h2>';
  if(due.length){
-  h+='<p class="mut">Fällig – kurz auffrischen, bevor es das Gehirn löscht:</p>';
-  due.forEach(m=>{h+='<button class="btn ghost" style="margin:4px 6px 4px 0" onclick="startReview(\''+m.id+'\')">'+m.ic+' '+m.t+'</button>';});
+  h+='<p class="mut">Fällig – kurz auffrischen, bevor es verblasst:</p><div class="btnrow">';
+  due.forEach(m=>{h+='<button class="btn sec" style="flex:0 0 auto" onclick="startReview(\''+m.id+'\')">'+m.ic+' '+m.t+'</button>';});
+  h+='</div>';
  }else h+='<p class="mut">Nichts fällig. Wiederholungen erscheinen nach 1, 3, 7, 14 und 30 Tagen.</p>';
  h+='</div>';
  $('#app').innerHTML=h;
 }
 function renderQuests(){
  setTab('quests');
- let h='<div class="card"><div class="ringwrap"><div>'+ringSVG()+'</div><div><h1>🎯 Tagesziel</h1>'+
- '<p class="mut">'+(state.dayXP.xp>=GOAL?'Geschafft – alles Weitere ist Bonus! 🎉':'Sammle '+GOAL+' XP. Ein Tagestraining reicht locker.')+'</p></div></div></div>';
+ let h='<div class="card"><div class="ringwrap"><div>'+ringSVG()+'</div><div style="flex:1;min-width:150px"><h1>Tagesziel</h1>'+
+ '<p class="mut">'+(state.dayXP.xp>=GOAL?'Geschafft – alles Weitere ist Bonus.':'Sammle '+GOAL+' XP. Ein Tagestraining reicht locker.')+'</p></div></div></div>';
  h+=questHTML();
- h+='<div class="card"><h2>🔥 Serien-Meilensteine</h2><p class="mut">Bei 3, 7, 14, 30, 50, 100 Tagen in Folge wartet eine Truhe.</p>';
+ h+='<div class="card"><h2>'+ico('flame')+'Serien-Meilensteine</h2><p class="mut">Bei 3, 7, 14, 30, 50 und 100 Tagen in Folge wartet eine Truhe.</p>';
  h+='<div class="badgewrap">';
- MILES.forEach(m=>{h+='<span class="badge" style="'+(state.streak>=m?'':'opacity:.4;filter:grayscale(1)')+'">🔥 '+m+'</span>';});
+ MILES.forEach(m=>{h+='<span class="badge '+(state.streak>=m?'has':'off')+'">'+ico('flame','sm')+' '+m+'</span>';});
  h+='</div><p class="hint">Aktuelle Serie: '+state.streak+' Tag'+(state.streak===1?'':'e')+' · Joker übrig: '+state.jokers+'</p></div>';
  $('#app').innerHTML=h;
 }
@@ -1247,76 +1633,77 @@ function renderProfil(){
  const totalStars=MODS.reduce((s2,m)=>s2+stars(st(m.id)),0);
  const totalC=MODS.reduce((s2,m)=>s2+st(m.id).c,0);
  const l=lvlOf(state.xp);
- let h='<div class="card"><h1>👤 Dein Profil</h1><p class="mut">Level '+l+' · <b>'+titleOf(l)+'</b></p>';
+ let h='<div class="card"><h1>Dein Profil</h1><p class="mut">Level '+l+' · <b>'+titleOf(l)+'</b></p>';
  h+='<div class="statrow">';
- h+='<div class="statbox"><div class="v">🔥 '+state.streak+'</div><div class="l">Tage-Serie</div></div>';
+ h+='<div class="statbox"><div class="v">'+ico('flame')+state.streak+'</div><div class="l">Tage-Serie</div></div>';
  h+='<div class="statbox"><div class="v">'+state.xp+'</div><div class="l">XP gesamt</div></div>';
- h+='<div class="statbox"><div class="v">'+totalStars+'/'+(MODS.length*3)+'</div><div class="l">Sterne</div></div>';
+ h+='<div class="statbox"><div class="v">'+totalStars+' / '+(MODS.length*3)+'</div><div class="l">Sterne</div></div>';
  h+='<div class="statbox"><div class="v">'+totalC+'</div><div class="l">Aufgaben richtig</div></div>';
- h+='<div class="statbox"><div class="v">🃏 '+state.jokers+'</div><div class="l">Joker</div></div>';
- h+='<div class="statbox"><div class="v">🔥 '+(state.bestCombo||0)+'</div><div class="l">Beste Kombo</div></div>';
+ h+='<div class="statbox"><div class="v">'+ico('shield')+state.jokers+'</div><div class="l">Joker</div></div>';
+ h+='<div class="statbox"><div class="v">'+ico('flame')+(state.bestCombo||0)+'</div><div class="l">Beste Kombo</div></div>';
  h+='</div>';
- h+='<div class="setrow"><label class="sw"><input type="checkbox" '+(state.snd?'checked':'')+' onchange="toggleSnd(this.checked)"> 🔊 Sounds</label>';
- h+='<label class="sw"><input type="checkbox" '+(state.vib?'checked':'')+' onchange="toggleVib(this.checked)"> 📳 Vibration</label></div></div>';
- h+='<div class="card"><h2>💾 Automatische Speicherung</h2>'+
- '<div class="savebox"><span class="savedot">✓</span><div><b>Alles automatisch gespeichert.</b>'+
+ h+='<div class="setrow"><label class="sw"><input type="checkbox" '+(state.snd?'checked':'')+' onchange="toggleSnd(this.checked)"> Sounds</label>';
+ h+='<label class="sw"><input type="checkbox" '+(state.vib?'checked':'')+' onchange="toggleVib(this.checked)"> Vibration</label></div></div>';
+ h+='<div class="card"><h2>'+ico('save')+'Automatische Speicherung</h2>'+
+ '<div class="savebox"><span class="savedot">'+ico('check','sm')+'</span><div><b>Alles automatisch gespeichert.</b>'+
  '<div class="hint" style="margin:0">Zuletzt: '+saveAgo()+' · doppelt gesichert im Gerätespeicher</div></div></div>'+
  '<p class="hint">Dein Fortschritt wird nach jeder Aufgabe, jeder Lektion und beim Schließen der App gespeichert – du musst nie selbst daran denken.</p>'+
- '<h3 style="margin-top:16px">Gerätewechsel (optional)</h3>'+
+ '<h3 style="margin-top:16px">Gerätewechsel</h3>'+
  '<p class="mut">Nur nötig, wenn du auf ein anderes Handy oder einen anderen Browser umziehen willst.</p>'+
- '<div class="btnrow"><button class="btn sec" onclick="exportState()">⬇️ Als Datei sichern</button>'+
- '<label class="btn ghost filebtn" style="display:inline-flex;align-items:center">⬆️ Datei laden<input type="file" accept=".json" onchange="importState(event)"></label></div></div>';
- h+='<div class="card"><h2>🧭 So funktioniert der Trainer</h2>'+
- '<p>1. Tippe auf den grünen <b>START</b>-Knoten – das Tagestraining beginnt mit Wiederholungen, dann kommt dein Fokusthema.</p>'+
- '<p>2. <b>Sterne</b> gibt es nur in ⚔️ Boss-Tests. <b>📅 Wiederholungen</b> kommen nach 1, 3, 7, 14, 30 Tagen.</p>'+
- '<p>3. Drei richtige in Folge zünden die 🔥 <b>Kombo</b>. Pro Einheit hast du 🛡️ <b>Schilde</b> – Fehler kosten eines.</p>'+
- '<p>4. Truhen aus Trainings, Quests und Meilensteinen bringen XP-Boosts, Joker und Sticker.</p>'+
- '<p>5. Ein Tag verpasst? Ein 🃏 Joker rettet die Serie (2 pro Woche).</p></div>';
+ '<div class="btnrow"><button class="btn sec" onclick="exportState()">'+ico('down')+' Als Datei sichern</button>'+
+ '<label class="btn ghost filebtn">'+ico('up')+' Datei laden<input type="file" accept=".json" onchange="importState(event)"></label></div></div>';
+ h+='<div class="card"><h2>'+ico('compass')+'So funktioniert der Trainer</h2>'+
+ '<p>1. Tippe auf den <b>START</b>-Knoten – das Tagestraining beginnt mit Wiederholungen, dann kommt dein Fokusthema.</p>'+
+ '<p>2. <b>Sterne</b> gibt es nur in Boss-Tests. <b>Wiederholungen</b> kommen nach 1, 3, 7, 14 und 30 Tagen.</p>'+
+ '<p>3. Drei richtige in Folge zünden die <b>Kombo</b>. Pro Einheit hast du <b>Schilde</b> – ein Fehler kostet eines.</p>'+
+ '<p>4. Truhen aus Trainings, Zielen und Meilensteinen bringen XP-Boosts, Joker und Sticker.</p>'+
+ '<p>5. Ein Tag verpasst? Ein <b>Joker</b> rettet die Serie (2 pro Woche).</p></div>';
  $('#app').innerHTML=h;
 }
 function renderModule(id,tab){
- document.body.classList.remove('intask');
+ dockMount(null);
  tab=tab||'lernen';
+ curModId=id;
  const m=modById(id);const s=st(id);
- let h='<button class="crumb" onclick="go(\'home\')">← Übersicht</button>';
+ let h='<button class="crumb" onclick="go(\'home\')">'+ico('left','sm')+' Übersicht</button>';
  h+='<div class="card"><h1>'+m.ic+' '+m.t+'</h1>';
- h+='<div class="stars" style="font-size:1.2rem">'+starStr(stars(s))+'</div>';
- h+='<p class="hint">'+s.c+' richtig gelöst · Sterne verdienst du in den ⚔️ Boss-Tests</p>';
- h+='<div class="tabs" style="margin-top:12px">';
- h+='<div class="tab '+(tab==='lernen'?'on':'')+'" onclick="renderModule(\''+id+'\',\'lernen\')">📖 Lernen</div>';
- h+='<div class="tab '+(tab==='ueben'?'on':'')+'" onclick="renderModule(\''+id+'\',\'ueben\')">✏️ Üben</div>';
+ h+='<div class="stars" style="font-size:1.3rem">'+starStr(stars(s))+'</div>';
+ h+='<p class="hint">'+s.c+' richtig gelöst · Sterne verdienst du in den Boss-Tests</p>';
+ h+='<div class="tabs" style="margin-top:14px">';
+ h+='<div class="tab '+(tab==='lernen'?'on':'')+'" onclick="renderModule(\''+id+'\',\'lernen\')">'+ico('book','sm')+' Lernen</div>';
+ h+='<div class="tab '+(tab==='ueben'?'on':'')+'" onclick="renderModule(\''+id+'\',\'ueben\')">'+ico('pencil','sm')+' Üben</div>';
  h+='</div>';
  if(tab==='lernen'){
   const M=(typeof MENTORS!=='undefined'&&MENTORS[id])?MENTORS[id]:{e:'🧑‍🏫',n:'Mentor'};
   h+='<div class="mentorarena"><div style="text-align:center;min-width:86px"><span class="mentorfig">'+M.e+'</span><div class="mname">'+M.n+'</div></div>';
   h+='<div style="flex:1"><div class="bubble">'+(s.seen?'Schön, dich wiederzusehen! Nochmal die Lektion durchgehen – oder unten im Spickzettel nachschlagen?':'Hallo! Ich bin '+M.n+' und erkläre dir <b>'+m.t+'</b> – in kleinen Schritten, mit Fragen zwischendurch. Bereit?')+'</div>';
-  h+='<div class="btnrow"><button class="btn" onclick="startLesson(\''+id+'\')">'+(s.seen?'Lektion wiederholen 🎓':'Interaktive Lektion starten 🎓')+'</button></div></div></div>';
+  h+='<div class="btnrow"><button class="btn" onclick="startLesson(\''+id+'\')">'+ico('book')+(s.seen?' Lektion wiederholen':' Lektion starten')+'</button></div></div></div>';
   if(s.seen){
-   h+='<h3 style="margin-top:16px">📌 Spickzettel & Beispiele</h3>'+m.ex;
+   h+='<h3 style="margin-top:16px">Spickzettel &amp; Beispiele</h3>'+m.ex;
    m.exm.forEach((e,i)=>{
-    h+='<div class="exbox"><b>📝 Beispiel: '+e.q+'</b><div id="exs'+i+'"></div>';
-    h+='<button class="btn ghost" style="margin-top:8px" id="exb'+i+'" onclick="exStep('+i+')">Nächster Schritt ▸</button></div>';
+    h+='<div class="exbox"><b>Beispiel: '+e.q+'</b><div id="exs'+i+'"></div>';
+    h+='<button class="btn ghost" style="margin-top:10px" id="exb'+i+'" onclick="exStep('+i+')">Nächster Schritt '+ico('right','sm')+'</button></div>';
    });
-   h+='<button class="btn big" style="margin-top:14px" onclick="renderModule(\''+id+'\',\'ueben\')">Jetzt üben ✏️</button>';
+   h+='<button class="btn big" style="margin-top:14px" onclick="renderModule(\''+id+'\',\'ueben\')">Jetzt üben</button>';
   }else{
    h+='<p class="hint" style="margin-top:12px">Nach der Lektion findest du hier deinen Spickzettel mit allen Regeln und Beispielen.</p>';
   }
  }else{
   const bs=bossState(id);
   if(bs.done){
-   h+='<div class="bossbox">🏆 <b>Alle drei Boss-Tests bestanden – Modul gemeistert!</b><div class="hint">Du kannst hier weiter üben, um fit zu bleiben.</div></div>';
+   h+='<div class="bossbox"><b>Alle drei Boss-Tests bestanden – Modul gemeistert.</b><div class="hint">Du kannst hier weiter üben, um fit zu bleiben.</div></div>';
   }else if(bs.unlocked){
    const B=bossOf(id);
    h+='<div class="bossbox"><div style="display:flex;gap:14px;align-items:center">'+
-   '<span class="bossfig" style="font-size:2.6rem">'+B.e+'</span>'+
-   '<div><b>'+B.n+'</b> bewacht '+bs.t.name+'!<br><i>„'+pick(B.t)+'"</i></div></div>'+
-   '<div class="hint" style="margin-top:6px">'+bs.t.n+' Aufgaben · nur <b>ein Versuch</b> pro Aufgabe · kein Lösungsweg-Spickzettel · mind. '+bs.t.pass+' richtige → '+'★'.repeat(bs.tier+1)+' und +'+bs.t.xp+' XP</div>'+
-   '<div class="btnrow"><button class="btn warn" onclick="startBoss(\''+id+'\')">Boss herausfordern ⚔️</button></div></div>';
+   '<span class="bossfig" style="font-size:2.4rem">'+B.e+'</span>'+
+   '<div><b>'+B.n+'</b> bewacht '+bs.t.name+'.<br><i>„'+pick(B.t)+'"</i></div></div>'+
+   '<div class="hint" style="margin-top:8px">'+bs.t.n+' Aufgaben · nur <b>ein Versuch</b> pro Aufgabe · kein Lösungsweg · mindestens '+bs.t.pass+' richtige ergeben <span class="stars">'+starStr(bs.tier+1)+'</span> und +'+bs.t.xp+' XP</div>'+
+   '<div class="btnrow"><button class="btn warn" onclick="startBoss(\''+id+'\')">'+ico('sword')+' Boss herausfordern</button></div></div>';
   }else{
    const B=bossOf(id);
-   h+='<div class="bossbox" style="opacity:.8">🔒 <span style="font-size:1.6rem;filter:grayscale(1)">'+B.e+'</span> <b>'+B.n+'</b> wartet hinter '+bs.t.name+': Noch '+(bs.t.need-s.c)+' richtige Aufgaben bis zur Herausforderung.</div>';
+   h+='<div class="bossbox" style="opacity:.75">'+ico('lock')+' <span style="font-size:1.5rem;filter:grayscale(1)">'+B.e+'</span> <b>'+B.n+'</b> wartet hinter '+bs.t.name+': noch '+(bs.t.need-s.c)+' richtige Aufgaben bis zur Herausforderung.</div>';
   }
-  h+='<div class="fieldrow"><label>Schwierigkeit:</label><select id="lvlSel" onchange="practiceNext()">'+
+  h+='<div class="fieldrow"><label>Schwierigkeit</label><select id="lvlSel" onchange="practiceNext()">'+
    '<option value="0">Auto (empfohlen)</option><option value="1">Level 1 · Grundlagen</option>'+
    '<option value="2">Level 2 · Anwenden</option><option value="3">Level 3 · Transfer</option></select></div>';
   h+='<div id="taskarea"></div>';
@@ -1326,9 +1713,9 @@ function renderModule(id,tab){
  if(tab==='lernen'){exSteps=m.exm.map(()=>0);}
  else practiceNext(id);
 }
-let exSteps=[];
+let exSteps=[],curModId=null;
 function exStep(i){
- const mod=MODS.find(mm=>document.querySelector('h1')&&document.querySelector('h1').textContent.indexOf(mm.t)>=0);
+ const mod=modById(curModId);
  if(!mod)return;
  const e=mod.exm[i];
  if(exSteps[i]<e.steps.length){
@@ -1376,7 +1763,7 @@ const BOSSES={
 function bossOf(id){return BOSSES[id]||{e:'😈',n:'Mathe-Dämon',t:['Du wagst es, mich herauszufordern?'],mid:'Nicht schlecht …',lose:'Besiegt …',win:'Ich bleibe ungeschlagen!'};}
 function bossReact(ok){
  const fig=$('#bossFig');if(!fig||!sess||sess.type!=='boss')return;
- sess.say=ok?pick(OUCH):pick(MOCK);
+ sess.say=ok?pick(OUCH):pick(MOCK);sess.sayStep=sess.i;
  const say=$('#bossSay');if(say)say.textContent=sess.say;
  fig.classList.remove('hit','mock');void fig.offsetWidth;
  fig.classList.add(ok?'hit':'mock');
@@ -1384,7 +1771,7 @@ function bossReact(ok){
 }
 
 /* ============ Sessions ============ */
-let sess=null,timerH=null;
+let sess=null,timerH=null,sessRoot=null;
 function shufArr(a){for(let i=a.length-1;i>0;i--){const j=ri(0,i);const t=a[i];a[i]=a[j];a[j]=t;}return a;}
 
 function startDaily(){
@@ -1396,11 +1783,11 @@ function startDaily(){
   let m;
   if(due[i])m=due[i];
   else m=started.length?pick(started):rec;
-  q.push({m:m.id,lvl:Math.min(2,autoLvl(st(m.id))),ph:'🔄 Aufwärmen & Wiederholen'});
+  q.push({m:m.id,lvl:Math.min(2,autoLvl(st(m.id))),ph:'Aufwärmen',phi:'repeat'});
  }
- for(let i=0;i<8;i++)q.push({m:rec.id,lvl:autoLvl(st(rec.id)),ph:'🎯 Fokus: '+rec.t});
+ for(let i=0;i<8;i++)q.push({m:rec.id,lvl:autoLvl(st(rec.id)),ph:'Fokus · '+rec.t,phi:'target'});
  const mixPool=started.concat(due).concat([rec]);
- for(let i=0;i<3;i++){const m=pick(mixPool);q.push({m:m.id,lvl:autoLvl(st(m.id)),ph:'🧩 Gemischter Abschluss'});}
+ for(let i=0;i<3;i++){const m=pick(mixPool);q.push({m:m.id,lvl:autoLvl(st(m.id)),ph:'Gemischter Abschluss',phi:'spark'});}
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'daily',focus:rec.id,combo:0,maxCombo:0,shields:5};
  if(!st(rec.id).seen)startLesson(rec.id,true);
  else renderSessTask();
@@ -1409,7 +1796,7 @@ function startErrTraining(){
  if(!state.errors.length){go('home');return;}
  const take=state.errors.slice(0,12);
  state.errors=state.errors.slice(take.length);save();
- const q=take.map(e=>({m:e.m,lvl:e.lvl,ph:'🔁 Fehler-Training'}));
+ const q=take.map(e=>({m:e.m,lvl:e.lvl,ph:'Fehler-Training',phi:'repeat'}));
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'err',combo:0,maxCombo:0,shields:4};
  renderSessTask();
 }
@@ -1417,54 +1804,98 @@ function startBoss(id){
  const bs=bossState(id);
  if(bs.done||!bs.unlocked)return;
  const lvls=shufArr(bs.t.lvls.slice());
- const q=lvls.map(l=>({m:id,lvl:l,ph:'⚔️ '+bs.t.name+': '+modById(id).t}));
+ const q=lvls.map(l=>({m:id,lvl:l,ph:bs.t.name+' · '+modById(id).t,phi:'sword'}));
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'boss',mod:id,tier:bs.tier,pass:bs.t.pass,xp:bs.t.xp,name:bs.t.name,combo:0,maxCombo:0};
  renderSessTask();
 }
 function startReview(id){
  const q=[];
- for(let i=0;i<5;i++)q.push({m:id,lvl:autoLvl(st(id)),ph:'📅 Wiederholung: '+modById(id).t});
+ for(let i=0;i<5;i++)q.push({m:id,lvl:autoLvl(st(id)),ph:'Wiederholung · '+modById(id).t,phi:'cal'});
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'rev',mod:id,combo:0,maxCombo:0};
  renderSessTask();
 }
 function renderSessIntro(m){
- let h='<div class="card"><span class="phase">🎯 Heutiges Fokusthema</span>';
- h+='<h1 style="margin-top:10px">'+m.ic+' '+m.t+'</h1>';
- h+='<p class="mut">Lies dir die Erklärung und die Beispiele in Ruhe durch (ca. 10 Min). Danach geht das Training los.</p>';
+ let h='<div class="card"><span class="phase">'+ico('target','sm')+' Heutiges Fokusthema</span>';
+ h+='<h1 style="margin-top:12px">'+m.ic+' '+m.t+'</h1>';
+ h+='<p class="mut">Lies dir die Erklärung und die Beispiele in Ruhe durch. Danach geht das Training los.</p>';
  h+=m.ex;
  m.exm.forEach(e=>{
-  h+='<div class="exbox"><b>📝 Beispiel: '+e.q+'</b>'+e.steps.map(s=>'<div class="stp">'+s+'</div>').join('')+'</div>';
+  h+='<div class="exbox"><b>Beispiel: '+e.q+'</b>'+e.steps.map(s=>'<div class="stp">'+s+'</div>').join('')+'</div>';
  });
- h+='<button class="btn big" onclick="sessBegin()">Verstanden – los geht\'s! 🚀</button></div>';
+ h+='<button class="btn big" onclick="sessBegin()">Verstanden, los geht\'s</button></div>';
  $('#app').innerHTML=h;
 }
 function sessBegin(){const m=modById(sess.focus);st(m.id).seen=true;save();renderSessTask();}
 function sessTime(){const s=Math.floor((Date.now()-sess.t0)/1000);
  return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2);}
+
+/* Der Boss-Spruch bleibt stehen, bis es einen Anlass gibt ihn zu wechseln
+   (früher wurde bei jedem Neuzeichnen neu gewürfelt). */
+function bossSayText(){
+ const B=bossOf(sess.mod);
+ if(sess.sayStep!==sess.i){
+  sess.sayStep=sess.i;
+  if(sess.i===0)sess.say=pick(B.t);
+  else if(sess.i===Math.floor(sess.q.length/2))sess.say=B.mid;
+  else if(!sess.say)sess.say=pick(B.t);
+ }
+ return sess.say;
+}
+function updBossArena(){
+ const el=$('#bossSay');if(!el)return;
+ el.textContent=bossSayText();
+ const hp=$('#bossHp');
+ if(hp)hp.style.width=Math.max(0,Math.round((sess.pass-sess.ok)/sess.pass*100))+'%';
+ const maxErr=sess.q.length-sess.pass,used=sess.i-sess.ok,left=Math.max(0,maxErr-used);
+ const sh=$('#bossShields');
+ if(sh)sh.innerHTML='Deine Schilde: '+(left>0?ico('shield','sm').repeat(left):'keine mehr – jede Aufgabe muss sitzen')+' · ein Versuch pro Aufgabe';
+}
+
+/* Nur der Aufgabenbereich wird pro Frage neu aufgebaut, nicht der ganze
+   Bildschirm. Das war die Hauptursache für das Ruckeln zwischen Aufgaben. */
+function buildSessShell(){
+ const B=sess.type==='boss'?bossOf(sess.mod):null;
+ let h='<div class="lessonhead"><button class="lx" onclick="quitSess()" aria-label="Einheit verlassen">'+ico('close')+'</button>';
+ h+='<div class="lprog"><div id="sProg" style="width:0%"></div></div>';
+ h+='<span id="sCombo"></span><span class="lshield" id="sShield"></span></div>';
+ h+='<div class="card" id="sessRoot">';
+ h+='<div class="lmeta"><span class="phase" id="sPhase"></span><span class="hint" id="sCount"></span></div>';
+ if(B){
+  h+='<div class="bossarena"><div style="text-align:center;min-width:80px"><span class="bossfig" id="bossFig">'+B.e+'</span><div class="bossname">'+B.n+'</div></div>';
+  h+='<div style="flex:1"><div class="bubble" id="bossSay"></div>';
+  h+='<div class="bossmeta" style="margin-top:8px">Boss-Energie – besiege ihn mit '+sess.pass+' richtigen</div>';
+  h+='<div class="bosshp"><div id="bossHp" style="width:100%"></div></div>';
+  h+='<div class="bossmeta" id="bossShields" style="margin-top:6px"></div></div></div>';
+ }
+ h+='<h2 id="sTitle"></h2><div id="taskarea"></div></div>';
+ $('#app').innerHTML=h;
+ sessRoot=true;
+ if(sess.shields==null){
+  if(timerH)clearInterval(timerH);
+  timerH=setInterval(()=>{
+   const el=$('#stimer');
+   if(!el||!sess){clearInterval(timerH);timerH=null;return;}
+   el.textContent=sessTime();
+  },1000);
+ }
+}
 function renderSessTask(){
  if(!sess||!sess.q||!sess.q[sess.i]){go('home');return;}
  const item=sess.q[sess.i];
  const m=modById(item.m);
- let h='<div class="lessonhead"><button class="lx" onclick="quitSess()">✕</button>';
- h+='<div class="lprog"><div style="width:'+Math.round(sess.i/sess.q.length*100)+'%"></div></div>';
- h+='<span class="lshield">'+(sess.shields!=null?'🛡️ '+Math.max(0,sess.shields):'⏱ <span id="stimer">'+sessTime()+'</span>')+'</span></div>';
- h+='<div class="card">';
- h+='<div class="lmeta"><span class="phase">'+item.ph+'</span><span class="hint">Aufgabe '+(sess.i+1)+' / '+sess.q.length+'</span></div>';
- if(sess.combo>=2)h+='<div class="sessmeta"><span class="comboflame">🔥 Kombo x'+sess.combo+'</span></div>';
- if(sess.type==='boss'){
-  const B=bossOf(sess.mod);
-  const say=sess.i===0?pick(B.t):(sess.i===Math.floor(sess.q.length/2)?B.mid:(sess.say||pick(B.t)));
-  const hpPct=Math.max(0,Math.round((sess.pass-sess.ok)/sess.pass*100));
-  const maxErr=sess.q.length-sess.pass,used=sess.i-sess.ok,left=Math.max(0,maxErr-used);
-  h+='<div class="bossarena"><div style="text-align:center;min-width:86px"><span class="bossfig" id="bossFig">'+B.e+'</span><div class="bossname">'+B.n+'</div></div>';
-  h+='<div style="flex:1"><div class="bubble" id="bossSay">'+say+'</div>';
-  h+='<div class="bossmeta" style="margin-top:8px">Boss-Energie (besiege ihn mit '+sess.pass+' richtigen):</div><div class="bosshp"><div id="bossHp" style="width:'+hpPct+'%"></div></div>';
-  h+='<div class="bossmeta" style="margin-top:4px">Deine Schilde: '+(left>0?'🛡️'.repeat(left):'⚠️ keine mehr – jede Aufgabe muss sitzen!')+' · nur 1 Versuch pro Aufgabe</div></div></div>';
- }
- h+='<h2>'+m.ic+' '+m.t+'</h2><div id="taskarea"></div></div>';
- $('#app').innerHTML=h;
- if(timerH)clearInterval(timerH);
- timerH=setInterval(()=>{const el=$('#stimer');if(!el){clearInterval(timerH);return;}el.textContent=sessTime();},1000);
+ if(!sessRoot||!document.getElementById('sessRoot'))buildSessShell();
+ $('#sProg').style.width=Math.round(sess.i/sess.q.length*100)+'%';
+ const shEl=$('#sShield');
+ shEl.className='lshield'+(sess.shields!=null?' shields':'');
+ shEl.innerHTML=sess.shields!=null
+   ? ico('shield')+' '+Math.max(0,sess.shields)
+   : ico('clock')+' <span id="stimer">'+sessTime()+'</span>';
+ $('#sPhase').innerHTML=ico(item.phi||'spark','sm')+' '+item.ph;
+ $('#sCount').textContent='Aufgabe '+(sess.i+1)+' / '+sess.q.length;
+ $('#sCombo').innerHTML=sess.combo>=2
+   ? '<span class="comboflame">'+ico('flame','sm')+' x'+sess.combo+'</span>' : '';
+ $('#sTitle').innerHTML=m.ic+' '+m.t;
+ if(sess.type==='boss')updBossArena();
  mountTask($('#taskarea'),item.m,item.lvl,(c)=>{
   if($('#tfb').classList.contains('ok'))sess.ok++;
   if(sess.combo>sess.maxCombo)sess.maxCombo=sess.combo;
@@ -1474,10 +1905,11 @@ function renderSessTask(){
   if(sess.i>=sess.q.length)renderSessEnd();else renderSessTask();
  },{strict:sess.type==='boss'});
 }
-function quitSess(){if(timerH)clearInterval(timerH);sess=null;go('home');}
+function quitSess(){if(timerH){clearInterval(timerH);timerH=null;}sess=null;sessRoot=null;go('home');}
 
 function renderSessEnd(){
- if(timerH)clearInterval(timerH);
+ if(timerH){clearInterval(timerH);timerH=null;}
+ sessRoot=null;dockMount(null);
  const n=sess.q.length;
  const quote=Math.round(sess.ok/n*100);
  let h='<div class="card">';
@@ -1488,54 +1920,53 @@ function renderSessEnd(){
    const s=st(sess.mod);s.boss=Math.min(3,s.boss+1);
    if(s.boss===1)scheduleStart(sess.mod);
    addXP(sess.xp);checkBadges();save();
-   h+='<div class="bigemoji"><span class="bossfig dead" style="font-size:3.4rem">'+B.e+'</span></div>';
-   h+='<h1 style="text-align:center">'+B.n+' besiegt! 🏆</h1>';
+   h+='<div class="bigemoji"><span class="bossfig dead" style="font-size:3.2rem">'+B.e+'</span></div>';
+   h+='<h1 style="text-align:center">'+B.n+' besiegt</h1>';
    h+='<div class="bossarena" style="opacity:.85"><span style="font-size:2rem;filter:grayscale(.6)">'+B.e+'</span><div class="bubble">'+B.lose+'</div></div>';
-   h+='<p style="text-align:center;font-size:1.2rem">'+modById(sess.mod).t+': jetzt <span class="stars">'+starStr(s.boss)+'</span> · <b>+'+sess.xp+' XP</b></p>';
-   h+='<p class="mut" style="text-align:center">'+sess.ok+' richtige Antworten – der Boss hatte keine Chance!</p>';
+   h+='<p style="text-align:center;font-size:1.15rem">'+modById(sess.mod).t+': jetzt <span class="stars">'+starStr(s.boss)+'</span> · <b>+'+sess.xp+' XP</b></p>';
+   h+='<p class="mut" style="text-align:center">'+sess.ok+' richtige Antworten – der Boss hatte keine Chance.</p>';
   }else{
-   h+='<div class="bigemoji"><span class="bossfig mock" style="font-size:3.4rem">'+B.e+'</span></div>';
-   h+='<h1 style="text-align:center">'+B.n+' hat gewonnen … diesmal!</h1>';
+   h+='<div class="bigemoji"><span class="bossfig mock" style="font-size:3.2rem">'+B.e+'</span></div>';
+   h+='<h1 style="text-align:center">'+B.n+' hat gewonnen … diesmal</h1>';
    h+='<div class="bossarena"><span style="font-size:2rem">'+B.e+'</span><div class="bubble">'+B.win+'</div></div>';
    h+='<p style="text-align:center">'+sess.ok+' richtig – du brauchst '+sess.pass+'.</p>';
-   h+='<p class="mut" style="text-align:center">Kein Drama: Übe noch ein paar Aufgaben (besonders im Fehler-Training) und fordere ihn erneut heraus. Beim zweiten Anlauf klappt es fast immer!</p>';
+   h+='<p class="mut" style="text-align:center">Kein Drama: Übe noch ein paar Aufgaben, besonders im Fehler-Training, und fordere ihn erneut heraus. Beim zweiten Anlauf klappt es fast immer.</p>';
   }
-  h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'mod\',\''+sess.mod+'\')">Zurück zum Modul</button></div>';
+  h+='<div class="btnrow"><button class="btn big" onclick="go(\'mod\',\''+sess.mod+'\')">Zurück zum Modul</button></div>';
  }else if(sess.type==='rev'){
   scheduleAdvance(sess.mod);addXP(25);checkBadges();
   const s=st(sess.mod);
-  h+='<div class="bigemoji">📅</div><h1 style="text-align:center">Wiederholung geschafft!</h1>';
+  h+='<div class="bigemoji">'+ico('cal','lg')+'</div><h1 style="text-align:center">Wiederholung geschafft</h1>';
   h+='<p style="text-align:center">'+sess.ok+' von '+n+' richtig · <b>+25 XP</b></p>';
-  h+='<p class="mut" style="text-align:center">Nächste Wiederholung von „'+modById(sess.mod).t+'": in '+IVL[s.stage]+' Tag'+(IVL[s.stage]>1?'en':'')+'. Jede geschaffte Wiederholung verlängert den Abstand – so wandert der Stoff ins Langzeitgedächtnis.</p>';
-  h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'home\')">Weiter</button></div>';
+  h+='<p class="mut" style="text-align:center">Nächste Wiederholung von „'+modById(sess.mod).t+'" in '+IVL[s.stage]+' Tag'+(IVL[s.stage]>1?'en':'')+'. Jede geschaffte Wiederholung verlängert den Abstand – so wandert der Stoff ins Langzeitgedächtnis.</p>';
+  h+='<div class="btnrow"><button class="btn big" onclick="go(\'home\')">Weiter</button></div>';
  }else{
   const perfect=sess.ok===n&&!sess.broke;
   sessBonus=40+(perfect?60:0);
   h+='<div class="bigemoji">'+(sess.broke?'🛡️':perfect?'🌟':quote>=80?'🏆':quote>=50?'💪':'🌱')+'</div>';
-  h+='<h1 style="text-align:center">'+(sess.broke?'Schilde aufgebraucht!':perfect?'Perfekte Runde!':'Training geschafft!')+'</h1>';
-  if(perfect)h+='<p style="text-align:center;font-weight:700;color:var(--ok)">Keine einzige falsche Antwort – +60 Bonus-XP extra!</p>';
-  if(sess.broke)h+='<p class="mut" style="text-align:center">Kein Problem – die Fehler landen im Fehler-Training. Nächster Versuch mit frischen Schilden!</p>';
+  h+='<h1 style="text-align:center">'+(sess.broke?'Schilde aufgebraucht':perfect?'Perfekte Runde':'Training geschafft')+'</h1>';
+  if(perfect)h+='<p style="text-align:center;font-weight:700;color:var(--ok)">Keine einzige falsche Antwort – 60 Bonus-XP extra.</p>';
+  if(sess.broke)h+='<p class="mut" style="text-align:center">Kein Problem – die Fehler landen im Fehler-Training. Nächster Versuch mit frischen Schilden.</p>';
   h+='<div class="statrow">';
-  h+='<div class="statbox"><div class="v">'+sess.ok+'/'+n+'</div><div class="l">richtig</div></div>';
+  h+='<div class="statbox"><div class="v">'+sess.ok+' / '+n+'</div><div class="l">richtig</div></div>';
   h+='<div class="statbox"><div class="v">'+sessTime()+'</div><div class="l">Dauer</div></div>';
-  h+='<div class="statbox"><div class="v">🔥 '+(sess.maxCombo||0)+'</div><div class="l">beste Kombo</div></div>';
+  h+='<div class="statbox"><div class="v">'+ico('flame')+(sess.maxCombo||0)+'</div><div class="l">beste Kombo</div></div>';
   h+='<div class="statbox"><div class="v">+<span id="xpCount">0</span></div><div class="l">Bonus-XP</div></div></div>';
   if(sess.type==='daily'){
    const t=dstr();const seen={};
    sess.q.forEach(it=>{if(seen[it.m])return;seen[it.m]=1;
     const s=st(it.m);if(s.due&&s.due<=t)scheduleAdvance(it.m);});
-   h+='<h2>📝 Mini-Zusammenfassung (wichtig!)</h2>';
+   h+='<h2>'+ico('pencil')+'Kurz festhalten</h2>';
    h+='<p class="mut">Das Aufschreiben in eigenen Worten ist der stärkste Trick gegen das Vergessen.</p>';
-   h+='<p><b>Was habe ich heute verstanden?</b></p><textarea id="r1" rows="2" style="width:100%"></textarea>';
-   h+='<p style="margin-top:8px"><b>Was war schwer?</b></p><textarea id="r2" rows="2" style="width:100%"></textarea>';
-   h+='<p style="margin-top:8px"><b>Was wiederhole ich morgen?</b></p><textarea id="r3" rows="2" style="width:100%"></textarea>';
-   h+='<button class="btn big" style="margin-top:14px" onclick="saveReflect()">Speichern & abschließen ✅</button>';
+   h+='<p style="margin-top:10px"><b>Was habe ich heute verstanden?</b></p><textarea id="r1" rows="2" style="width:100%"></textarea>';
+   h+='<p style="margin-top:10px"><b>Was war schwer?</b></p><textarea id="r2" rows="2" style="width:100%"></textarea>';
+   h+='<p style="margin-top:10px"><b>Was wiederhole ich morgen?</b></p><textarea id="r3" rows="2" style="width:100%"></textarea>';
+   h+='<button class="btn big" style="margin-top:16px" onclick="saveReflect()">Speichern und abschließen</button>';
   }else{
    h+='<button class="btn big" onclick="finishPlain()">Zurück zur Übersicht</button>';
   }
  }
  h+='</div>';
- document.body.classList.remove('intask');
  saveNow();
  $('#app').innerHTML=h;
  const won=(sess.type!=='boss'||sess.ok>=sess.pass);
@@ -1571,21 +2002,25 @@ function renderBlitzTask(){
  if(Date.now()>=sess.end){renderBlitzEnd();return;}
  const m=pick(blitzPool());
  const lvl=pick([1,1,2]);
- let h='<div class="lessonhead"><button class="lx" onclick="quitSess()">✕</button>';
- h+='<span class="blitztime" id="btime">'+fmtT(blitzLeft())+'</span>';
- h+='<div class="lprog"><div style="width:'+Math.min(100,Math.round(sess.n/25*100))+'%;background:var(--org)"></div></div>';
- h+='<span class="lshield" style="color:var(--ok)">✅ '+sess.ok+'</span></div>';
- h+='<div class="card">';
- h+='<div class="lmeta"><span class="phase" style="background:#3a2c14;color:#ffb84d">⚡ Blitzrunde</span></div>';
- h+='<h2>'+m.ic+' '+m.t+'</h2><div id="taskarea"></div></div>';
- $('#app').innerHTML=h;
- if(timerH)clearInterval(timerH);
- timerH=setInterval(()=>{
-  if(!sess||sess.type!=='blitz'){clearInterval(timerH);return;}
-  const el=$('#btime');
-  if(Date.now()>=sess.end){clearInterval(timerH);renderBlitzEnd();return;}
-  if(el)el.textContent=fmtT(blitzLeft());
- },500);
+ if(!sessRoot||!document.getElementById('sessRoot')){
+  let h='<div class="lessonhead"><button class="lx" onclick="quitSess()" aria-label="Blitzrunde abbrechen">'+ico('close')+'</button>';
+  h+='<span class="blitztime" id="btime">'+fmtT(blitzLeft())+'</span>';
+  h+='<div class="lprog"><div id="bProg" style="width:0%;background:var(--warn)"></div></div>';
+  h+='<span class="lshield" id="bOk" style="color:var(--ok)"></span></div>';
+  h+='<div class="card" id="sessRoot"><div class="lmeta"><span class="phase hot">'+ico('bolt','sm')+' Blitzrunde</span></div>';
+  h+='<h2 id="sTitle"></h2><div id="taskarea"></div></div>';
+  $('#app').innerHTML=h;
+  sessRoot=true;
+  if(timerH)clearInterval(timerH);
+  timerH=setInterval(()=>{
+   if(!sess||sess.type!=='blitz'){clearInterval(timerH);timerH=null;return;}
+   if(Date.now()>=sess.end){clearInterval(timerH);timerH=null;renderBlitzEnd();return;}
+   const el=$('#btime');if(el)el.textContent=fmtT(blitzLeft());
+  },500);
+ }
+ $('#bProg').style.width=Math.min(100,Math.round(sess.n/25*100))+'%';
+ $('#bOk').innerHTML=ico('check')+' '+sess.ok;
+ $('#sTitle').innerHTML=m.ic+' '+m.t;
  mountTask($('#taskarea'),m.id,lvl,()=>{
   if($('#tfb')&&$('#tfb').classList.contains('ok'))sess.ok++;
   sess.n++;
@@ -1594,8 +2029,8 @@ function renderBlitzTask(){
 }
 function fmtT(s){return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+s%60).slice(-2);}
 function renderBlitzEnd(){
- if(timerH)clearInterval(timerH);
- document.body.classList.remove('intask');
+ if(timerH){clearInterval(timerH);timerH=null;}
+ sessRoot=null;dockMount(null);
  setTimeout(()=>saveNow(),50);
  const rec=sess.ok>state.blitzBest;
  if(rec)state.blitzBest=sess.ok;
@@ -1604,16 +2039,16 @@ function renderBlitzEnd(){
  addXP(bonus);checkBadges();questProg('blitz',1);
  if(sess.ok>=8)addChest('silber','Starke Blitzrunde');else if(sess.ok>0)addChest('holz','Blitzrunde gespielt');
  save();
- let h='<div class="card"><div class="bigemoji">⚡</div>';
- h+='<h1 style="text-align:center">Blitzrunde vorbei!</h1>';
+ let h='<div class="card"><div class="bigemoji">'+ico('bolt','lg')+'</div>';
+ h+='<h1 style="text-align:center">Blitzrunde vorbei</h1>';
  h+='<div class="statrow">';
  h+='<div class="statbox"><div class="v">'+sess.ok+'</div><div class="l">richtig</div></div>';
  h+='<div class="statbox"><div class="v">'+sess.n+'</div><div class="l">versucht</div></div>';
  h+='<div class="statbox"><div class="v">+'+bonus+'</div><div class="l">XP</div></div>';
  h+='<div class="statbox"><div class="v">'+state.blitzBest+'</div><div class="l">Rekord</div></div></div>';
- if(rec&&sess.ok>0)h+='<p style="text-align:center;font-weight:800;color:var(--org)">🎉 Neuer persönlicher Rekord!</p>';
- h+='<div class="btnrow"><button class="btn big" onclick="sess=null;go(\'home\')">Zurück</button>'+
- '<button class="btn warn" onclick="go(\'blitz\')">Nochmal! ⚡</button></div></div>';
+ if(rec&&sess.ok>0)h+='<p style="text-align:center;font-weight:800;color:var(--warn)">Neuer persönlicher Rekord!</p>';
+ h+='<div class="btnrow"><button class="btn sec" onclick="go(\'home\')">Zurück</button>'+
+ '<button class="btn warn" onclick="go(\'blitz\')">Nochmal</button></div></div>';
  $('#app').innerHTML=h;
  if(rec&&sess.ok>0)cheer();
  sess=null;
@@ -1621,28 +2056,27 @@ function renderBlitzEnd(){
 
 /* ============ Logbuch & Abzeichen ============ */
 function renderLog(){
- let h='<button class="crumb" onclick="go(\'home\')">← Übersicht</button>';
- h+='<div class="card"><h1>🏅 Abzeichen</h1><div class="badgewrap">';
+ let h='<div class="card"><h1>Abzeichen</h1><div class="badgewrap">';
  BADGES.forEach(b=>{
   const has=state.badges.indexOf(b.id)>=0;
-  h+='<span class="badge" style="'+(has?'':'opacity:.38;filter:grayscale(1)')+'" title="'+b.d+'">'+b.e+' '+b.n+'</span>';
+  h+='<span class="badge '+(has?'has':'off')+'" title="'+b.d+'">'+b.e+' '+b.n+'</span>';
  });
- h+='</div><p class="hint" style="margin-top:8px">Grau = noch nicht verdient. Tippe auf ein Abzeichen für die Bedingung.</p></div>';
- h+='<div class="card"><h1>🖼️ Sticker-Album</h1><div class="stickwrap">';
+ h+='</div><p class="hint" style="margin-top:10px">Blass = noch nicht verdient. Tippe auf ein Abzeichen für die Bedingung.</p></div>';
+ h+='<div class="card"><h1>Sticker-Album</h1><div class="stickwrap">';
  STICKERS.forEach((s,i)=>{
   const has=state.stickers.indexOf(i)>=0;
-  h+='<div class="stick'+(has?'':' locked')+'" title="'+s.n+'"><span>'+(has?s.e:'❔')+'</span><small>'+(has?s.n:'noch offen')+'</small></div>';
+  h+='<div class="stick'+(has?'':' locked')+'" title="'+s.n+'"><span>'+(has?s.e:'·')+'</span><small>'+(has?s.n:'noch offen')+'</small></div>';
  });
- h+='</div><p class="hint">'+state.stickers.length+' von '+STICKERS.length+' Stickern gesammelt – sie stecken in den Truhen!</p></div>';
- h+='<div class="card"><h2>⚡ Rekorde</h2><p>Blitzrunde: <b>'+state.blitzBest+' richtige</b> in 5 Minuten · '+state.blitzRuns+' Runden</p>'+
- '<p>Beste Kombo: <b>🔥 '+(state.bestCombo||0)+'</b></p></div>';
- h+='<div class="card"><h1>📓 Logbuch</h1>';
- if(!state.journal.length)h+='<p class="mut">Noch keine Einträge. Schließe dein erstes Tagestraining ab!</p>';
+ h+='</div><p class="hint">'+state.stickers.length+' von '+STICKERS.length+' Stickern gesammelt – sie stecken in den Truhen.</p></div>';
+ h+='<div class="card"><h2>'+ico('chart')+'Rekorde</h2><p>Blitzrunde: <b>'+state.blitzBest+' richtige</b> in 5 Minuten · '+state.blitzRuns+' Runden</p>'+
+ '<p>Beste Kombo: <b>'+(state.bestCombo||0)+'</b></p></div>';
+ h+='<div class="card"><h1>Logbuch</h1>';
+ if(!state.journal.length)h+='<p class="mut">Noch keine Einträge. Schließe dein erstes Tagestraining ab.</p>';
  state.journal.slice().reverse().forEach(j=>{
   h+='<div class="jentry"><b>'+j.d+'</b> · '+j.ok+'/'+j.n+' richtig';
-  if(j.a1)h+='<br>✅ Verstanden: '+j.a1;
-  if(j.a2)h+='<br>❓ Schwer: '+j.a2;
-  if(j.a3)h+='<br>🔁 Morgen: '+j.a3;
+  if(j.a1)h+='<br><span class="mut">Verstanden:</span> '+j.a1;
+  if(j.a2)h+='<br><span class="mut">Schwer:</span> '+j.a2;
+  if(j.a3)h+='<br><span class="mut">Morgen:</span> '+j.a3;
   h+='</div>';
  });
  h+='</div>';
@@ -1790,7 +2224,7 @@ fun:[
  {m:'Das war die Grundlage ALLER Funktionen – Geraden, Parabeln, Exponentialkurven. Alle jonglieren nach dieser Regel. Weiter zum Training!'}],
 lin:[
  {m:'Servus! Milo, Bergführer. Lineare Funktionen sind meine Wanderwege: immer gleichmäßig steil. Die Karte dazu: <b>y = mx + b</b>.'},
- {m:'m ist die <b>Steigung</b> (wie steil), b der <b>Startpunkt</b> auf der y-Achse.',b:graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#e8590c'},{dot:[1,3],col:'#2b8a3e'}])+'y = 2x + 1: Start bei 1 (orange), pro Schritt nach rechts 2 hoch (grün)'},
+ {m:'m ist die <b>Steigung</b> (wie steil), b der <b>Startpunkt</b> auf der y-Achse.',b:graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#ffc233'},{dot:[1,3],col:'#35d39a'}])+'y = 2x + 1: Start bei 1 (orange), pro Schritt nach rechts 2 hoch (grün)'},
  {q:'Bei y = 3x − 2: Was passiert mit y, wenn x um 1 wächst?',o:['y wächst um 3','y sinkt um 2','y wächst um 1'],a:0,ok:'Bergauf mit Steigung 3! Genau das bedeutet m.',no:'Die Zahl VOR dem x (m = 3) sagt: pro Schritt nach rechts geht es 3 nach oben.'},
  {q:'Und wo startet y = 3x − 2 auf der y-Achse?',o:['Bei −2','Bei 3','Bei 0'],a:0,ok:'Basislager gefunden: b = −2!',no:'b ist die Zahl OHNE x – hier −2. Dort schneidet die Gerade die y-Achse.'},
  {m:'Steigung aus zwei Punkten? Höhenunterschied durch Wegstrecke:',b:'m = '+frac('y₂ − y₁','x₂ − x₁')+'&nbsp;&nbsp;z. B. (0|2) und (2|6): m = '+frac(4,2)+' = 2'},
@@ -1799,7 +2233,7 @@ lin:[
  {m:'Mit m und b liest du jede Gerade wie eine Wanderkarte. Pack die Stiefel – Übungszeit!'}],
 qfk:[
  {m:'Yo! Coach Para hier. Jeder Basketballwurf fliegt eine <b>Parabel</b> – genau die Kurve der quadratischen Funktionen!'},
- {m:'Die Scheitelpunktform ist mein Spielzug Nummer 1:',b:'f(x) = a(x − d)² + e → Scheitel S(d | e)<br>'+graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#e8590c'}])+'f(x) = (x − 2)² − 1: Scheitel S(2 | −1)'},
+ {m:'Die Scheitelpunktform ist mein Spielzug Nummer 1:',b:'f(x) = a(x − d)² + e → Scheitel S(d | e)<br>'+graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#ffc233'}])+'f(x) = (x − 2)² − 1: Scheitel S(2 | −1)'},
  {q:'Scheitelpunkt von f(x) = (x + 1)² + 3?',o:['S(−1 | 3)','S(1 | 3)','S(−1 | −3)'],a:0,ok:'Nothing but net! (x + 1) = (x − (−1)) → d = −1. Das Vorzeichen dreht sich!',no:'Achtung, Trick: (x + 1)² heißt d = −1, denn die Form ist (x − d)². e = +3 bleibt.'},
  {q:'f(x) = −2x² + 3: Wie ist die Parabel geöffnet?',o:['Nach unten (a < 0)','Nach oben','Gar nicht'],a:0,ok:'Wie ein Wurf zum Korb – erst hoch, dann runter: a = −2 ist negativ!',no:'Entscheidend ist die Zahl vor x²: negativ → Öffnung nach unten.'},
  {m:'Nullstellen = wo der Ball den Boden trifft. Setze f(x) = 0:',b:'(x − 1)² − 4 = 0 → (x − 1)² = 4<br>x − 1 = ±2 → x = 3 oder x = −1'},
@@ -1878,12 +2312,12 @@ function startLesson(id,toSession){
 }
 function renderLesson(){
  const L=LESSONS[les.mod],step=L[les.i],M=lesMentor(),m=modById(les.mod);
- let h='<div class="lessonhead"><button class="lx" onclick="lesQuit()">✕</button>';
+ let h='<div class="lessonhead"><button class="lx" onclick="lesQuit()" aria-label="Lektion verlassen">'+ico('close')+'</button>';
  h+='<div class="lprog"><div style="width:'+Math.round(les.i/L.length*100)+'%"></div></div>';
- h+='<span class="lshield" style="color:var(--mut)">'+(les.i+1)+'/'+L.length+'</span></div>';
+ h+='<span class="lshield" style="color:var(--ink-3)">'+(les.i+1)+' / '+L.length+'</span></div>';
  h+='<div class="card">';
- h+='<div class="lmeta"><span class="phase" style="background:#1d3323;color:#7fe030">🎓 Lektion: '+m.ic+' '+m.t+'</span></div>';
- h+='<div class="mentorarena"><div style="text-align:center;min-width:86px"><span class="mentorfig" id="menFig">'+M.e+'</span><div class="mname">'+M.n+'</div></div>';
+ h+='<div class="lmeta"><span class="phase grow">'+ico('book','sm')+' Lektion · '+m.ic+' '+m.t+'</span></div>';
+ h+='<div class="mentorarena"><div style="text-align:center;min-width:80px"><span class="mentorfig" id="menFig">'+M.e+'</span><div class="mname">'+M.n+'</div></div>';
  h+='<div style="flex:1"><div class="bubble" id="menSay">'+(step.q?step.q:step.m)+'</div></div></div>';
  let board='';
  for(let k=0;k<=les.i;k++)if(L[k].b)board+='<div class="tl'+(k===les.i?' neu':'')+'">'+L[k].b+'</div>';
@@ -1892,11 +2326,13 @@ function renderLesson(){
   if(!les.perm||les.perm.length!==step.o.length)les.perm=shuffled(step.o.map((_,i)=>i));
   les.perm.forEach((oi,i)=>{h+='<button class="mcopt" onclick="lesPick(this,'+i+')">'+step.o[oi]+'</button>';});
  }
- h+='<div class="btnrow taskbar"><button class="btn" id="lesNext" onclick="lesNext()" '+(step.q?'style="display:none"':'')+'>'+(les.i===L.length-1?'Lektion abschließen ✅':'WEITER')+'</button></div>';
+ h+='<div class="btnrow taskbar"><button class="btn" id="lesNext" onclick="lesNext()" '+(step.q?'style="display:none"':'')+'>'+
+  (les.i===L.length-1?'Lektion abschließen':'Weiter '+ico('right'))+'</button></div>';
  h+='</div>';
- $('#app').innerHTML=h;
- document.body.classList.add('intask');
- const nx=$('#lesNext');if(nx&&!step.q)nx.focus();
+ const app=$('#app');
+ app.innerHTML=h;
+ dockMount(app);
+ const nx=$('#lesNext');if(nx&&!step.q)nx.focus({preventScroll:true});
 }
 function lesPick(btn,i){
  if(!les||les.answered)return;
@@ -1908,14 +2344,14 @@ function lesPick(btn,i){
   les.answered=true;
   btn.classList.add('ok');
   document.querySelectorAll('.mcopt').forEach(b=>b.disabled=true);
-  if(say)say.innerHTML='✅ '+step.ok;
+  if(say)say.innerHTML=ico('check','sm')+' '+step.ok;
   if(fig){fig.classList.remove('think');void fig.offsetWidth;fig.classList.add('happy');}
   if(!les.tried)addXP(5);
-  const nx=$('#lesNext');if(nx){nx.style.display='inline-block';nx.focus();}
+  const nx=$('#lesNext');if(nx){nx.style.display='';nx.focus({preventScroll:true});syncChrome();}
  }else{
   les.tried=true;
   btn.classList.add('bad');btn.disabled=true;
-  if(say)say.innerHTML='🤔 '+step.no;
+  if(say)say.innerHTML=ico('spark','sm')+' '+step.no;
   if(fig){fig.classList.remove('happy');void fig.offsetWidth;fig.classList.add('think');}
  }
 }
@@ -1930,21 +2366,21 @@ function lesQuit(){
  go('home');
 }
 function lesEnd(){
- document.body.classList.remove('intask');
+ dockMount(null);
  const id=les.mod,m=modById(id),M=lesMentor(),s=st(id);
  const first=!s.seen;
- s.seen=true;save();
+ s.seen=true;
  if(first)addXP(25);
  saveNow('flash');
  let h='<div class="card"><div class="bigemoji"><span class="mentorfig">'+M.e+'</span></div>';
- h+='<h1 style="text-align:center">Lektion geschafft!'+(first?' <b>+25 XP</b>':'')+'</h1>';
+ h+='<h1 style="text-align:center">Lektion geschafft'+(first?' · <b>+25 XP</b>':'')+'</h1>';
  h+='<p class="mut" style="text-align:center">'+M.n+': „Stark gemacht! Jetzt festigt das Üben alles – Wissen wächst beim Rechnen."</p>';
- h+='<h2 style="margin-top:16px">📌 Dein Spickzettel</h2>'+m.ex;
+ h+='<h2 style="margin-top:18px">'+ico('book')+'Dein Spickzettel</h2>'+m.ex;
  if(les.toSession){
-  h+='<button class="btn big" onclick="lesToSess()">Weiter zum Training 🚀</button>';
+  h+='<button class="btn big" style="margin-top:14px" onclick="lesToSess()">Weiter zum Training</button>';
  }else{
-  h+='<div class="btnrow"><button class="btn big" onclick="les=null;renderModule(\''+id+'\',\'ueben\')">Jetzt üben ✏️</button></div>';
-  h+='<button class="crumb" onclick="les=null;go(\'home\')">Zur Übersicht</button>';
+  h+='<div class="btnrow"><button class="btn big" onclick="les=null;renderModule(\''+id+'\',\'ueben\')">Jetzt üben</button></div>';
+  h+='<button class="crumb" onclick="go(\'home\')">Zur Übersicht</button>';
  }
  h+='</div>';
  $('#app').innerHTML=h;cheer();
@@ -2023,8 +2459,8 @@ regler:{manual:true,
 wahr:{manual:false,
  html:function(t){
   return '<div class="wfbox">'+t.stmt+'</div>'+
-   '<div class="btnrow" style="justify-content:center"><button class="gbtn big ok" onclick="wfTap(true)">✅ Wahr</button>'+
-   '<button class="gbtn big no" onclick="wfTap(false)">❌ Falsch</button></div>';}
+   '<div class="btnrow" style="justify-content:center"><button class="gbtn big ok" onclick="wfTap(true)">'+ico('check')+' Wahr</button>'+
+   '<button class="gbtn big no" onclick="wfTap(false)">'+ico('close')+' Falsch</button></div>';}
 },
 
 /* --- 8) Sortieren nach Größe --- */
@@ -2130,23 +2566,23 @@ function wfTap(ans){
 }
 /* ============ Spiel-Aufgaben pro Modul ============ */
 function mkPuzzle(steps){return {game:'puzzle',steps2:steps,order:shuffled(steps.map((_,i)=>i)),
- q:'🧩 <b>Lösungsweg-Puzzle:</b> Bringe die Schritte in die richtige Reihenfolge.',
+ q:'<b>Lösungsweg-Puzzle:</b> Bringe die Schritte in die richtige Reihenfolge.',
  steps:['Richtige Reihenfolge:'].concat(steps.map((s,i)=>(i+1)+'. '+s))};}
 function mkFehler(lines,bad,why){return {game:'fehler',lines:lines,bad:bad,
- q:'🔍 <b>Fehlersuche:</b> Wo steckt der Fehler?',
+ q:'<b>Fehlersuche:</b> Wo steckt der Fehler?',
  steps:['Der Fehler steckt in <b>Zeile '+(bad+1)+'</b>.',why]};}
 function mkWahr(stmt,truth,why){return {game:'wahr',stmt:stmt,truth:truth,
- q:'⚡ <b>Wahr oder falsch?</b>',steps:[(truth?'Die Aussage ist <b>wahr</b>.':'Die Aussage ist <b>falsch</b>.'),why]};}
+ q:'<b>Wahr oder falsch?</b>',steps:[(truth?'Die Aussage ist <b>wahr</b>.':'Die Aussage ist <b>falsch</b>.'),why]};}
 function mkSort(items){return {game:'sortier',items:shuffled(items),
- q:'📏 <b>Sortieren:</b> vom kleinsten zum größten Wert',
+ q:'<b>Sortieren:</b> vom kleinsten zum größten Wert',
  steps:['Richtige Reihenfolge: '+items.slice().sort((a,b)=>a.v-b.v).map(i=>i.txt).join(' &lt; ')]};}
 function mkMemory(pairs){
  const cards=[];pairs.forEach((p,g)=>{p.forEach(txt=>cards.push({txt:txt,g:g}));});
  return {game:'memory',pairs:pairs,cards:shuffled(cards),
-  q:'🃏 <b>Memory:</b> Finde die gleichwertigen Paare!',
+  q:'<b>Memory:</b> Finde die gleichwertigen Paare.',
   steps:['Zusammen gehören:'].concat(pairs.map(p=>p.join('  =  ')))};}
 function mkBau(chips,acc,frage){return {game:'bau',chips:shuffled(chips),acc:acc,
- q:'🧱 <b>Term-Baukasten:</b> '+frage,steps:['Richtige Lösung: <b>'+acc[0]+'</b>']};}
+ q:'<b>Term-Baukasten:</b> '+frage,steps:['Richtige Lösung: <b>'+acc[0]+'</b>']};}
 function mkWaage(a,b,c){
  // a·x + b = c  (Lösung ganzzahlig)
  const moves=[];
@@ -2156,14 +2592,14 @@ function mkWaage(a,b,c){
  moves.push({l:(b<0?'− ':'+ ')+Math.abs(b),f:s=>{s.b+=b;s.c+=b;}});
  moves.push({l:'· '+a,f:s=>{s.a*=a;s.b*=a;s.c*=a;}});
  return {game:'waage',a:a,b:b,c:c,lhs:linStr(a,b),rhs:''+c,moves:shuffled(moves),
-  q:'⚖️ <b>Waage:</b> Löse '+linStr(a,b)+' = '+c+' Schritt für Schritt.',
+  q:'<b>Waage:</b> Löse '+linStr(a,b)+' = '+c+' Schritt für Schritt.',
   steps:['Erst die Zahl wegräumen: '+(b<0?'+ ':'− ')+Math.abs(b),'Dann durch die Zahl vor dem x teilen: : '+a,'<b>x = '+((c-b)/a)+'</b>']};}
 function mkRegler(task,l1,r1,l2,r2,sol,draw){
  let s1=sol[0],s2=sol[1],g=0;
  while(s1===sol[0]&&g<20){s1=ri(r1[0],r1[1]);g++;}
  s2=sol[1]===r2[0]?r2[1]:r2[0];
  return {game:'regler',task:task,l1:l1,r1:r1,l2:l2,r2:r2,sol:sol,start:[s1,s2],draw:draw,
-  q:'🎚️ <b>Regler-Spiel</b>',steps:['Richtig ist: '+l1+' '+sol[0]+' und '+l2+' '+sol[1]]};}
+  q:'<b>Regler-Spiel</b>',steps:['Richtig ist: '+l1+' '+sol[0]+' und '+l2+' '+sol[1]]};}
 
 /* Spielgeneratoren je Modul (Level 2 & 3) */
 const GAMEGEN={
@@ -2290,7 +2726,7 @@ lin:[
  ()=>{const m=pick([-3,-2,-1,1,2,3]),b=ri(-3,3);
   return mkRegler('Stelle die Gerade so ein, dass sie zum roten Punkt passt: y = m·x + b soll durch <b>(0 | '+b+')</b> gehen und die Steigung <b>'+m+'</b> haben.',
    'Steigung m =',[-3,3],'y-Achsenabschnitt b =',[-4,4],[m,b],
-   (v1,v2)=>graphSVG([{f:x=>v1*x+v2},{f:x=>m*x+b,col:'#adb5bd'},{dot:[0,b],col:'#e8590c'},{dot:[1,m+b],col:'#e8590c'}]));},
+   (v1,v2)=>graphSVG([{f:x=>v1*x+v2},{f:x=>m*x+b,col:'#5a628f'},{dot:[0,b],col:'#ffc233'},{dot:[1,m+b],col:'#ffc233'}]));},
  ()=>mkWahr('Bei y = 3x − 2 ist der y-Achsenabschnitt −2',true,'b ist die Zahl ohne x.'),
  ()=>{const m=ri(2,4),b=ri(1,5);
   return mkPuzzle(['Steigung ablesen: m = '+m,'y-Achsenabschnitt ablesen: b = '+b,'Gleichung aufstellen: y = '+linStr(m,b)]);},
@@ -2300,7 +2736,7 @@ qfk:[
  ()=>{const d=ri(-3,3),e=ri(-3,3);
   return mkRegler('Verschiebe die Parabel f(x) = (x − d)² + e auf den roten Scheitelpunkt!',
    'd =',[-3,3],'e =',[-3,3],[d,e],
-   (v1,v2)=>graphSVG([{f:x=>(x-v1)*(x-v1)+v2},{dot:[d,e],col:'#e8590c'}]));},
+   (v1,v2)=>graphSVG([{f:x=>(x-v1)*(x-v1)+v2},{dot:[d,e],col:'#ffc233'}]));},
  ()=>mkWahr('Bei f(x) = −2x² + 1 ist die Parabel nach unten geöffnet',true,'Die Zahl vor x² ist negativ.'),
  ()=>{const d=ri(1,4),k=ri(1,3);
   return mkPuzzle(['(x − '+d+')² − '+(k*k)+' = 0','(x − '+d+')² = '+(k*k),'Wurzel: x − '+d+' = ±'+k,'x₁ = '+(d+k)+', x₂ = '+(d-k)]);},
@@ -2964,7 +3400,7 @@ gen:function(lvl){
    while((Math.abs(y0)>4||x0===0)&&g<40){x0=ri(-3,3);y0=m*x0+b;g++;}
    if(Math.abs(y0)>4||x0===0){m=1;b=0;x0=2;y0=2;}
    return {q:'Der Graph zeigt eine Funktion f. Lies ab: f('+x0+') = ?'+
-    graphSVG([{f:x=>m*x+b},{dot:[x0,y0],col:'#e8590c'}]),
+    graphSVG([{f:x=>m*x+b},{dot:[x0,y0],col:'#ffc233'}]),
     fields:[{l:'f('+x0+') =',a:y0}],
     steps:['Gehe auf der x-Achse zu x = '+x0,'Der markierte Punkt liegt auf Höhe y = '+y0,'<b>f('+x0+') = '+y0+'</b>']};}
   if(v1===0){
@@ -2997,7 +3433,7 @@ gen:function(lvl){
 {id:'lin',ic:'📈',t:'Lineare Funktionen',blk:2,
 ex:'<p>Lineare Funktionen haben die Form <span class="formel">y = mx + b</span> – ihr Graph ist eine Gerade.</p>'+
 '<div class="merk"><b>Merke:</b><br>• <b>m = Steigung</b>: um wie viel y steigt, wenn x um 1 wächst. m = '+frac('y₂ − y₁','x₂ − x₁')+'<br>• <b>b = y-Achsenabschnitt</b>: dort schneidet die Gerade die y-Achse.<br>• <b>Schnittpunkt zweier Geraden:</b> Terme gleichsetzen, nach x auflösen, y berechnen.</div>'+
-graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#e8590c'},{dot:[1,3],col:'#2b8a3e'}])+
+graphSVG([{f:x=>2*x+1},{dot:[0,1],col:'#ffc233'},{dot:[1,3],col:'#35d39a'}])+
 '<p class="hint" style="text-align:center">y = 2x + 1: Start bei b = 1 (orange), pro Schritt nach rechts geht es m = 2 nach oben (grün).</p>',
 exm:[
  {q:'Gerade durch (0, 2) und (2, 6)',steps:['m = '+frac('6 − 2','2 − 0')+' = '+frac(4,2)+' = 2','b: bei x = 0 ist y = 2 → b = 2','<b>y = 2x + 2</b>']},
@@ -3010,7 +3446,7 @@ gen:function(lvl){
    while(Math.abs(m+b)>4&&g<20){b=ri(-3,3);g++;}
    if(Math.abs(m+b)>4){m=1;b=1;}
    return {q:'Lies aus dem Graphen die Steigung m und den y-Achsenabschnitt b ab. (Die Punkte bei x = 0 und x = 1 sind markiert.)'+
-    graphSVG([{f:x=>m*x+b},{dot:[0,b],col:'#e8590c'},{dot:[1,m+b],col:'#2b8a3e'}]),
+    graphSVG([{f:x=>m*x+b},{dot:[0,b],col:'#ffc233'},{dot:[1,m+b],col:'#35d39a'}]),
     fields:[{l:'m =',a:m},{l:'b =',a:b}],
     steps:['b: Wo schneidet die Gerade die y-Achse? Beim orangen Punkt (0 | '+b+') → b = '+b,'m: Von x = 0 zu x = 1 geht es um '+(m>0?m+' nach oben':(-m)+' nach unten')+' → m = '+m,'<b>y = '+linStr(m,b)+'</b>'],
     hint:'1 nach rechts – wie viele Kästchen nach oben/unten?'};}
@@ -3050,7 +3486,7 @@ gen:function(lvl){
 {id:'qfk',ic:'🌉',t:'Quadratische Funktionen',blk:2,
 ex:'<p>Der Graph einer quadratischen Funktion ist eine <b>Parabel</b>. Die Scheitelpunktform verrät fast alles:</p>'+
 '<div class="merk"><span class="formel">f(x) = a(x − d)² + e</span><br>• Scheitelpunkt: <b>S(d | e)</b> – Achtung: bei (x − 2)² ist d = +2!<br>• a &gt; 0: nach <b>oben</b> geöffnet (Minimum), a &lt; 0: nach <b>unten</b> (Maximum).<br>• Nullstellen: f(x) = 0 setzen und lösen (0, 1 oder 2 Lösungen).</div>'+
-graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#e8590c'}])+
+graphSVG([{f:x=>(x-2)*(x-2)-1},{dot:[2,-1],col:'#ffc233'}])+
 '<p class="hint" style="text-align:center">f(x) = (x − 2)² − 1: Scheitel S(2 | −1), nach oben geöffnet, Nullstellen bei 1 und 3.</p>',
 exm:[
  {q:'f(x) = (x − 2)² + 3',steps:['Vergleich mit a(x − d)² + e: d = 2, e = 3','Scheitelpunkt <b>S(2 | 3)</b>','a = 1 &gt; 0 → nach oben geöffnet, S ist Minimum']},
@@ -3063,7 +3499,7 @@ gen:function(lvl){
   if(v1===2){
    const a=pick([1,-1]),d=ri(-3,3),e=a>0?ri(-3,1):ri(-1,3);
    return {q:'Der Graph zeigt eine Parabel. Lies den <b>Scheitelpunkt</b> ab (er ist markiert).'+
-    graphSVG([{f:x=>a*(x-d)*(x-d)+e},{dot:[d,e],col:'#e8590c'}]),
+    graphSVG([{f:x=>a*(x-d)*(x-d)+e},{dot:[d,e],col:'#ffc233'}]),
     fields:[{l:'x-Wert des Scheitels:',a:d},{l:'y-Wert des Scheitels:',a:e}],
     steps:['Der Scheitel ist der '+(a>0?'tiefste':'höchste')+' Punkt der Parabel','Markierter Punkt: <b>S('+d+' | '+e+')</b>']};}
   if(v1===0){
@@ -3421,8 +3857,9 @@ window.addEventListener('beforeinstallprompt',function(e){
  e.preventDefault();defPrompt=e;
  if(document.getElementById('instBtn'))return;
  const b=document.createElement('button');
- b.id='instBtn';b.className='btn';b.textContent='📲 Als App installieren';
- b.style.cssText='position:fixed;bottom:18px;right:18px;z-index:110;box-shadow:0 6px 20px rgba(0,0,0,.3)';
+ b.id='instBtn';b.className='btn';b.textContent='Als App installieren';
+ /* über der Tab-Leiste, damit nichts verdeckt wird */
+ b.style.cssText='position:fixed;bottom:calc(var(--tabh) + 14px);right:14px;z-index:110';
  b.onclick=function(){if(defPrompt){defPrompt.prompt();defPrompt=null;}b.remove();};
  document.body.appendChild(b);
 });
