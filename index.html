@@ -278,12 +278,16 @@ body.intask .tabbar{display:none}
 /* ==========================================================================
    LERNPFAD
    ========================================================================== */
-.path{position:relative;max-width:420px;margin:0 auto;padding:var(--s2) 0 var(--s5);overflow:hidden}
-.pblock{text-align:center;margin:var(--s6) 0 var(--s5);display:flex;align-items:center;gap:var(--s3)}
-.pblock::before,.pblock::after{content:'';flex:1 0 16px;height:1px;background:var(--line)}
-.pblock span{display:block;color:var(--ink-2);font-weight:800;font-size:var(--t-sm);
- letter-spacing:-.01em;line-height:1.3}
-.pblock small{display:block;color:var(--ink-3);font-weight:600;font-size:var(--t-xs);margin-top:1px}
+.path{position:relative;max-width:420px;margin:0 auto;padding:var(--s2) 0 var(--s5);
+ overflow:hidden;--nsize:72px}
+/* Die Linien flankieren nur den Titel. Vorher lagen sie auf der Mitte des
+   zweizeiligen Blocks und liefen dadurch quer durch die Überschrift. */
+.pblock{text-align:center;margin:var(--s6) 0 var(--s5)}
+.pbtitle{display:flex;align-items:center;gap:var(--s3)}
+.pbtitle::before,.pbtitle::after{content:'';flex:1 0 16px;height:1px;background:var(--line)}
+.pbtitle span{color:var(--ink-2);font-weight:800;font-size:var(--t-sm);
+ letter-spacing:-.01em;line-height:1.3;white-space:nowrap}
+.pblock small{display:block;color:var(--ink-3);font-weight:600;font-size:var(--t-xs);margin-top:3px}
 .prow{position:relative;display:flex;justify-content:center;margin:6px 0}
 .prow.bub{margin-top:56px}   /* Platz für die START-Sprechblase */
 /* Versatz in Prozent der Pfadbreite – die Verbindungskurven rechnen mit
@@ -305,7 +309,7 @@ body.intask .tabbar{display:none}
 .pconn.now .pc-line{stroke:var(--brand);stroke-dasharray:9 11;animation:pc-flow 1.4s linear infinite}
 @keyframes pc-flow{to{stroke-dashoffset:-20}}
 .nwrap{position:relative;text-align:center;width:112px}
-.node{width:72px;height:72px;border-radius:50%;margin:0 auto;display:flex;align-items:center;
+.node{width:var(--nsize);height:var(--nsize);border-radius:50%;margin:0 auto;display:flex;align-items:center;
  justify-content:center;cursor:pointer;position:relative;
  box-shadow:0 5px 0 var(--nedge,rgba(0,0,0,.35)),var(--sh2);
  transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease)}
@@ -329,8 +333,14 @@ body.intask .tabbar{display:none}
 .node.cur{animation:nodebob 4.2s ease-in-out infinite}
 .node .ck{position:absolute;display:flex;color:var(--ok-ink)}
 .node .ck .ico{width:34px;height:34px;stroke-width:2.6}
-.nring{position:absolute;left:50%;top:-8px;transform:translateX(-50%);width:88px;height:88px;
- border-radius:50%;z-index:0}
+/* Fortschrittsring um die aktuelle Station. Größe folgt dem Knoten, und die
+   Mitte wird ausgestanzt – sonst ist es eine gefüllte Scheibe, die den Knoten
+   überragt und den Puls verdeckt. */
+.nring{position:absolute;left:50%;top:-8px;transform:translateX(-50%);
+ width:calc(var(--nsize) + 16px);height:calc(var(--nsize) + 16px);
+ border-radius:50%;z-index:0;
+ -webkit-mask:radial-gradient(closest-side,transparent 79%,#000 80%);
+         mask:radial-gradient(closest-side,transparent 79%,#000 80%)}
 .node.z{position:relative;z-index:1}
 .nlab{margin-top:var(--s2);font-size:var(--t-xs);font-weight:700;color:var(--ink-2);line-height:1.3;cursor:pointer}
 .nflag{position:absolute;top:-4px;right:2px;display:flex;align-items:center;gap:2px;
@@ -385,8 +395,12 @@ body.intask .tabbar{display:none}
  border-color:var(--line);border-left-color:var(--bad);padding:var(--s4)}
 .formel{background:var(--surface-3);border-radius:var(--r1);padding:7px 13px;margin:5px 0;
  font-size:1.04rem;display:inline-block}
-.qtop{display:flex;justify-content:space-between;gap:var(--s2);font-size:var(--t-sm);
- margin-bottom:6px;font-weight:700}
+.qtop{display:flex;justify-content:space-between;align-items:baseline;gap:var(--s3);
+ font-size:var(--t-sm);margin-bottom:6px;font-weight:700}
+.qtop span{flex:1;min-width:0}
+/* Der Zähler darf nie umbrechen – sonst steht bei langen Aufgabentexten
+   die Zielzahl unter der erreichten. */
+.qtop b{flex:none;white-space:nowrap;font-variant-numeric:tabular-nums}
 
 .tabs{display:flex;gap:var(--s2);margin-bottom:var(--s4);background:var(--surface-2);
  padding:4px;border-radius:var(--r2)}
@@ -540,54 +554,65 @@ body.intask .tabbar{display:none}
 .stepshead b{color:var(--ink-2);font-size:var(--t-sm)}
 
 /* ==========================================================================
-   LEKTIONS-PFAD
-   Fünf Stationen auf einer Kurve. Farbe = Rolle: Plus grün, Null blau,
-   Minus amber. Animiert wird nur transform, opacity und stroke-dashoffset.
+   LEKTIONS-PFAD  ·  Der Pfad IST die Lektion
+   Nutzt die Mechanik der Übersicht (.path/.prow/.pconn/.node), damit beide
+   Pfade dieselbe Sprache sprechen. Farbe = Rolle: Plus grün (Einführung),
+   Null blau (Üben), Minus amber (Prüfung), X violett (Truhe).
+   Prüfung und Truhe stehen größer im Pfad – sie wiegen schwerer.
    ========================================================================== */
-.lp{margin:var(--s3) 0 var(--s4)}
-.lp-svg{display:block;width:100%;height:auto;overflow:visible}
-.lp-track{fill:none;stroke:var(--surface-3);stroke-width:7;stroke-linecap:round}
-.lp-fill{fill:none;stroke:url(#lpgrad);stroke:var(--brand);stroke-width:7;stroke-linecap:round;
- stroke-dasharray:100;transition:stroke-dashoffset .7s var(--ease)}
+.lhead{display:flex;align-items:center;gap:var(--s3);margin-bottom:var(--s3)}
+.lhead .micon.big{width:44px;height:44px;flex:none}
+.lhead-t{min-width:0}
+.lhead-t h1{margin:0 0 4px;font-size:var(--t-xl);line-height:1.2}
 
-.lp-node .lp-disc{fill:var(--surface-2);stroke:var(--line);stroke-width:3}
-.lp-node .lp-glyph path,.lp-node .lp-glyph circle{fill:none;stroke:var(--ink-3);
- stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
-.lp-node .lp-pulse{fill:none;stroke:none}
-.lp-node.is-locked{opacity:.55}
-.lp-lockbody{fill:var(--ink-3);stroke:none}
+.lpsum{height:8px;border-radius:var(--rp);background:var(--surface-3);overflow:hidden}
+.lpsum>i{display:block;height:100%;border-radius:var(--rp);
+ background:linear-gradient(90deg,var(--brand),var(--brand-2));
+ transition:width .6s var(--e-soft)}
 
-/* erledigt */
-.lp-node.is-done .lp-disc{fill:var(--nc,var(--brand));stroke:var(--nc,var(--brand))}
-.lp-node.is-done .lp-glyph path,.lp-node.is-done .lp-glyph circle{stroke:var(--bg)}
-/* aktiv – gefüllt plus pulsierender Ring */
-.lp-node.is-active .lp-disc{fill:var(--nc,var(--brand));stroke:var(--nc,var(--brand))}
-.lp-node.is-active .lp-glyph path,.lp-node.is-active .lp-glyph circle{stroke:var(--bg)}
-.lp-node.is-active .lp-pulse{stroke:var(--nc,var(--brand));stroke-width:3}
-/* Rollenfarben */
-.lp-start{--nc:#2EBE86}
-.lp-practice{--nc:#2FA8DF}
-.lp-boss{--nc:#F2A03C}
+/* Begleiter des aktuellen Schritts – zeigt, wer gerade führt */
+.lguide{display:flex;align-items:center;gap:var(--s3);margin:var(--s4) 0 0}
+.lguide .char{flex:none}
 
-/* Puls je Station unterschiedlich stark */
-@keyframes lp-pulse{0%{transform:scale(.86);opacity:.85}100%{transform:scale(1.28);opacity:0}}
-.lp-node.is-active .lp-pulse{transform-box:fill-box;transform-origin:center;
- animation:lp-pulse 2.4s ease-out infinite}
-.lp-practice.is-active .lp-pulse{animation-duration:2s}
-.lp-boss.is-active .lp-pulse{animation-duration:1.5s;stroke-width:4}
-/* Freischaltung der Prüfung: einmaliger Funke */
-@keyframes lp-spark{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.9);opacity:0}}
-.lp-boss.is-active .lp-disc{animation:lp-spark .9s ease-out}
+.lpath{padding-top:var(--s4)}
+.lpath .prow.big{--nsize:88px}
+.lpath .nwrap{width:126px}
 
-/* Fortschritts-Orb */
-.lp-orb{transition:transform .8s var(--e-soft)}
-.lp-orb-glow{fill:var(--accent);opacity:.28}
-.lp-orb-core{fill:var(--accent)}
-@keyframes lp-orbpulse{50%{transform:scale(1.3)}}
-.lp-orb-glow{transform-box:fill-box;transform-origin:center;animation:lp-orbpulse 1.8s ease-in-out infinite}
+/* Rollenfarben: --nc färbt Knoten und Fortschrittsring, --nce die Standkante */
+.lp-intro {--nc:#2EBE86;--nce:#1d8a5e}
+.lp-train {--nc:#2FA8DF;--nce:#1d78a4}
+.lp-exam  {--nc:#F2A03C;--nce:#b5722a}
+.lp-reward{--nc:#7C6CF7;--nce:#5748c2}
 
-.lp-legend{margin-top:var(--s2);font-size:var(--t-sm);color:var(--ink-2);text-align:center;line-height:1.5}
-.lp-legend b{color:var(--ink)}
+.lpath .node.done,.lpath .node.cur{background:var(--nc);--nedge:var(--nce);color:var(--bg)}
+.lpath .node.cur{animation:nodebob 4.2s ease-in-out infinite}
+.lpath .node .ck{color:var(--bg)}
+.lpath .prow.big .node>.ico{width:40px;height:40px}
+
+/* Beschriftung: Titel plus Zusatzzeile am aktuellen Schritt */
+.lpath .nlab{font-size:var(--t-xs)}
+.lpath .prow .nsub{display:block;margin-top:3px;font-weight:600;color:var(--ink-3);
+ font-size:var(--t-xs);line-height:1.3}
+.lpath .node.cur+.nlab,.lpath .prow.bub .nlab{color:var(--ink)}
+
+/* --- Die Truhe steht als echte Truhe im Pfad, nicht als Kreis mit Symbol --- */
+.lgift{display:block;cursor:pointer;line-height:0;text-align:center}
+.lgift .chest{width:96px}
+.lgift.is-locked,.lgift.is-taken{cursor:default}
+/* gesperrt: entsättigt und gedimmt, die Form bleibt erkennbar */
+.lgift.is-locked .chest{filter:grayscale(1) brightness(.55);opacity:.6}
+
+/* Spickzettel: Nachschlagewerk unter dem Pfad, kein zweiter Menüpunkt */
+.sheet{margin-top:var(--s4);border:1px solid var(--line);border-radius:var(--r2);
+ background:var(--surface-2);overflow:hidden}
+.sheet>summary{list-style:none;cursor:pointer;padding:var(--s3);display:flex;
+ align-items:center;gap:var(--s2);font-weight:800;font-size:var(--t-sm);color:var(--ink-2)}
+.sheet>summary::-webkit-details-marker{display:none}
+.sheet>summary::after{content:'';margin-left:auto;flex:none;width:8px;height:8px;
+ border-right:2px solid var(--ink-3);border-bottom:2px solid var(--ink-3);
+ rotate:45deg;translate:0 -2px;transition:rotate var(--t-fast) var(--e-out)}
+.sheet[open]>summary::after{rotate:-135deg;translate:0 2px}
+.sheetbody{padding:0 var(--s3) var(--s3)}
 
 /* Sterne */
 .lp-stars{display:inline-flex;gap:5px}
@@ -843,12 +868,57 @@ input[type=range]{width:190px;padding:0;border:none;accent-color:var(--brand);ba
 .sw{display:flex;align-items:center;gap:var(--s2);font-size:var(--t-sm);font-weight:700;
  color:var(--ink-2);cursor:pointer}
 .sw input{width:19px;height:19px;accent-color:var(--brand)}
-.stickwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:var(--s2);margin-top:var(--s3)}
-.stick{background:var(--accent-soft);border:1px solid var(--accent);border-radius:var(--r2);
- padding:var(--s3) 6px;text-align:center}
-.stick span{font-size:1.8rem;display:block;line-height:1.2}
-.stick small{font-size:var(--t-xs);color:var(--ink-2);display:block;margin-top:3px;line-height:1.25;font-weight:700}
-.stick.locked{background:var(--surface-2);border-color:var(--line);opacity:.5}
+/* ---------- Sticker ----------
+   Drei Farbfamilien: Figuren (eigene Farbe), Themen (violett), Belohnung (amber). */
+.stk{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;
+ border-radius:var(--r1);flex:none;background:var(--surface-3);color:var(--ink-3);
+ vertical-align:-.5em;transition:transform var(--t-base) var(--e-out)}
+.stk-i{width:60%;height:60%;fill:none;stroke:currentColor;stroke-width:2;
+ stroke-linecap:round;stroke-linejoin:round}
+.stk--topic {color:var(--brand-2);background:var(--brand-soft)}
+.stk--reward{color:var(--accent); background:var(--accent-soft)}
+.stk--x     {color:#8E82FF;background:rgba(124,108,247,.18)}
+.stk--plus  {color:#3ED39B;background:rgba(46,190,134,.18)}
+.stk--zero  {color:#4FBAEC;background:rgba(47,168,223,.18)}
+.stk--minus {color:#FFB35C;background:rgba(242,160,60,.18)}
+
+.stickwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));
+ gap:var(--s2);margin-top:var(--s3)}
+.stick{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r2);
+ padding:var(--s3) 6px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.stick .stk{width:46px;height:46px;border-radius:var(--r2)}
+.stick small{font-size:var(--t-xs);color:var(--ink-2);line-height:1.3;font-weight:700;text-align:center}
+.stick.locked{opacity:.42}
+.stick.locked .stk{background:var(--surface-3);color:var(--ink-3)}
+.stick:not(.locked):active .stk{transform:scale(1.08) rotate(-4deg)}
+
+/* ---------- Abzeichen ----------
+   Vier Stufen, farblich identisch zu den Truhen. Sechseck-Rahmen, Icon innen. */
+.bdg{position:relative;display:inline-flex;align-items:center;justify-content:center;
+ width:54px;height:54px;flex:none;--bt:var(--line-2);--bt-bg:var(--surface-2)}
+.bdg-f{position:absolute;inset:0;width:100%;height:100%}
+.bdg-fill{fill:var(--bt-bg)}
+.bdg-ring{fill:none;stroke:var(--bt);stroke-width:3;stroke-linejoin:round}
+.bdg-shine{fill:#fff;opacity:.12}
+.bdg-i{position:relative;width:24px;height:24px;fill:none;stroke:var(--bt);
+ stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.bdg--bronze.on{--bt:#E8A166;--bt-bg:rgba(232,161,102,.15)}
+.bdg--silver.on{--bt:#DFE5F0;--bt-bg:rgba(223,229,240,.13)}
+.bdg--gold.on  {--bt:#FFD44A;--bt-bg:rgba(255,212,74,.15)}
+.bdg--purple.on{--bt:#C4A2FF;--bt-bg:rgba(196,162,255,.16)}
+.bdg:not(.on){opacity:.45}
+.bdg:not(.on) .bdg-shine{opacity:0}
+/* Schein nur bei den beiden hohen Stufen – 19 Drop-Shadows wären zu teuer */
+.bdg.on.bdg--gold,.bdg.on.bdg--purple{filter:drop-shadow(0 0 7px var(--bt))}
+@keyframes bdg-pop{0%{transform:scale(.5);opacity:0}62%{transform:scale(1.12)}100%{transform:none;opacity:1}}
+.bdg.tiny{width:32px;height:32px;vertical-align:-.6em;animation:bdg-pop .5s var(--e-pop)}
+.bdg.tiny .bdg-i{width:16px;height:16px}
+
+.bdgwrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));
+ gap:var(--s3);margin-top:var(--s3)}
+.bcell{display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center}
+.bcell small{font-size:var(--t-xs);color:var(--ink-2);line-height:1.3;font-weight:700}
+.bcell.off small{color:var(--ink-3)}
 .ringwrap{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
 
 /* ==========================================================================
@@ -921,7 +991,7 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
  .memgrid{grid-template-columns:repeat(2,1fr)}
  input[type=range]{width:150px}
  .card{padding:var(--s4)}
- .node{width:64px;height:64px}
+ .path{--nsize:64px}
  .micon.node{width:32px;height:32px}
  .brand span{display:none}
 }
@@ -976,6 +1046,7 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
 <g id="i-star"><path d="M12 3.4 14.3 8.9 20.2 9.3 15.7 13.2 17.1 19 12 15.9 6.9 19 8.3 13.2 3.8 9.3 9.7 8.9Z"/></g>
 <g id="i-gift"><rect x="3.4" y="8.6" width="17.2" height="11.4" rx="2.6"/><path d="M2.6 8.6h18.8M12 8.6V20"/><path d="M12 8.6S9.8 3.8 7.6 5.2 8.9 8.6 12 8.6zm0 0s2.2-4.8 4.4-3.4S15.1 8.6 12 8.6z"/></g>
 <g id="i-clock"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.2V12l3.2 2"/></g>
+<g id="i-cap"><path d="M2.6 9.1 12 4.8l9.4 4.3L12 13.4z"/><path d="M6.6 11.1v5c0 1.5 2.4 2.8 5.4 2.8s5.4-1.3 5.4-2.8v-5"/><path d="M20.6 9.7v5.1"/></g>
 <g id="i-book"><path d="M4.4 5.4A2.6 2.6 0 0 1 7 2.8h12.6v14.4H7a2.6 2.6 0 0 0-2.6 2.6z"/><path d="M4.4 19.8A2.6 2.6 0 0 1 7 17.2h12.6v4H7a2.6 2.6 0 0 1-2.6-2.6z"/></g>
 <g id="i-pencil"><path d="M4 20.2h4.2L20 8.4a2.7 2.7 0 0 0-3.8-3.8L4.4 16.4z"/><path d="m15 5.8 3.2 3.2"/></g>
 <g id="i-sword"><path d="M20.8 3.2h-4.4L6.2 13.8l4.4 4.4L20.8 7.6z"/><path d="m7.4 15 -4.2 4.2 1.8 1.8L9.2 16.8"/></g>
@@ -1010,6 +1081,15 @@ table.wt td,table.wt th{border:1px solid var(--line);padding:5px 12px;text-align
 <g id="m-area"><path d="M4 20.5V3.5M3.5 20h17"/><path d="M6.5 15.5c3.5 0 4.5-8 10-8"/><path d="M7 15.5V20M11 12.5V20M15 8.5V20"/></g>
 <g id="m-angle"><path d="M3.5 19.5h17L3.5 7z"/><path d="M8.6 19.5a5.4 5.4 0 0 0-.8-2.9"/></g>
 <g id="m-vector"><path d="M3.5 20.5 18 6"/><path d="M11.5 5.5h7.2v7.2"/></g>
+
+<!-- Sticker- und Abzeichen-Motive, gleiche Formensprache -->
+<g id="s-x"><path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5"/></g>
+<g id="s-plus"><path d="M12 5.5v13M5.5 12h13"/></g>
+<g id="s-zero"><ellipse cx="12" cy="12" rx="5.6" ry="7.6"/></g>
+<g id="s-minus"><path d="M5.5 12h13"/></g>
+<g id="s-gem"><path d="M12 3.2 20.2 9.4 12 20.8 3.8 9.4Z"/><path d="M3.8 9.4h16.4M12 3.2 8.6 9.4 12 20.8M12 3.2l3.4 6.2L12 20.8"/></g>
+<g id="s-trophy"><path d="M7.8 3.8h8.4v6.4a4.2 4.2 0 0 1-8.4 0z"/><path d="M7.8 5.8H5.2a3 3 0 0 0 3 3M16.2 5.8h2.6a3 3 0 0 1-3 3"/><path d="M12 14.4v2.8M8.8 20.4h6.4l-.6-3.2H9.4z"/></g>
+<g id="s-flame"><path d="M12 2.8c.6 3 2.2 4.1 3.4 5.5A6.6 6.6 0 0 1 17.2 13a5.2 5.2 0 0 1-10.4 0c0-1.7.6-3 1.6-4 .2.9.7 1.6 1.4 1.9-.3-2.7.6-5.7 2.2-8.1z"/></g>
 </defs></svg>
 <script>
 /* ============ Hilfsfunktionen ============ */
@@ -1228,28 +1308,28 @@ function bossState(id){const s=st(id);if(s.boss>=3)return {done:true};
 function totalC(){return MODS.reduce((a,m)=>a+st(m.id).c,0);}
 function blockDone(b,minB){return MODS.filter(m=>m.blk===b).every(m=>st(m.id).boss>=minB);}
 const BADGES=[
- {id:'b_first',e:'🐣',n:'Erster Schritt',d:'Erste Aufgabe richtig gelöst',c:()=>totalC()>=1},
- {id:'b_50',e:'✏️',n:'Fleißarbeiter',d:'50 Aufgaben richtig',c:()=>totalC()>=50},
- {id:'b_200',e:'🏗️',n:'Ausdauer-Ass',d:'200 Aufgaben richtig',c:()=>totalC()>=200},
- {id:'b_500',e:'🏔️',n:'Unaufhaltsam',d:'500 Aufgaben richtig',c:()=>totalC()>=500},
- {id:'b_streak3',e:'🔥',n:'Dranbleiber',d:'3 Tage in Serie',c:()=>state.streak>=3},
- {id:'b_streak7',e:'🚀',n:'Wochen-Krieger',d:'7 Tage in Serie',c:()=>state.streak>=7},
- {id:'b_streak14',e:'🌋',n:'Gewohnheits-Tier',d:'14 Tage in Serie',c:()=>state.streak>=14},
- {id:'b_boss1',e:'⚔️',n:'Boss-Bezwinger',d:'Ersten Boss-Test bestanden',c:()=>MODS.some(m=>st(m.id).boss>=1)},
- {id:'b_bru3',e:'🍕',n:'Bruchmeister',d:'Brüche & Prozent mit 3 Sternen',c:()=>st('bru').boss>=3},
- {id:'b_glg3',e:'⚖️',n:'Gleichungs-Champion',d:'Lineare Gleichungen mit 3 Sternen',c:()=>st('glg').boss>=3},
- {id:'b_abl3',e:'🎢',n:'Ableitungs-Ass',d:'Ableitungen mit 3 Sternen',c:()=>st('abl').boss>=3},
- {id:'b_blockA',e:'🧱',n:'Rechen-Fundament',d:'Block A: überall mind. ★★',c:()=>blockDone(0,2)},
- {id:'b_blockB',e:'🧩',n:'Algebra im Griff',d:'Block B: überall mind. ★★',c:()=>blockDone(1,2)},
- {id:'b_blockC',e:'📈',n:'Funktionen-Kenner',d:'Block C: überall mind. ★★',c:()=>blockDone(2,2)},
- {id:'b_blockD',e:'🎓',n:'Bereit für die Oberstufe',d:'Block D: überall mind. ★★',c:()=>blockDone(3,2)},
- {id:'b_blitz10',e:'⚡',n:'Blitzdenker',d:'10 richtige in einer Blitzrunde',c:()=>state.blitzBest>=10},
- {id:'b_blitz18',e:'🌩️',n:'Gedankenblitz',d:'18 richtige in einer Blitzrunde',c:()=>state.blitzBest>=18},
- {id:'b_xp1000',e:'💎',n:'XP-Sammler',d:'1000 XP erreicht',c:()=>state.xp>=1000},
- {id:'b_xp3000',e:'👑',n:'XP-König',d:'3000 XP erreicht',c:()=>state.xp>=3000}];
+ {id:'b_first',n:'Erster Schritt',d:'Erste Aufgabe richtig gelöst',c:()=>totalC()>=1},
+ {id:'b_50',n:'Fleißarbeiter',d:'50 Aufgaben richtig',c:()=>totalC()>=50},
+ {id:'b_200',n:'Ausdauer-Ass',d:'200 Aufgaben richtig',c:()=>totalC()>=200},
+ {id:'b_500',n:'Unaufhaltsam',d:'500 Aufgaben richtig',c:()=>totalC()>=500},
+ {id:'b_streak3',n:'Dranbleiber',d:'3 Tage in Serie',c:()=>state.streak>=3},
+ {id:'b_streak7',n:'Wochen-Krieger',d:'7 Tage in Serie',c:()=>state.streak>=7},
+ {id:'b_streak14',n:'Gewohnheits-Tier',d:'14 Tage in Serie',c:()=>state.streak>=14},
+ {id:'b_boss1',n:'Boss-Bezwinger',d:'Ersten Boss-Test bestanden',c:()=>MODS.some(m=>st(m.id).boss>=1)},
+ {id:'b_bru3',n:'Bruchmeister',d:'Brüche & Prozent mit 3 Sternen',c:()=>st('bru').boss>=3},
+ {id:'b_glg3',n:'Gleichungs-Champion',d:'Lineare Gleichungen mit 3 Sternen',c:()=>st('glg').boss>=3},
+ {id:'b_abl3',n:'Ableitungs-Ass',d:'Ableitungen mit 3 Sternen',c:()=>st('abl').boss>=3},
+ {id:'b_blockA',n:'Rechen-Fundament',d:'Block A: überall mindestens zwei Sterne',c:()=>blockDone(0,2)},
+ {id:'b_blockB',n:'Algebra im Griff',d:'Block B: überall mindestens zwei Sterne',c:()=>blockDone(1,2)},
+ {id:'b_blockC',n:'Funktionen-Kenner',d:'Block C: überall mindestens zwei Sterne',c:()=>blockDone(2,2)},
+ {id:'b_blockD',n:'Bereit für die Oberstufe',d:'Block D: überall mindestens zwei Sterne',c:()=>blockDone(3,2)},
+ {id:'b_blitz10',n:'Blitzdenker',d:'10 richtige in einer Blitzrunde',c:()=>state.blitzBest>=10},
+ {id:'b_blitz18',n:'Gedankenblitz',d:'18 richtige in einer Blitzrunde',c:()=>state.blitzBest>=18},
+ {id:'b_xp1000',n:'XP-Sammler',d:'1000 XP erreicht',c:()=>state.xp>=1000},
+ {id:'b_xp3000',n:'XP-König',d:'3000 XP erreicht',c:()=>state.xp>=3000}];
 function checkBadges(){let neu=false;
  BADGES.forEach(b=>{if(state.badges.indexOf(b.id)<0&&b.c()){state.badges.push(b.id);
-  toast(ico('medal','sm')+' Neues Abzeichen: <b>'+b.e+' '+b.n+'</b>');neu=true;}});
+  toast(badgeArt(b.id,true,'tiny')+' Neues Abzeichen: <b>'+b.n+'</b>');neu=true;}});
  if(neu)save();}
 
 const praise=['Richtig!','Stark!','Genau so!','Sauber gerechnet!','Top!','Perfekt!','Sitzt!'];
@@ -1573,13 +1653,16 @@ function levelUp(l){
 
 /* ============ Sticker (Truhen-Inhalt) ============
    Die Truhen selbst liegen in p2f.js. */
+/* Die Motive liegen in p2g.js (STICKER_ART), hier nur noch die Namen.
+   Reihenfolge nicht ändern – gesammelte Sticker werden über den Index
+   gespeichert. */
 const STICKERS=[
- {e:'🍕',n:'Pizza-Bruch'},{e:'🐊',n:'Krokodilmaul'},{e:'🎩',n:'Zauberzylinder'},
- {e:'⚖️',n:'Goldene Waage'},{e:'🚀',n:'Potenz-Rakete'},{e:'🧭',n:'Vektor-Kompass'},
- {e:'🦉',n:'Weise Eule'},{e:'🌉',n:'Parabel-Brücke'},{e:'🔑',n:'Log-Schlüssel'},
- {e:'🎢',n:'Ableitungs-Achterbahn'},{e:'🐢',n:'Grenzwert-Schildkröte'},{e:'📐',n:'Flächen-Zirkel'},
- {e:'🧙',n:'Zauberhut'},{e:'💎',n:'Mathe-Diamant'},{e:'🔥',n:'Kombo-Flamme'},
- {e:'🌟',n:'Goldstern'},{e:'🧩',n:'Puzzleteil'},{e:'🛡️',n:'Schild der Geduld'}
+ {n:'Bruchstrich'},{n:'Krokodilmaul'},{n:'Mini-Plus'},
+ {n:'Goldene Waage'},{n:'Potenz-Quadrat'},{n:'Vektor-Pfeil'},
+ {n:'Mini-Null'},{n:'Parabel-Bogen'},{n:'Log-Schlüssel'},
+ {n:'Tangente'},{n:'Grenzwert-Punkte'},{n:'Flächen-Streifen'},
+ {n:'Mini-X'},{n:'Mathe-Kristall'},{n:'Kombo-Flamme'},
+ {n:'Goldstern'},{n:'Mini-Minus'},{n:'Schild der Geduld'}
 ];
 /* ============ Tages-Quests ============ */
 const QUESTPOOL=[
@@ -1818,7 +1901,7 @@ function charCue(cue,size,cls){
 
 /* Begleiter je Trainingsart. Boss-Tests bleiben bewusst ohne Begleiter –
    dort ist der Boss die Figur, zwei Charaktere gleichzeitig wären zu viel. */
-const SESS_CHAR={daily:'x',err:'zero',blitz:'zero',rev:'minus',boss:null};
+const SESS_CHAR={daily:'x',err:'zero',blitz:'zero',rev:'minus',boss:null,practice:'zero'};
 
 /* ---- Lebenszeichen ----
    Ein einziger Taktgeber für die ganze App: in unregelmäßigen Abständen
@@ -1995,7 +2078,7 @@ function chestReward(type){
   const left=STICKERS.map((s,i)=>i).filter(i=>state.stickers.indexOf(i)<0);
   if(!left.length)return {k:'xp',txt:'+50 XP <span class="mut">(Sticker-Album komplett)</span>',v:(addXP(50),50)};
   const id=pick(left);state.stickers.push(id);save();
-  return {k:'sticker',id:id,txt:STICKERS[id].e+' Sticker „'+STICKERS[id].n+'" – neu im Album'};
+  return {k:'sticker',id:id,txt:stickerArt(id)+' Sticker „'+STICKERS[id].n+'" – neu im Album'};
  }
  if(p.k==='xp'){addXP(p.v);return {k:'xp',txt:'+'+p.v+' XP'};}
  if(p.k==='boost'){state.boost=(state.boost||0)+p.v;save();
@@ -2036,6 +2119,55 @@ function chestOpen(){
   btn.onclick=()=>{if(state.chests.length)renderChest();else go('home');};
  },620);
 }
+/* ============ Sticker & Abzeichen ============
+   Beides war bisher Emoji. Jetzt eine gemeinsame Formensprache mit dem
+   Rest der App: dieselben Strich-Icons, dieselben Farbtokens.
+
+   Sticker  – Sammelmotive, drei Farbfamilien (Figuren / Themen / Belohnung)
+   Abzeichen – vier Stufen, farblich identisch zu den Truhen               */
+
+/* Icon und Farbfamilie je Sticker, Reihenfolge = STICKERS-Index. */
+const STICKER_ART=[
+ ['m-frac','topic'],   ['m-ineq','topic'],   ['s-plus','plus'],
+ ['m-scale','topic'],  ['m-power','topic'],  ['m-vector','topic'],
+ ['s-zero','zero'],    ['m-parab','topic'],  ['m-key','topic'],
+ ['m-tangent','topic'],['m-limit','topic'],  ['m-area','topic'],
+ ['s-x','x'],          ['s-gem','reward'],   ['s-flame','reward'],
+ ['i-star','reward'],  ['s-minus','minus'],  ['i-shield','reward']
+];
+function stickerArt(i,cls){
+ const a=STICKER_ART[i]||['i-star','reward'];
+ return '<span class="stk stk--'+a[1]+(cls?' '+cls:'')+'">'+
+   '<svg class="stk-i" viewBox="0 0 24 24" aria-hidden="true"><use href="#'+a[0]+'"/></svg></span>';
+}
+
+/* Stufe und Motiv je Abzeichen. Die vier Stufen entsprechen den Truhen –
+   dadurch liest sich „Gold" überall gleich. */
+const BADGE_ART={
+ b_first  :['bronze','i-spark'],   b_50     :['bronze','i-pencil'],
+ b_streak3:['bronze','s-flame'],
+ b_200    :['silver','i-chart'],   b_streak7:['silver','s-flame'],
+ b_boss1  :['silver','i-sword'],   b_blitz10:['silver','i-bolt'],
+ b_blockA :['silver','m-terms'],
+ b_500    :['gold','s-trophy'],    b_streak14:['gold','s-flame'],
+ b_bru3   :['gold','m-frac'],      b_glg3   :['gold','m-scale'],
+ b_abl3   :['gold','m-tangent'],   b_blitz18:['gold','i-bolt'],
+ b_xp1000 :['gold','s-gem'],       b_blockB :['gold','m-factor'],
+ b_blockC :['purple','m-parab'],   b_blockD :['purple','i-medal'],
+ b_xp3000 :['purple','s-trophy']
+};
+const BADGE_RAHMEN='M24 2.6 42.4 13.3v21.4L24 45.4 5.6 34.7V13.3Z';
+function badgeArt(id,has,cls){
+ const a=BADGE_ART[id]||['bronze','i-star'];
+ return '<span class="bdg bdg--'+a[0]+(has?' on':'')+(cls?' '+cls:'')+'">'+
+  '<svg class="bdg-f" viewBox="0 0 48 48" aria-hidden="true">'+
+   '<path class="bdg-fill" d="'+BADGE_RAHMEN+'"/>'+
+   '<path class="bdg-ring" d="'+BADGE_RAHMEN+'"/>'+
+   '<path class="bdg-shine" d="M12 16 24 5.5 30 9 14.5 20Z"/>'+
+  '</svg>'+
+  '<svg class="bdg-i" viewBox="0 0 24 24" aria-hidden="true"><use href="#'+a[1]+'"/></svg></span>';
+}
+function badgeTier(id){return (BADGE_ART[id]||['bronze'])[0];}
 /* ============ Ansichten ============ */
 const BLOCKS=['Sicher rechnen','Algebra im Griff','Funktionen verstehen','Fit für die Oberstufe'];
 
@@ -2095,7 +2227,8 @@ function renderHome(){
  MODS.forEach((m,i)=>{
   const neuerBlock=(i===0||m.blk!==MODS[i-1].blk);
   if(neuerBlock){
-   h+='<div class="pblock"><span>Block '+String.fromCharCode(65+m.blk)+' · '+BLOCKS[m.blk]+'<small>'+MODS.filter(x=>x.blk===m.blk).length+' Stationen</small></span></div>';
+   h+='<div class="pblock"><div class="pbtitle"><span>Block '+String.fromCharCode(65+m.blk)+' · '+BLOCKS[m.blk]+
+      '</span></div><small>'+MODS.filter(x=>x.blk===m.blk).length+' Stationen</small></div>';
   }
   const st_=st(m.id);
   const isCur=m.id===rec.id;
@@ -2145,7 +2278,6 @@ function nodeTap(id,locked,isCur){
   toast(ico('lock','sm')+' Hol dir erst einen Stern in „'+prev+'" – oder tippe nochmal, um trotzdem zu üben.');
   return;
  }
- if(isCur){go('daily');return;}
  renderModule(id);
 }
 function exportState(){
@@ -2267,97 +2399,48 @@ function renderProfil(){
  '<p>5. Ein Tag verpasst? Ein <b>Joker</b> rettet die Serie (2 pro Woche).</p></div>';
  $('#app').innerHTML=h;
 }
+/* ============ Lektion ============
+   Eine Lektion = ein Pfad. Keine Tabs, keine Untermenüs: alle acht Schritte
+   liegen offen, genau einer ist der nächste. Der Spickzettel bleibt als
+   Nachschlagewerk darunter stehen, sobald die Einführung gesehen wurde. */
 function renderModule(id,tab){
  dockMount(null);
- tab=tab||'lernen';
  curModId=id;
- const m=modById(id);const s=st(id);
+ const m=modById(id),s=st(id);
+ const nodes=lessonNodes(id),fertig=nodes.filter(n=>n.done).length;
+
  let h='<button class="crumb" onclick="go(\'home\')">'+ico('left','sm')+' Übersicht</button>';
- h+='<div class="card"><h1>'+modIcon(m,'big')+' '+m.t+'</h1>';
- h+=lessonStars(stars(s));
- h+='<p class="hint">'+s.c+' Aufgaben richtig gelöst</p>';
- /* Lektions-Pfad: zeigt in einem Blick, wo man steht */
+ h+='<div class="card">';
+ h+='<div class="lhead">'+modIcon(m,'big')+'<div class="lhead-t"><h1>'+m.t+'</h1>'+
+    lessonStars(stars(s))+'</div></div>';
+ h+='<div class="lpsum"><i style="width:'+Math.round(fertig/nodes.length*100)+'%"></i></div>';
+ h+='<p class="hint">Schritt '+Math.min(fertig+1,nodes.length)+' von '+nodes.length+' · '+
+    s.c+' Aufgaben richtig gelöst</p>';
+
+ h+=lessonGuide(id);
  h+=lessonPathHTML(id);
- if(!bossState(id).done)h+=diffIndicator(stars(s));
+
  const mIdx=MODS.findIndex(x=>x.id===id),nxt=MODS[mIdx+1];
  if(nxt){
   const offen=stars(s)>=3;
   h+='<div class="lp-next'+(offen?' open':'')+'">'+ico(offen?'check':'lock')+
      '<span>'+(offen?'Freigeschaltet: ':'Nächste Lektion – 3 Sterne nötig: ')+'<b>'+nxt.t+'</b></span></div>';
  }
- h+='<div class="tabs" style="margin-top:14px">';
- h+='<div class="tab '+(tab==='lernen'?'on':'')+'" onclick="renderModule(\''+id+'\',\'lernen\')">'+ico('book','sm')+' Lernen</div>';
- h+='<div class="tab '+(tab==='ueben'?'on':'')+'" onclick="renderModule(\''+id+'\',\'ueben\')">'+ico('pencil','sm')+' Üben</div>';
- h+='</div>';
- if(tab==='lernen'){
-  const M=TEACHER;
-  h+='<div class="mentorarena"><div style="text-align:center;min-width:70px">'+character('plus','talking','sm')+'<div class="mname">'+M.n+'</div></div>';
-  h+='<div style="flex:1"><div class="bubble">'+(s.seen?'Schön, dich wiederzusehen! Nochmal die Lektion durchgehen – oder unten im Spickzettel nachschlagen?':'Hallo! Ich bin '+M.n+' und erkläre dir <b>'+m.t+'</b> – in kleinen Schritten, mit Fragen zwischendurch. Bereit?')+'</div>';
-  h+='<div class="btnrow"><button class="btn" onclick="startLesson(\''+id+'\')">'+ico('book')+(s.seen?' Lektion wiederholen':' Lektion starten')+'</button></div></div></div>';
-  if(s.seen){
-   h+='<h3 style="margin-top:16px">Spickzettel &amp; Beispiele</h3>'+m.ex;
-   m.exm.forEach((e,i)=>{
-    h+='<div class="exbox"><b>Beispiel: '+e.q+'</b><div id="exs'+i+'"></div>';
-    h+='<button class="btn ghost" style="margin-top:10px" id="exb'+i+'" onclick="exStep('+i+')">Nächster Schritt '+ico('right','sm')+'</button></div>';
-   });
-   h+='<button class="btn big" style="margin-top:14px" onclick="renderModule(\''+id+'\',\'ueben\')">Jetzt üben</button>';
-  }else{
-   h+='<p class="hint" style="margin-top:12px">Nach der Lektion findest du hier deinen Spickzettel mit allen Regeln und Beispielen.</p>';
-  }
- }else{
-  const bs=bossState(id);
-  if(bs.done){
-   h+='<div class="bossbox"><b>Alle drei Boss-Tests bestanden – Modul gemeistert.</b><div class="hint">Du kannst hier weiter üben, um fit zu bleiben.</div></div>';
-  }else if(bs.unlocked){
-   const B=bossOf(id);
-   h+='<div class="bossbox"><div style="display:flex;gap:14px;align-items:center">'+
-   character('minus','idle','sm')+
-   '<div><b>'+B.n+'</b> nimmt '+bs.t.name+' ab.<br><i>„'+pick(B.t)+'"</i></div></div>'+
-   '<div class="hint" style="margin-top:8px">'+bs.t.n+' Aufgaben · nur <b>ein Versuch</b> pro Aufgabe · kein Lösungsweg · mindestens '+bs.t.pass+' richtige ergeben <span class="stars">'+starStr(bs.tier+1)+'</span> und +'+bs.t.xp+' XP</div>'+
-   '<div class="btnrow"><button class="btn warn" onclick="startBoss(\''+id+'\')">'+ico('sword')+' Boss herausfordern</button></div></div>';
-  }else{
-   const B=bossOf(id);
-   h+='<div class="bossbox" style="opacity:.75">'+ico('lock')+' <b>'+B.n+'</b> nimmt '+bs.t.name+' erst ab, wenn du bereit bist: noch '+(bs.t.need-s.c)+' richtige Aufgaben.</div>';
-  }
-  h+='<div class="mentorarena"><div style="text-align:center;min-width:70px"><span id="zeroFig">'+
-     character('zero','idle','sm')+'</span><div class="mname">Null</div></div>'+
-     '<div style="flex:1"><div class="bubble" id="zeroSay">Ich übe mit dir – ohne Wertung, so lange du magst.</div></div></div>';
-  h+='<div class="fieldrow"><label>Schwierigkeit</label><select id="lvlSel" onchange="practiceNext()">'+
-   '<option value="0">Auto (empfohlen)</option><option value="1">Level 1 · Grundlagen</option>'+
-   '<option value="2">Level 2 · Anwenden</option><option value="3">Level 3 · Transfer</option></select></div>';
-  h+='<div id="taskarea"></div>';
+
+ if(s.seen){
+  h+='<details class="sheet"><summary>'+ico('book','sm')+' Spickzettel &amp; Beispiele</summary>'+
+     '<div class="sheetbody">'+m.ex;
+  m.exm.forEach(e=>{
+   h+='<div class="exbox"><b>Beispiel: '+e.q+'</b>'+
+      e.steps.map(x=>'<div class="stp">'+x+'</div>').join('')+'</div>';
+  });
+  h+='</div></details>';
  }
  h+='</div>';
  $('#app').innerHTML=h;
- lessonPathMount(id);
- if(tab==='lernen'){exSteps=m.exm.map(()=>0);}
- else practiceNext(id);
+ charLifeStart();
 }
-let exSteps=[],curModId=null;
-function exStep(i){
- const mod=modById(curModId);
- if(!mod)return;
- const e=mod.exm[i];
- if(exSteps[i]<e.steps.length){
-  const d=document.createElement('div');d.className='stp';d.innerHTML=e.steps[exSteps[i]];
-  $('#exs'+i).appendChild(d);exSteps[i]++;
-  if(exSteps[i]>=e.steps.length)$('#exb'+i).style.display='none';
- }
-}
-let curPracticeMod=null,practiceFirst=true;
-function practiceNext(id){
- if(id){curPracticeMod=id;practiceFirst=true;}
- const m=modById(curPracticeMod);
- const selEl=$('#lvlSel');
- const sel=selEl?parseInt(selEl.value):0;
- const lvl=sel===0?autoLvl(st(m.id)):sel;
- mountTask($('#taskarea'),m.id,lvl,()=>practiceNext());
- /* Null kündigt jede neue Aufgabe an und geht wieder in Ruhehaltung. */
- if(practiceFirst)practiceFirst=false;
- else zeroSay(pick(ZERO_ASK));
- charState('#zeroFig .char','idle');
-}
-
+let curModId=null;
 
 /* ============ Prüfer ============
    Ein Prüfer für alle Module: Minus. Pro Thema gibt es nur noch die
@@ -2578,6 +2661,21 @@ function renderSessEnd(){
   h+='<p style="text-align:center">'+sess.ok+' von '+n+' richtig · <b>+25 XP</b></p>';
   h+='<p class="mut" style="text-align:center">Nächste Wiederholung von „'+modById(sess.mod).t+'" in '+IVL[s.stage]+' Tag'+(IVL[s.stage]>1?'en':'')+'. Jede geschaffte Wiederholung verlängert den Abstand – so wandert der Stoff ins Langzeitgedächtnis.</p>';
   h+='<div class="btnrow"><button class="btn big" onclick="go(\'home\')">Weiter</button></div>';
+ }else if(sess.type==='practice'){
+  /* Übungsknoten des Lernpfads: kurze Bilanz, dann zurück auf den Pfad. */
+  const mod=sess.mod;
+  const nx=lessonCurrent(mod);
+  h+='<div style="text-align:center">'+character('zero',sess.ok===n?'celebrate':'happy','lg')+'</div>';
+  h+='<h1 style="text-align:center">'+(sess.ok===n?'Alles richtig':'Übung geschafft')+'</h1>';
+  h+='<p style="text-align:center;font-size:1.15rem">'+sess.ok+' von '+n+' richtig</p>';
+  if(nx&&nx.typ==='train'&&nx.tier===sess.tier){
+   const fehlt=nx.need-nx.have;
+   h+='<p class="mut" style="text-align:center">Noch '+fehlt+' richtige Aufgabe'+(fehlt===1?'':'n')+
+      ', dann schaltet sich die nächste Prüfung frei.</p>';
+  }else if(nx){
+   h+='<p style="text-align:center;font-weight:700;color:var(--ok)">'+ico('check')+' Freigeschaltet: '+nx.t+'</p>';
+  }
+  h+='<div class="btnrow"><button class="btn big" onclick="go(\'mod\',\''+mod+'\')">Zurück zum Pfad</button></div>';
  }else{
   const perfect=sess.ok===n&&!sess.broke;
   sessBonus=40+(perfect?60:0);
@@ -2614,7 +2712,8 @@ function renderSessEnd(){
  if(sess.type==='rev'){addChest('bronze','Wiederholung erledigt');questProg('rev',1);}
  if(sess.type==='err'&&!sess.broke)addChest('bronze','Fehler aufgearbeitet');
  if(sess.type==='boss'&&sess.ok>=sess.pass)addChest('gold','Boss besiegt');
- if(sess.type==='boss'||sess.type==='rev'||sess.type==='err')sess=null;
+ if(sess.type==='practice'&&sess.ok===sess.q.length)addChest('bronze','Übung ohne Fehler');
+ if(sess.type==='boss'||sess.type==='rev'||sess.type==='err'||sess.type==='practice')sess=null;
 }
 let sessBonus=40;
 function saveReflect(){
@@ -2695,16 +2794,17 @@ function renderBlitzEnd(){
 
 /* ============ Logbuch & Abzeichen ============ */
 function renderLog(){
- let h='<div class="card"><h1>Abzeichen</h1><div class="badgewrap">';
+ let h='<div class="card"><h1>Abzeichen</h1>'+
+  '<p class="mut">Vier Stufen: Bronze, Silber, Gold und Legendär.</p><div class="bdgwrap">';
  BADGES.forEach(b=>{
   const has=state.badges.indexOf(b.id)>=0;
-  h+='<span class="badge '+(has?'has':'off')+'" title="'+b.d+'">'+b.e+' '+b.n+'</span>';
+  h+='<div class="bcell'+(has?'':' off')+'" title="'+b.d+'">'+badgeArt(b.id,has)+'<small>'+b.n+'</small></div>';
  });
- h+='</div><p class="hint" style="margin-top:10px">Blass = noch nicht verdient. Tippe auf ein Abzeichen für die Bedingung.</p></div>';
+ h+='</div><p class="hint" style="margin-top:12px">Blass = noch nicht verdient. Tippe auf ein Abzeichen für die Bedingung.</p></div>';
  h+='<div class="card"><h1>Sticker-Album</h1><div class="stickwrap">';
  STICKERS.forEach((s,i)=>{
   const has=state.stickers.indexOf(i)>=0;
-  h+='<div class="stick'+(has?'':' locked')+'" title="'+s.n+'"><span>'+(has?s.e:'·')+'</span><small>'+(has?s.n:'noch offen')+'</small></div>';
+  h+='<div class="stick'+(has?'':' locked')+'" title="'+s.n+'">'+stickerArt(i)+'<small>'+(has?s.n:'noch offen')+'</small></div>';
  });
  h+='</div><p class="hint">'+state.stickers.length+' von '+STICKERS.length+' Stickern gesammelt – sie stecken in den Truhen.</p></div>';
  h+='<div class="card"><h2>'+ico('chart')+'Rekorde</h2><p>Blitzrunde: <b>'+state.blitzBest+' richtige</b> in 5 Minuten · '+state.blitzRuns+' Runden</p>'+
@@ -2742,43 +2842,56 @@ function pathConn(o1,o2,zustand){
 }
 
 /* ============ Lektions-Pfad ============
-   Fünf Stationen: 1× Erklärung (Plus) · 3× Übung (Null) · 1× Prüfung (Minus).
-   Zustände: intro · practice · bossAvailable · completed
-   Der Pfad liest den vorhandenen Modulzustand, er hält keinen eigenen. */
+   Der Pfad IST die Lektion: acht Knoten in fester Reihenfolge.
 
-const LP_NODES=[
- {x:36, y:100,k:'start'},
- {x:106,y:58, k:'practice'},
- {x:176,y:104,k:'practice'},
- {x:246,y:58, k:'practice'},
- {x:316,y:100,k:'boss'}
+   Der Knotenzustand wird vollständig aus dem vorhandenen Modulzustand
+   abgeleitet (s.seen, s.c, s.boss) – es gibt keinen zweiten Datenstand,
+   der auseinanderlaufen könnte, und bestehender Fortschritt bleibt gültig.
+   Einzige Erweiterung: s.chest merkt sich die abgeholte Abschlusstruhe.
+
+   Neue Lektionen brauchen keine eigene Pfaddefinition: jedes Modul in MODS
+   bekommt automatisch dieselben acht Knoten.                              */
+
+const LP_TYP={
+ intro :{ic:'i-book', ch:'plus',  cta:'Erklärung starten'},
+ train :{ic:'i-star', ch:'zero',  cta:'Üben'},
+ exam  :{ic:'i-cap',  ch:'minus', cta:'Prüfung starten'},
+ reward:{ic:'i-gift', ch:'x',     cta:'Truhe öffnen'}
+};
+const LESSON_NODES=[
+ {k:'intro',typ:'intro', t:'Einführung',       s:'Thema verstehen'},
+ {k:'t1',   typ:'train', t:'Grundlagen',       s:'Erste Übungen',            tier:0},
+ {k:'e1',   typ:'exam',  t:'Prüfung 1',        s:'Erster Wissenstest',       tier:0},
+ {k:'t2',   typ:'train', t:'Vertiefung',       s:'Schwierigere Aufgaben',    tier:1},
+ {k:'e2',   typ:'exam',  t:'Prüfung 2',        s:'Zweiter Wissenstest',      tier:1},
+ {k:'t3',   typ:'train', t:'Meistertraining',  s:'Anspruchsvolle Aufgaben',  tier:2},
+ {k:'e3',   typ:'exam',  t:'Abschlussprüfung', s:'Finaler Test des Themas',  tier:2},
+ {k:'gift', typ:'reward',t:'Große Truhe',      s:'Lektion abgeschlossen'}
 ];
-const LP_D='M36 100C66 100 76 58 106 58S146 104 176 104S216 58 246 58S286 100 316 100';
-/* Position des Orbs beim letzten Rendern – damit er sichtbar weiterwandert. */
-const lpLast={};
+/* Aufgabenmischung je Übungsknoten – wird mit jeder Stufe schwerer. */
+const LP_MIX=[[1,1,2],[1,2,2,3],[2,3,3]];
 
-/* ---------- Zustand ---------- */
-function lessonPhase(id){
- const s=st(id),bs=bossState(id);
- if(bs.done)return 'completed';
- if(!s.seen)return 'intro';
- return bs.unlocked?'bossAvailable':'practice';
+/* Ableitung: erledigt / aktuell / gesperrt. Genau ein Knoten ist aktuell. */
+function lessonNodes(id){
+ const s=st(id);
+ const fertig={
+  intro:!!s.seen,
+  t1:s.c>=BOSSTIERS[0].need, e1:s.boss>=1,
+  t2:s.c>=BOSSTIERS[1].need, e2:s.boss>=2,
+  t3:s.c>=BOSSTIERS[2].need, e3:s.boss>=3,
+  gift:!!s.chest
+ };
+ let offen=true;
+ return LESSON_NODES.map(n=>{
+  const d=!!fertig[n.k];
+  const o={k:n.k,typ:n.typ,t:n.t,s:n.s,tier:n.tier,done:d,
+           current:!d&&offen, locked:!d&&!offen};
+  if(n.typ==='train'){o.have=Math.min(s.c,BOSSTIERS[n.tier].need);o.need=BOSSTIERS[n.tier].need;}
+  if(!d)offen=false;
+  return o;
+ });
 }
-/* Fortschritt 0..1 über den gesamten Pfad. */
-function lessonProgress(id){
- const s=st(id),bs=bossState(id);
- if(bs.done)return 1;
- if(!s.seen)return 0;
- const p=Math.min(1,s.c/bs.t.need);
- return bs.unlocked?.94:.08+p*.78;
-}
-/* Wie viele Übungsstationen sind erledigt (0..3)? */
-function lessonStations(id){
- const s=st(id),bs=bossState(id);
- if(bs.done)return 3;
- if(!s.seen)return 0;
- return Math.min(3,Math.floor(s.c/(bs.t.need/3)));
-}
+function lessonCurrent(id){return lessonNodes(id).find(n=>n.current)||null;}
 
 /* ---------- Sterne ---------- */
 function lessonStars(v,cls){
@@ -2787,94 +2900,113 @@ function lessonStars(v,cls){
  return h+'</div>';
 }
 
-/* ---------- Schwierigkeits-Anzeige ---------- */
+/* ---------- Schwierigkeits-Anzeige einer Prüfung ---------- */
 function diffIndicator(tier){
  const t=BOSSTIERS[Math.min(tier,2)];
  const c={1:0,2:0,3:0};t.lvls.forEach(l=>c[l]++);
- let h='<div class="lp-diff"><div class="lp-difftop"><b>'+t.name+'</b>'+
-   '<span>'+t.n+' Aufgaben · höchstens '+(t.n-t.pass)+' Fehler</span></div><div class="lp-bars">';
- [1,2,3].forEach(l=>{
-  h+='<span class="lp-bar lvl'+l+'" style="flex:'+Math.max(c[l],0.001)+'" title="Typ '+l+': '+c[l]+' Aufgaben">'+
-     (c[l]?c[l]+'× Typ '+l:'')+'</span>';
- });
- return h+'</div></div>';
+ let h='<div class="lp-bars" aria-hidden="true">';
+ [1,2,3].forEach(l=>{if(c[l])h+='<span class="lp-bar lvl'+l+'" style="flex:'+c[l]+'"></span>';});
+ return h+'</div><span class="lpn-diffnote">'+t.n+' Aufgaben · höchstens '+(t.n-t.pass)+' Fehler</span>';
 }
 
-/* ---------- Pfad ---------- */
+/* ---------- Pfad ----------
+   Dieselbe Mechanik wie die Übersicht: geschwungene Verbindungen, Knoten im
+   Wechselversatz. Die Schritte liegen dadurch IM Pfad statt daneben.
+   Der Versatz endet mittig – die Truhe steht als Ziel in der Mitte. */
+const LP_OFFS=[2,1,0,1,2,3,4,2];
+const LP_KURZ={intro:'START',train:'ÜBEN',exam:'PRÜFUNG',reward:'ÖFFNEN'};
+
 function lessonPathHTML(id){
- const s=st(id),bs=bossState(id),phase=lessonPhase(id);
- const need=bs.done?0:bs.t.need, doneSt=lessonStations(id);
- const prog=lessonProgress(id);
- const start=lpLast[id]!=null?lpLast[id]:0;   /* Orb startet, wo er zuletzt stand */
+ const nodes=lessonNodes(id);
+ let h='<div class="path lpath">';
+ nodes.forEach((n,i)=>{
+  const T=LP_TYP[n.typ];
+  /* Verbindung in diesen Knoten hinein – Zustand richtet sich nach dem Ziel. */
+  if(i>0)h+=pathConn(LP_OFFS[i-1],LP_OFFS[i],
+                     n.done?'done':n.current?'now':'lock');
 
- let nodes='';
- LP_NODES.forEach((n,i)=>{
-  let cls=n.k,state_;
-  if(n.k==='start')      state_=s.seen?'done':'active';
-  else if(n.k==='boss')  state_=bs.done?'done':(bs.unlocked?'active':'locked');
-  else{const idx=i;      /* Übungsstationen 1..3 */
-   state_=doneSt>=idx?'done':(s.seen&&doneSt===idx-1?'active':'locked');}
-  const r=n.k==='boss'?24:19;
-  nodes+='<g class="lp-node lp-'+n.k+' is-'+state_+'" transform="translate('+n.x+','+n.y+')">'+
-    '<circle class="lp-pulse" r="'+(r+7)+'"/>'+
-    '<circle class="lp-disc" r="'+r+'"/>'+
-    '<g class="lp-glyph">'+lpGlyph(n.k,state_)+'</g>'+
-   '</g>';
+  const gross=(n.typ==='exam'||n.typ==='reward');
+  h+='<div class="prow o'+LP_OFFS[i]+(gross?' big':'')+(n.current?' bub':'')+'">';
+  h+='<div class="nwrap lp-'+n.typ+'">';
+
+  if(n.current){
+   /* Übungsknoten zeigen ihren Füllstand im Ring, alle anderen einen vollen. */
+   const pr=n.typ==='train'?Math.round(n.have/n.need*100):100;
+   h+='<div class="nring" style="background:conic-gradient(var(--nc) '+pr+'%, transparent '+pr+'%)"></div>';
+   h+='<div class="startbub">'+LP_KURZ[n.typ]+'</div>';
+  }
+
+  const zu=n.done?'done':n.current?'cur z':'lock';
+  const tap=' onclick="lessonTap(\''+id+'\',\''+n.k+'\')"';
+
+  if(n.typ==='reward'){
+   /* Die Truhe ist keine Kreisscheibe mit Symbol, sondern die echte Truhe. */
+   h+='<span class="lgift'+(n.locked?' is-locked':n.done?' is-taken':'')+'"'+
+      (n.done?'':tap)+'>'+
+      chest('gold',n.done?'open':n.current?'idle':'closed','md')+'</span>';
+  }else{
+   h+='<div class="node '+zu+'"'+tap+'>'+
+      (n.done?'<span class="ck">'+ico('check')+'</span>':
+       n.locked?ico('lock'):ico(T.ic.slice(2)))+'</div>';
+  }
+
+  /* Beschriftung: Titel immer, Zusatz nur am aktuellen Schritt. */
+  let sub='';
+  if(n.current&&n.typ==='train')      sub=n.have+' von '+n.need+' Aufgaben';
+  else if(n.current&&n.typ==='exam')  sub=BOSSTIERS[n.tier].n+' Aufgaben · ein Versuch';
+  else if(n.current)                  sub=n.s;
+  h+='<div class="nlab"'+tap+'>'+n.t+(sub?'<span class="nsub">'+sub+'</span>':'')+'</div>';
+  h+='</div></div>';
  });
-
- let h='<div class="lp" data-lp="'+id+'">';
- h+='<svg class="lp-svg" viewBox="0 0 352 152" aria-hidden="true">'+
-    '<path class="lp-track" d="'+LP_D+'" pathLength="100"/>'+
-    '<path class="lp-fill" d="'+LP_D+'" pathLength="100" style="stroke-dashoffset:'+(100-start*100)+'"/>'+
-    nodes+
-    '<g class="lp-orb"><circle class="lp-orb-glow" r="11"/><circle class="lp-orb-core" r="5"/></g>'+
-    '</svg>';
- /* Klartext darunter – der wichtigste Teil für das Verständnis */
- h+='<div class="lp-legend">';
- if(phase==='intro')
-  h+='<b>Schritt 1:</b> Lies die Erklärung von Plus.';
- else if(phase==='practice')
-  h+='<b>Übe mit Null:</b> noch <b>'+Math.max(0,need-s.c)+'</b> von '+need+' Aufgaben bis zur Prüfung.';
- else if(phase==='bossAvailable')
-  h+='<b>Prüfung frei.</b> Minus wartet – du kannst aber weiter üben.';
- else
-  h+='<b>Lektion gemeistert.</b> Alle drei Sterne verdient.';
- h+='</div>';
  return h+'</div>';
 }
 
-function lpGlyph(k,state_){
- if(k==='start')   return '<path d="M-8 0h16M0 -8v16"/>';
- if(k==='boss')    return state_==='locked'
-   ? '<path d="M-6 -1v-4a6 6 0 0 1 12 0v4" fill="none"/><rect x="-8" y="-1" width="16" height="11" rx="3" stroke="none" class="lp-lockbody"/>'
-   : '<path d="M-10 0h20"/>';
- return '<circle r="7" fill="none"/>';
+/* Der Begleiter zeigt, wer den aktuellen Schritt führt. */
+function lessonGuide(id){
+ const n=lessonCurrent(id);
+ if(!n)return '';
+ const T=LP_TYP[n.typ];
+ const txt={
+  intro :'Ich erkläre dir das Thema Schritt für Schritt.',
+  train :'Wir üben zusammen, bis es sitzt.',
+  exam  :'Jetzt prüfe ich, ob das Wissen sitzt.',
+  reward:'Geschafft! Deine Belohnung wartet.'
+ }[n.typ];
+ return '<div class="lguide"><span id="lguideFig">'+character(T.ch,n.typ==='exam'?'idle':'talking','sm')+'</span>'+
+        '<div class="bubble">'+txt+'</div></div>';
 }
 
-/* ---------- Nach dem Rendern: Orb setzen, Funke auslösen ---------- */
-function lessonPathMount(id){
- const wrap=document.querySelector('.lp[data-lp="'+id+'"]');
- if(!wrap)return;
- const track=wrap.querySelector('.lp-track'),
-       fill=wrap.querySelector('.lp-fill'),
-       orb=wrap.querySelector('.lp-orb');
- if(!track||!orb)return;
- const prog=lessonProgress(id);
- const put=p=>{
-  try{const L=track.getTotalLength(),pt=track.getPointAtLength(L*p);
-   orb.setAttribute('transform','translate('+pt.x+','+pt.y+')');}catch(e){}
- };
- put(lpLast[id]!=null?lpLast[id]:prog);
- /* im nächsten Frame auf den neuen Stand – die CSS-Transition macht die Fahrt */
- const apply=()=>{
-  put(prog);
-  if(fill)fill.style.strokeDashoffset=String(100-prog*100);
-  lpLast[id]=prog;
- };
- requestAnimationFrame(()=>requestAnimationFrame(apply));
- /* Sicherheitsnetz: feuert requestAnimationFrame nicht (Tab im Hintergrund),
-    wäre der Balken sonst dauerhaft falsch. apply ist mehrfach aufrufbar. */
- setTimeout(apply,260);
+/* ---------- Knoten antippen ---------- */
+function lessonTap(id,k){
+ const n=lessonNodes(id).find(x=>x.k===k);
+ if(!n)return;
+ if(typeof sfx!=='undefined')sfx.click();
+ if(n.locked){toast(ico('lock','sm')+' Erledige zuerst die Schritte davor.');return;}
+ if(n.typ==='intro')      startLesson(id);
+ else if(n.typ==='train') startPractice(id,n.tier);
+ else if(n.typ==='exam')  startBoss(id);
+ else                     claimLessonChest(id);
+}
+
+/* Übungsknoten: begrenzte Einheit, danach zurück auf den Pfad. */
+function startPractice(id,tier){
+ const s=st(id),need=BOSSTIERS[tier].need;
+ const offen=Math.max(0,need-s.c);
+ const anzahl=Math.min(8,Math.max(3,offen));
+ const label=LESSON_NODES.filter(n=>n.typ==='train')[tier].t;
+ const q=[];
+ for(let i=0;i<anzahl;i++)q.push({m:id,lvl:pick(LP_MIX[tier]),ph:label,phi:'star'});
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'practice',mod:id,tier:tier,combo:0,maxCombo:0,shields:5};
+ renderSessTask();
+}
+
+/* Abschlusstruhe: einmal je Lektion. */
+function claimLessonChest(id){
+ const s=st(id);
+ if(s.chest)return;
+ s.chest=true;save();
+ addChest('gold','Lektion „'+modById(id).t+'" abgeschlossen');
+ go('chest');
 }
 /* ============ Lehrer & interaktive Lektionen ============
    Ein Lehrer für alle 21 Themen: Plus. Die Lektionstexte sind auf
@@ -3079,7 +3211,7 @@ vek:[
 /* ============ Lektions-Player ============ */
 let les=null;
 function startLesson(id,toSession){
- if(!LESSONS[id]){renderModule(id,'ueben');return;}
+ if(!LESSONS[id]){renderModule(id);return;}
  les={mod:id,i:0,toSession:!!toSession,answered:false,tried:false};
  renderLesson();
 }
@@ -3152,7 +3284,7 @@ function lesEnd(){
  if(les.toSession){
   h+='<button class="btn big" style="margin-top:14px" onclick="lesToSess()">Weiter zum Training</button>';
  }else{
-  h+='<div class="btnrow"><button class="btn big" onclick="les=null;renderModule(\''+id+'\',\'ueben\')">Jetzt üben</button></div>';
+  h+='<div class="btnrow"><button class="btn big" onclick="les=null;renderModule(\''+id+'\')">Weiter auf dem Pfad</button></div>';
   h+='<button class="crumb" onclick="go(\'home\')">Zur Übersicht</button>';
  }
  h+='</div>';
