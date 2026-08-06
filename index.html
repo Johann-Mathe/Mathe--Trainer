@@ -348,6 +348,7 @@ body.intask .tabbar{display:none}
 .nflag .ico{width:13px;height:13px}
 .nflag .f-due{color:var(--accent)}
 .nflag .f-boss{color:var(--bad)}
+.nflag .f-mast{color:var(--accent)}
 .startbub{position:absolute;left:50%;top:-42px;transform:translateX(-50%);background:var(--ink);
  color:var(--bg);font-weight:800;letter-spacing:.04em;font-size:var(--t-xs);border-radius:var(--r1);
  padding:6px 14px;z-index:3;box-shadow:var(--sh2);white-space:nowrap}
@@ -583,6 +584,9 @@ body.intask .tabbar{display:none}
 .lp-train {--nc:#2FA8DF;--nce:#1d78a4}
 .lp-exam  {--nc:#F2A03C;--nce:#b5722a}
 .lp-reward{--nc:#7C6CF7;--nce:#5748c2}
+/* Ein Skill auf Stufe „sicher" – Gold wie die Sterne */
+.lp-mast  {--nc:#FFC233;--nce:#c08e12}
+.lpath .nlab.mast{color:var(--accent)}
 
 .lpath .node.done,.lpath .node.cur{background:var(--nc);--nedge:var(--nce);color:var(--bg)}
 .lpath .node.cur{animation:nodebob 4.2s ease-in-out infinite}
@@ -1201,10 +1205,91 @@ function st(id){if(!state.mods[id])state.mods[id]={c:0,t:0,a:0,seen:false,boss:0
  const s=state.mods[id];
  if(s.boss==null)s.boss=0;if(s.stage==null)s.stage=-1;if(s.due==null)s.due='';
  if(!s.hist)s.hist=[];if(!s.lvl)s.lvl=1;
+ /* Teilkompetenzen: nur für Module, die bereits in subs zerlegt sind.
+    Alle übrigen behalten exakt den alten Zustand. */
+ const m=(typeof MODS!=='undefined')&&modById(id);
+ if(m&&m.subs){
+  if(!s.sk)s.sk={};
+  for(let i=0;i<m.subs.length;i++){const k=m.subs[i].k;
+   if(!s.sk[k])s.sk[k]={lvl:0,seen:false,hist:[],due:'',stage:-1,n:0,ok:0};
+   const q=s.sk[k];
+   if(q.lvl==null)q.lvl=0;if(!q.hist)q.hist=[];if(q.due==null)q.due='';
+   if(q.stage==null)q.stage=-1;if(q.n==null)q.n=0;if(q.ok==null)q.ok=0;}
+ }
  return s;}
+
+/* ============ Teilkompetenzen (Skills) ============
+   Ein Skill ist eine benannte Variante der Modulaufgaben mit eigenem
+   Fortschritt, eigener Schwierigkeitssteuerung und eigenem
+   Wiederholungstermin. Module ohne subs kennen davon nichts. */
+const SK_LVLN={0:'Neu',1:'Kennengelernt',2:'Kann ich',3:'Sicher'};
+const SK_NEED={n:8,quote:.75};   /* Stufe 1 → 2: acht Aufgaben, mind. 75 % */
+const SK_CHECK={n:6,pass:5,hard:2}; /* Stufe 2 → 3: 6er-Check, 2 davon auf Level 3 */
+
+function subOf(m,k){if(!m||!m.subs)return null;
+ for(let i=0;i<m.subs.length;i++)if(m.subs[i].k===k)return m.subs[i];
+ return null;}
+function skOf(id,k){const s=st(id);return (s.sk&&s.sk[k])||null;}
+
+/* Wählt einen Unter-Generator. Ohne k wird zufällig einer gezogen, der das
+   Level bedienen kann; mit k genau dieser, notfalls auf sein nächstes
+   erlaubtes Level heruntergebrochen. Gibt null zurück, wenn es keine subs
+   gibt – dann greift der bisherige gen(lvl). */
+function subGen(m,lvl,k){
+ if(!m||!m.subs||!m.subs.length)return null;
+ let sub=k?subOf(m,k):null;
+ if(!sub){
+  const pool=m.subs.filter(x=>x.lvl.indexOf(lvl)>=0);
+  sub=pick(pool.length?pool:m.subs);
+ }
+ let L=lvl;
+ if(sub.lvl.indexOf(L)<0)L=sub.lvl.reduce((a,b)=>Math.abs(b-L)<Math.abs(a-L)?b:a);
+ const t=sub.gen(L);
+ if(t){t.sk=sub.k;t.lvl=L;}
+ return t;}
+
+/* Adaptive Schwierigkeit auf Skill-Ebene, begrenzt auf die Level des Skills. */
+function autoLvlSk(id,k){
+ const q=skOf(id,k);const m=modById(id);const sub=subOf(m,k);
+ if(!q||!sub)return autoLvl(st(id));
+ let L;
+ if(q.hist.length>=4){
+  const quote=q.hist.reduce((a,b)=>a+b,0)/q.hist.length;
+  L=quote>=.85?3:(quote>=.6?2:1);
+ }else L=q.lvl>=2?2:1;
+ if(sub.lvl.indexOf(L)>=0)return L;
+ return sub.lvl.reduce((a,b)=>Math.abs(b-L)<Math.abs(a-L)?b:a);}
+
+/* Ergebnis auf Skill-Ebene verbuchen und ggf. Stufe 1 → 2 auslösen. */
+function noteSkill(id,k,lvl,ok){
+ const q=skOf(id,k);if(!q)return;
+ q.hist.push(ok?1:0);if(q.hist.length>12)q.hist.shift();
+ q.n++;if(ok)q.ok++;
+ if(q.lvl<=1&&q.n>=SK_NEED.n&&q.ok/q.n>=SK_NEED.quote){
+  q.lvl=2;skScheduleStart(id,k);
+  if(typeof toast==='function')toast(ico('star','sm')+' „'+subOf(modById(id),k).t+'" sitzt – jetzt kannst du es.');
+ }}
+
+/* Lektion eines Skills abgeschlossen: Stufe 0 → 1. */
+function skillSeen(id,k){
+ const q=skOf(id,k);if(!q)return false;
+ const neu=!q.seen;
+ q.seen=true;if(q.lvl<1)q.lvl=1;
+ save();return neu;}
+
+/* Wiederholung je Skill – dasselbe Intervallschema wie auf Modulebene. */
+function skScheduleStart(id,k){const q=skOf(id,k);
+ if(q&&q.stage<0){q.stage=0;q.due=addDays(1);save();}}
+function skScheduleAdvance(id,k){const q=skOf(id,k);
+ if(!q||q.stage<0)return;
+ q.stage=Math.min(q.stage+1,IVL.length-1);q.due=addDays(IVL[q.stage]);save();}
+function dueSkills(id){const t=dstr(),s=st(id),m=modById(id);
+ if(!s.sk||!m||!m.subs)return [];
+ return m.subs.filter(x=>{const q=s.sk[x.k];return q&&q.lvl>=2&&q.due&&q.due<=t;});}
 /* Verlauf: 1 = richtig, 0 = falsch (nur die letzten 12 zählen) */
-function noteResult(id,lvl,ok){
+function noteResult(id,lvl,ok,k){
  const s=st(id);
+ if(k)noteSkill(id,k,lvl,ok);
  s.hist.push(ok?1:0);if(s.hist.length>12)s.hist.shift();
  if(s.hist.length>=5){
   const q=s.hist.reduce((a,b)=>a+b,0)/s.hist.length;
@@ -1212,7 +1297,17 @@ function noteResult(id,lvl,ok){
   else if(q<0.6&&s.lvl>1){s.lvl--;s.hist=[];}
  }
  save();}
-function stars(s){return s.boss||0;}
+/* Bei zerlegten Modulen zählen die Skills: ★ wenn alle ≥ 2, ★★★ wenn alle = 3.
+   Der Bosswert bleibt Untergrenze – so kann niemand einen Stern verlieren. */
+function stars(s,id){
+ const m=(id&&typeof MODS!=='undefined')?modById(id):null;
+ if(m&&m.subs&&s.sk){
+  let min=3;
+  for(let i=0;i<m.subs.length;i++)min=Math.min(min,(s.sk[m.subs[i].k]||{}).lvl||0);
+  const sk=min>=3?3:(min>=2?1:0);
+  return Math.max(sk,s.boss||0);
+ }
+ return s.boss||0;}
 function starStr(n){let s='';for(let i=0;i<3;i++)s+=ico('star',i<n?'':'off');return s;}
 function dstr(d){d=d||new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function addDays(n){return dstr(new Date(Date.now()+n*864e5));}
@@ -1289,7 +1384,9 @@ function toast(msg){
 function scheduleStart(id){const s=st(id);if(s.stage<0){s.stage=0;s.due=addDays(1);save();}}
 function scheduleAdvance(id){const s=st(id);if(s.stage<0)return;
  s.stage=Math.min(s.stage+1,IVL.length-1);s.due=addDays(IVL[s.stage]);save();}
-function dueMods(){const t=dstr();return MODS.filter(m=>{const s=st(m.id);return s.due&&s.due<=t;});}
+function dueMods(){const t=dstr();return MODS.filter(m=>{const s=st(m.id);
+ if(m.subs&&dueSkills(m.id).length)return true;
+ return s.due&&s.due<=t;});}
 
 /* ============ Boss-Tests ============ */
 /* Schwierigkeitsskala je Sternstufe. Alles, was die Lektion steuert, steht hier:
@@ -1345,7 +1442,7 @@ function autoLvl(s){
  return pick([2,2,3,3,3]);}
 function modById(id){return MODS.find(m=>m.id===id);}
 /* Die nächste Lektion wird erst bei 3 Sternen freigeschaltet. */
-function recMod(){for(const m of MODS){if(stars(st(m.id))<3)return m;}return MODS[MODS.length-1];}
+function recMod(){for(const m of MODS){if(stars(st(m.id),m.id)<3)return m;}return MODS[MODS.length-1];}
 
 const lvlName={1:'Level 1 · Grundlagen',2:'Level 2 · Anwenden',3:'Level 3 · Transfer'};
 
@@ -1394,12 +1491,16 @@ function mountTask(container,modId,lvl,onDone,opts){
  opts=opts||{};
  const m=modById(modId);
  let task=null;
- /* Minispiele mischen sich ins Training (nicht im Boss-Test) */
- const gp=opts.gameChance!=null?opts.gameChance:(opts.strict?0:0.34);
+ /* Minispiele mischen sich ins Training (nicht im Boss-Test). Bei einer
+    Skill-Übung entfallen sie: die Spiele sind modulweit gebaut und würden
+    die Teilkompetenz verwässern. */
+ const gp=opts.sk?0:(opts.gameChance!=null?opts.gameChance:(opts.strict?0:0.34));
  if(typeof gameFor==='function'&&Math.random()<gp&&lvl>=2)task=gameFor(modId);
+ if(!task&&opts.sk)task=subGen(m,lvl,opts.sk);
  if(!task)task=m.gen(lvl);
- task.lvl=lvl;
- cur={task:task,tries:0,done:false,onDone:onDone,modId:modId,strict:!!opts.strict,autoNext:!!opts.autoNext};
+ if(task.lvl==null)task.lvl=lvl;
+ cur={task:task,tries:0,done:false,onDone:onDone,modId:modId,
+      sk:task.sk||opts.sk||null,strict:!!opts.strict,autoNext:!!opts.autoNext};
  container.innerHTML=taskHTML(task,cur.strict);
  container.classList.remove('tin');void container.offsetWidth;container.classList.add('tin');
  if(task.game&&GAMES[task.game].init)GAMES[task.game].init(task);
@@ -1460,7 +1561,7 @@ function finishAttempt(ok){
   addXP(xp+cbonus);
   if(typeof sfx!=='undefined'){sfx.ok();if(sess&&sess.combo>=3)sfx.combo(sess.combo);}
   const s=st(cur.modId);s.c++;s.a++;if(t.lvl===3)s.t++;
-  noteResult(cur.modId,t.lvl,true);
+  noteResult(cur.modId,t.lvl,true,cur.sk);
   if(typeof questProg==='function'){questProg('task',1);if(t.lvl===3)questProg('lvl3',1);if(t.game)questProg('game',1);}
   let msg=ico('check')+' '+pick(praise)+' <b>+'+((xp+cbonus)*(boosted?2:1))+' XP</b>';
   if(cbonus)msg+=' <span class="combochip">'+ico('flame','sm')+' Kombo x'+sess.combo+' +'+cbonus+'</span>';
@@ -1484,7 +1585,7 @@ function finishAttempt(ok){
   }else{
    cur.done=true;
    const s=st(cur.modId);s.a++;
-   noteResult(cur.modId,t.lvl,false);
+   noteResult(cur.modId,t.lvl,false,cur.sk);
    if(sess&&sess.shields!=null){sess.shields--;if(typeof sfx!=='undefined')sfx.shield();}
    state.errors.push({m:cur.modId,lvl:t.lvl});
    if(state.errors.length>40)state.errors.shift();
@@ -2258,7 +2359,7 @@ function renderHome(){
   h+='<div class="node '+cls+'" onclick="nodeTap(\''+m.id+'\','+(locked?1:0)+','+(isCur?1:0)+')">'+icon;
   if(flags)h+='<span class="nflag">'+flags+'</span>';
   h+='</div>';
-  h+='<div class="nlab" onclick="renderModule(\''+m.id+'\')">'+m.t+'<br><span class="stars">'+starStr(stars(st_))+'</span></div>';
+  h+='<div class="nlab" onclick="renderModule(\''+m.id+'\')">'+m.t+'<br><span class="stars">'+starStr(stars(st_,m.id))+'</span></div>';
   h+='</div></div>';
  });
  h+='<div class="prow o2"><div class="nwrap"><div class="node lock" onclick="toast(\'Das Ziel: alle 21 Stationen mit drei Sternen.\')">'+ico('star')+'</div><div class="nlab">Ziel: Oberstufen-fit</div></div></div>';
@@ -2369,7 +2470,7 @@ function renderQuests(){
 }
 function renderProfil(){
  setTab('profil');
- const totalStars=MODS.reduce((s2,m)=>s2+stars(st(m.id)),0);
+ const totalStars=MODS.reduce((s2,m)=>s2+stars(st(m.id),m.id),0);
  const totalC=MODS.reduce((s2,m)=>s2+st(m.id).c,0);
  const l=lvlOf(state.xp);
  let h='<div class="card"><h1>Dein Profil</h1><p class="mut">Level '+l+' · <b>'+titleOf(l)+'</b></p>';
@@ -2412,7 +2513,7 @@ function renderModule(id,tab){
  let h='<button class="crumb" onclick="go(\'home\')">'+ico('left','sm')+' Übersicht</button>';
  h+='<div class="card">';
  h+='<div class="lhead">'+modIcon(m,'big')+'<div class="lhead-t"><h1>'+m.t+'</h1>'+
-    lessonStars(stars(s))+'</div></div>';
+    lessonStars(stars(s,id))+'</div></div>';
  h+='<div class="lpsum"><i style="width:'+Math.round(fertig/nodes.length*100)+'%"></i></div>';
  h+='<p class="hint">Schritt '+Math.min(fertig+1,nodes.length)+' von '+nodes.length+' · '+
     s.c+' Aufgaben richtig gelöst</p>';
@@ -2422,7 +2523,7 @@ function renderModule(id,tab){
 
  const mIdx=MODS.findIndex(x=>x.id===id),nxt=MODS[mIdx+1];
  if(nxt){
-  const offen=stars(s)>=3;
+  const offen=stars(s,id)>=3;
   h+='<div class="lp-next'+(offen?' open':'')+'">'+ico(offen?'check':'lock')+
      '<span>'+(offen?'Freigeschaltet: ':'Nächste Lektion – 3 Sterne nötig: ')+'<b>'+nxt.t+'</b></span></div>';
  }
@@ -2526,6 +2627,14 @@ function startBoss(id){
 }
 function startReview(id){
  const q=[];
+ const faellig=(typeof dueSkills==='function')?dueSkills(id):[];
+ if(faellig.length){
+  /* Nur die Bausteine, die wirklich dran sind – das ist der Lerngewinn. */
+  for(let i=0;i<5;i++){const x=faellig[i%faellig.length];
+   q.push({m:id,sk:x.k,lvl:autoLvlSk(id,x.k),ph:'Wiederholung · '+x.t,phi:'cal'});}
+  sess={q:q,i:0,ok:0,t0:Date.now(),type:'rev',mod:id,revSk:faellig.map(x=>x.k),combo:0,maxCombo:0};
+  renderSessTask();return;
+ }
  for(let i=0;i<5;i++)q.push({m:id,lvl:autoLvl(st(id)),ph:'Wiederholung · '+modById(id).t,phi:'cal'});
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'rev',mod:id,combo:0,maxCombo:0};
  renderSessTask();
@@ -2624,7 +2733,7 @@ function renderSessTask(){
   if(sess.shields!=null&&sess.shields<=0){sess.broke=true;renderSessEnd();return;}
   if(sess.type==='boss'&&(sess.ok>=sess.pass||sess.i-sess.ok>sess.q.length-sess.pass)){renderSessEnd();return;}
   if(sess.i>=sess.q.length)renderSessEnd();else renderSessTask();
- },{strict:sess.type==='boss'});
+ },{strict:sess.type==='boss'||sess.type==='skcheck',sk:item.sk||null});
 }
 function quitSess(){if(timerH){clearInterval(timerH);timerH=null;}sess=null;sessRoot=null;go('home');}
 
@@ -2655,12 +2764,42 @@ function renderSessEnd(){
   }
   h+='<div class="btnrow"><button class="btn big" onclick="go(\'mod\',\''+sess.mod+'\')">Zurück zum Modul</button></div>';
  }else if(sess.type==='rev'){
+  if(sess.revSk)sess.revSk.forEach(k=>skScheduleAdvance(sess.mod,k));
   scheduleAdvance(sess.mod);addXP(25);checkBadges();
   const s=st(sess.mod);
   h+='<div style="text-align:center">'+character('minus','happy','md')+'</div><h1 style="text-align:center">Wiederholung geschafft</h1>';
   h+='<p style="text-align:center">'+sess.ok+' von '+n+' richtig · <b>+25 XP</b></p>';
   h+='<p class="mut" style="text-align:center">Nächste Wiederholung von „'+modById(sess.mod).t+'" in '+IVL[s.stage]+' Tag'+(IVL[s.stage]>1?'en':'')+'. Jede geschaffte Wiederholung verlängert den Abstand – so wandert der Stoff ins Langzeitgedächtnis.</p>';
   h+='<div class="btnrow"><button class="btn big" onclick="go(\'home\')">Weiter</button></div>';
+ }else if(sess.type==='skcheck'){
+  /* Bestanden: der Skill steigt auf „sicher" und wandert in die Wiederholung. */
+  const q=skOf(sess.mod,sess.sk),sub=subOf(modById(sess.mod),sess.sk);
+  const win=sess.ok>=sess.pass;
+  if(win){
+   if(q.lvl<3){q.lvl=3;addXP(60);}
+   skScheduleAdvance(sess.mod,sess.sk);checkBadges();save();
+   h+='<div style="text-align:center">'+character('minus','happy','lg')+'</div>';
+   h+='<h1 style="text-align:center">Check bestanden</h1>';
+   h+='<p style="text-align:center;font-size:1.15rem">„'+sub.t+'" ist jetzt <b>sicher</b> · +60 XP</p>';
+   h+='<p class="mut" style="text-align:center">'+sess.ok+' von '+n+' richtig – ohne zweite Chance. Diesen Baustein bekommst du in ein paar Tagen zur Auffrischung wieder.</p>';
+  }else{
+   h+='<div style="text-align:center">'+character('minus','thinking','lg')+'</div>';
+   h+='<h1 style="text-align:center">Noch nicht sicher</h1>';
+   h+='<p style="text-align:center">'+sess.ok+' von '+n+' richtig – nötig sind '+sess.pass+'.</p>';
+   h+='<p class="mut" style="text-align:center">Kein Problem: „'+sub.t+'" bleibt auf „kann ich". Übe ein paar Runden und komm wieder.</p>';
+  }
+  h+='<div class="btnrow"><button class="btn big" onclick="go(\'mod\',\''+sess.mod+'\')">Zurück zum Pfad</button></div>';
+ }else if(sess.type==='skprac'){
+  const q=skOf(sess.mod,sess.sk),sub=subOf(modById(sess.mod),sess.sk);
+  if(sess.auffr){skScheduleAdvance(sess.mod,sess.sk);addXP(20);}
+  h+='<div style="text-align:center">'+character('zero',sess.ok===n?'celebrate':'happy','lg')+'</div>';
+  h+='<h1 style="text-align:center">'+(sess.ok===n?'Alles richtig':'Übung geschafft')+'</h1>';
+  h+='<p style="text-align:center;font-size:1.15rem">'+sess.ok+' von '+n+' richtig'+(sess.auffr?' · +20 XP':'')+'</p>';
+  if(q.lvl>=2&&!sess.auffr)
+   h+='<p style="text-align:center;font-weight:700;color:var(--ok)">'+ico('check')+' „'+sub.t+'" sitzt – der Check wartet.</p>';
+  else if(q.lvl<2)
+   h+='<p class="mut" style="text-align:center">Noch '+Math.max(0,SK_NEED.n-q.n)+' Aufgaben, dann ist „'+sub.t+'" geschafft.</p>';
+  h+='<div class="btnrow"><button class="btn big" onclick="go(\'mod\',\''+sess.mod+'\')">Zurück zum Pfad</button></div>';
  }else if(sess.type==='practice'){
   /* Übungsknoten des Lernpfads: kurze Bilanz, dann zurück auf den Pfad. */
   const mod=sess.mod;
@@ -2713,7 +2852,9 @@ function renderSessEnd(){
  if(sess.type==='err'&&!sess.broke)addChest('bronze','Fehler aufgearbeitet');
  if(sess.type==='boss'&&sess.ok>=sess.pass)addChest('gold','Boss besiegt');
  if(sess.type==='practice'&&sess.ok===sess.q.length)addChest('bronze','Übung ohne Fehler');
- if(sess.type==='boss'||sess.type==='rev'||sess.type==='err'||sess.type==='practice')sess=null;
+ if(sess.type==='skcheck'&&sess.ok>=sess.pass)addChest('silver','Baustein gemeistert');
+ if(sess.type==='boss'||sess.type==='rev'||sess.type==='err'||
+    sess.type==='practice'||sess.type==='skprac'||sess.type==='skcheck')sess=null;
 }
 let sessBonus=40;
 function saveReflect(){
@@ -2855,8 +2996,16 @@ function pathConn(o1,o2,zustand){
 const LP_TYP={
  intro :{ic:'i-book', ch:'plus',  cta:'Erklärung starten'},
  train :{ic:'i-star', ch:'zero',  cta:'Üben'},
+ skill :{ic:'i-star', ch:'zero',  cta:'Weiter'},
  exam  :{ic:'i-cap',  ch:'minus', cta:'Prüfung starten'},
  reward:{ic:'i-gift', ch:'x',     cta:'Truhe öffnen'}
+};
+/* Was ein Skill-Knoten je Stufe anbietet – Symbol, Kurzwort, Beschriftung. */
+const SK_STUFE={
+ 0:{ic:'i-book',kurz:'LERNEN', ch:'plus', sub:'Neu – hier fängst du an'},
+ 1:{ic:'i-star',kurz:'ÜBEN',   ch:'zero', sub:''},
+ 2:{ic:'i-cap', kurz:'CHECK',  ch:'minus',sub:'Bereit für den Check'},
+ 3:{ic:'i-check',kurz:'AUFFRISCHEN',ch:'zero',sub:'Sicher'}
 };
 const LESSON_NODES=[
  {k:'intro',typ:'intro', t:'Einführung',       s:'Thema verstehen'},
@@ -2873,7 +3022,43 @@ const LP_MIX=[[1,1,2],[1,2,2,3],[2,3,3]];
 
 /* Ableitung: erledigt / aktuell / gesperrt. Genau ein Knoten ist aktuell. */
 function lessonNodes(id){
- const s=st(id);
+ const s=st(id),mm=modById(id);
+ if(mm&&mm.subs)return lessonNodesSk(id,s,mm);
+ return lessonNodesAlt(id,s);
+}
+
+/* Zerlegtes Modul: je Skill ein Knoten, danach unverändert die drei
+   Prüfungen und die Truhe. Ein Skill gilt ab Stufe 2 („kann ich") als
+   erledigt – Stufe 3 wird über den Check erreicht und als Stern markiert. */
+function lessonNodesSk(id,s,m){
+ const heute=dstr();
+ const out=[];let offen=true;
+ m.subs.forEach(x=>{
+  const q=(s.sk&&s.sk[x.k])||{lvl:0,n:0,ok:0,due:''};
+  const d=q.lvl>=2;
+  out.push({k:'sk:'+x.k,sk:x.k,typ:'skill',t:x.t,s:'',
+            skLvl:q.lvl,have:Math.min(q.n||0,SK_NEED.n),need:SK_NEED.n,
+            faellig:!!(q.lvl>=2&&q.due&&q.due<=heute),
+            done:d,current:!d&&offen,locked:!d&&!offen});
+  if(!d)offen=false;
+ });
+ /* Beschriftung wie im unzerlegten Pfad, damit beide gleich klingen. */
+ const exT=['Prüfung 1','Prüfung 2','Abschlussprüfung'];
+ [0,1,2].forEach(t=>{
+  const d=s.boss>=t+1;
+  const fehlt=Math.max(0,BOSSTIERS[t].need-s.c);
+  out.push({k:'e'+(t+1),typ:'exam',t:exT[t],s:'',tier:t,fehlt:fehlt,
+            done:d,current:!d&&offen,locked:!d&&!offen});
+  if(!d)offen=false;
+ });
+ const gd=!!s.chest;
+ out.push({k:'gift',typ:'reward',t:'Große Truhe',s:'Lektion abgeschlossen',
+           done:gd,current:!gd&&offen,locked:!gd&&!offen});
+ return out;
+}
+
+/* Unzerlegtes Modul – unveränderter bisheriger Aufbau. */
+function lessonNodesAlt(id,s){
  const fertig={
   intro:!!s.seen,
   t1:s.c>=BOSSTIERS[0].need, e1:s.boss>=1,
@@ -2925,15 +3110,17 @@ function lessonPathHTML(id){
   if(i>0)h+=pathConn(LP_OFFS[i-1],LP_OFFS[i],
                      n.done?'done':n.current?'now':'lock');
 
+  const S=n.typ==='skill'?SK_STUFE[n.skLvl]:null;
   const gross=(n.typ==='exam'||n.typ==='reward');
   h+='<div class="prow o'+LP_OFFS[i]+(gross?' big':'')+(n.current?' bub':'')+'">';
-  h+='<div class="nwrap lp-'+n.typ+'">';
+  h+='<div class="nwrap lp-'+(n.typ==='skill'?(n.skLvl>=3?'mast':SK_STUFE[n.skLvl].ch==='plus'?'intro':SK_STUFE[n.skLvl].ch==='minus'?'exam':'train'):n.typ)+'">';
 
   if(n.current){
    /* Übungsknoten zeigen ihren Füllstand im Ring, alle anderen einen vollen. */
-   const pr=n.typ==='train'?Math.round(n.have/n.need*100):100;
+   const pr=n.typ==='train'?Math.round(n.have/n.need*100)
+            :(n.typ==='skill'&&n.skLvl===1)?Math.round(n.have/n.need*100):100;
    h+='<div class="nring" style="background:conic-gradient(var(--nc) '+pr+'%, transparent '+pr+'%)"></div>';
-   h+='<div class="startbub">'+LP_KURZ[n.typ]+'</div>';
+   h+='<div class="startbub">'+(S?S.kurz:LP_KURZ[n.typ])+'</div>';
   }
 
   const zu=n.done?'done':n.current?'cur z':'lock';
@@ -2945,17 +3132,28 @@ function lessonPathHTML(id){
       (n.done?'':tap)+'>'+
       chest('gold',n.done?'open':n.current?'idle':'closed','md')+'</span>';
   }else{
-   h+='<div class="node '+zu+'"'+tap+'>'+
-      (n.done?'<span class="ck">'+ico('check')+'</span>':
-       n.locked?ico('lock'):ico(T.ic.slice(2)))+'</div>';
+   const sym=n.typ==='skill'
+     ? (n.locked?ico('lock'):ico((S?S.ic:'i-star').slice(2)))
+     : (n.done?'<span class="ck">'+ico('check')+'</span>':n.locked?ico('lock'):ico(T.ic.slice(2)));
+   let flag='';
+   if(n.typ==='skill'&&n.skLvl>=3)flag+=ico('star','f-mast');
+   if(n.faellig)flag+=ico('cal','f-due');
+   h+='<div class="node '+zu+'"'+tap+'>'+sym+
+      (flag?'<span class="nflag">'+flag+'</span>':'')+'</div>';
   }
 
   /* Beschriftung: Titel immer, Zusatz nur am aktuellen Schritt. */
   let sub='';
-  if(n.current&&n.typ==='train')      sub=n.have+' von '+n.need+' Aufgaben';
-  else if(n.current&&n.typ==='exam')  sub=BOSSTIERS[n.tier].n+' Aufgaben · ein Versuch';
+  if(n.typ==='skill'){
+   if(n.faellig)                      sub='Wiederholung fällig';
+   else if(n.skLvl===1)               sub=n.have+' von '+n.need+' Aufgaben';
+   else if(n.current||n.done)         sub=SK_STUFE[n.skLvl].sub;
+  }
+  else if(n.current&&n.typ==='train') sub=n.have+' von '+n.need+' Aufgaben';
+  else if(n.current&&n.typ==='exam')  sub=n.fehlt?('noch '+n.fehlt+' Aufgaben'):(BOSSTIERS[n.tier].n+' Aufgaben · ein Versuch');
   else if(n.current)                  sub=n.s;
-  h+='<div class="nlab"'+tap+'>'+n.t+(sub?'<span class="nsub">'+sub+'</span>':'')+'</div>';
+  h+='<div class="nlab'+(n.typ==='skill'&&n.skLvl>=3?' mast':'')+'"'+tap+'>'+n.t+
+     (sub?'<span class="nsub">'+sub+'</span>':'')+'</div>';
   h+='</div></div>';
  });
  return h+'</div>';
@@ -2965,14 +3163,19 @@ function lessonPathHTML(id){
 function lessonGuide(id){
  const n=lessonCurrent(id);
  if(!n)return '';
- const T=LP_TYP[n.typ];
+ const T=n.typ==='skill'?{ch:SK_STUFE[n.skLvl].ch}:LP_TYP[n.typ];
  const txt={
   intro :'Ich erkläre dir das Thema Schritt für Schritt.',
   train :'Wir üben zusammen, bis es sitzt.',
   exam  :'Jetzt prüfe ich, ob das Wissen sitzt.',
-  reward:'Geschafft! Deine Belohnung wartet.'
+  reward:'Geschafft! Deine Belohnung wartet.',
+  skill:{0:'Neuer Baustein – ich erkläre ihn dir.',
+         1:'Wir üben das, bis es sitzt.',
+         2:'Zeig mir, dass du das sicher kannst.',
+         3:'Sitzt. Kurz auffrischen, damit es so bleibt.'}[n.skLvl]
  }[n.typ];
- return '<div class="lguide"><span id="lguideFig">'+character(T.ch,n.typ==='exam'?'idle':'talking','sm')+'</span>'+
+ const ruhig=(n.typ==='exam'||(n.typ==='skill'&&n.skLvl===2));
+ return '<div class="lguide"><span id="lguideFig">'+character(T.ch,ruhig?'idle':'talking','sm')+'</span>'+
         '<div class="bubble">'+txt+'</div></div>';
 }
 
@@ -2982,6 +3185,15 @@ function lessonTap(id,k){
  if(!n)return;
  if(typeof sfx!=='undefined')sfx.click();
  if(n.locked){toast(ico('lock','sm')+' Erledige zuerst die Schritte davor.');return;}
+ if(n.typ==='skill'){
+  if(n.skLvl===0)      startLesson(id,false,n.sk);
+  else if(n.skLvl===1) startSkillPractice(id,n.sk,6);
+  else if(n.skLvl===2) startSkillCheck(id,n.sk);
+  else                 startSkillPractice(id,n.sk,5,true);
+  return;
+ }
+ if(n.typ==='exam'&&n.fehlt){
+  toast(ico('lock','sm')+' Noch '+n.fehlt+' gelöste Aufgaben, dann ist die Prüfung frei.');return;}
  if(n.typ==='intro')      startLesson(id);
  else if(n.typ==='train') startPractice(id,n.tier);
  else if(n.typ==='exam')  startBoss(id);
@@ -2997,6 +3209,36 @@ function startPractice(id,tier){
  const q=[];
  for(let i=0;i<anzahl;i++)q.push({m:id,lvl:pick(LP_MIX[tier]),ph:label,phi:'star'});
  sess={q:q,i:0,ok:0,t0:Date.now(),type:'practice',mod:id,tier:tier,combo:0,maxCombo:0,shields:5};
+ renderSessTask();
+}
+
+/* Übung einer einzelnen Teilkompetenz. Ohne Minispiele, ohne Umweg über
+   einen Übungs-Tab – genau dieser Baustein, so lange bis er sitzt. */
+function startSkillPractice(id,k,anz,auffrischen){
+ const sub=subOf(modById(id),k);if(!sub)return;
+ const q=[];
+ for(let i=0;i<(anz||6);i++)
+  q.push({m:id,sk:k,lvl:autoLvlSk(id,k),ph:sub.t,phi:'star'});
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'skprac',mod:id,sk:k,
+       auffr:!!auffrischen,combo:0,maxCombo:0,shields:5};
+ renderSessTask();
+}
+
+/* Der Check hebt einen Skill von „kann ich" auf „sicher": sechs Aufgaben
+   ohne zweite Chance, zwei davon auf der höchsten Stufe dieses Skills. */
+function startSkillCheck(id,k){
+ const sub=subOf(modById(id),k);if(!sub)return;
+ const hoch=Math.max.apply(null,sub.lvl);
+ const rest=sub.lvl.filter(l=>l!==hoch);
+ const q=[];
+ for(let i=0;i<SK_CHECK.n;i++){
+  const lvl=i<SK_CHECK.hard?hoch:(rest.length?pick(rest):hoch);
+  q.push({m:id,sk:k,lvl:lvl,ph:'Check · '+sub.t,phi:'cap'});
+ }
+ /* die schweren nicht immer vorn */
+ for(let i=q.length-1;i>0;i--){const j=ri(0,i);const t=q[i];q[i]=q[j];q[j]=t;}
+ sess={q:q,i:0,ok:0,t0:Date.now(),type:'skcheck',mod:id,sk:k,
+       pass:SK_CHECK.pass,combo:0,maxCombo:0};
  renderSessTask();
 }
 
@@ -3210,18 +3452,37 @@ vek:[
 
 /* ============ Lektions-Player ============ */
 let les=null;
-function startLesson(id,toSession){
+/* Die Schritte der laufenden Lektion – Modul-Lektion oder Skill-Lektion. */
+function lesSteps(){
+ if(les&&les.sk&&typeof SKILL_LESSONS!=='undefined'&&
+    SKILL_LESSONS[les.mod]&&SKILL_LESSONS[les.mod][les.sk])
+  return SKILL_LESSONS[les.mod][les.sk];
+ return LESSONS[les.mod];
+}
+function startLesson(id,toSession,sk){
+ if(sk){
+  /* Solange für diesen Baustein noch keine Lektion geschrieben ist, geht es
+     direkt in die Übung – der Pfad bleibt dadurch immer begehbar. */
+  const hat=(typeof SKILL_LESSONS!=='undefined'&&SKILL_LESSONS[id]&&SKILL_LESSONS[id][sk]);
+  if(!hat){
+   if(skillSeen(id,sk)&&typeof addXP==='function')addXP(10);
+   startSkillPractice(id,sk,4);return;
+  }
+  les={mod:id,sk:sk,i:0,toSession:false,answered:false,tried:false};
+  renderLesson();return;
+ }
  if(!LESSONS[id]){renderModule(id);return;}
  les={mod:id,i:0,toSession:!!toSession,answered:false,tried:false};
  renderLesson();
 }
 function renderLesson(){
- const L=LESSONS[les.mod],step=L[les.i],m=modById(les.mod);
+ const L=lesSteps(),step=L[les.i],m=modById(les.mod);
+ const sub=les.sk?subOf(m,les.sk):null;
  let h='<div class="lessonhead"><button class="lx" onclick="lesQuit()" aria-label="Lektion verlassen">'+ico('close')+'</button>';
  h+='<div class="lprog"><div style="width:'+Math.round(les.i/L.length*100)+'%"></div></div>';
  h+='<span class="lshield" style="color:var(--ink-3)">'+(les.i+1)+' / '+L.length+'</span></div>';
  h+='<div class="card">';
- h+='<div class="lmeta"><span class="phase grow">'+ico('book','sm')+' Lektion · '+m.t+'</span></div>';
+ h+='<div class="lmeta"><span class="phase grow">'+ico('book','sm')+' Lektion · '+(sub?sub.t:m.t)+'</span></div>';
  h+='<div class="mentorarena"><div style="text-align:center;min-width:70px"><span id="menFig">'+character('plus','talking','sm')+'</span><div class="mname">'+TEACHER.n+'</div></div>';
  h+='<div style="flex:1"><div class="bubble" id="menSay">'+(step.q?step.q:step.m)+'</div></div></div>';
  let board='';
@@ -3263,7 +3524,7 @@ function lesPick(btn,i){
 function lesNext(){
  if(!les)return;
  les.i++;les.answered=false;les.tried=false;les.perm=null;
- if(les.i>=LESSONS[les.mod].length)lesEnd();else renderLesson();
+ if(les.i>=lesSteps().length)lesEnd();else renderLesson();
 }
 function lesQuit(){
  const toSess=les&&les.toSession;les=null;
@@ -3273,6 +3534,22 @@ function lesQuit(){
 function lesEnd(){
  dockMount(null);
  const id=les.mod,m=modById(id),s=st(id);
+ if(les.sk){
+  /* Skill-Lektion: Stufe 1 erreicht, danach ohne Umweg vier Aufgaben
+     ausschliesslich aus diesem Baustein. */
+  const k=les.sk,sub=subOf(m,k);
+  const neu=skillSeen(id,k);
+  if(neu)addXP(15);
+  saveNow('flash');
+  let hh='<div class="card"><div style="text-align:center">'+character('plus','happy','md')+'</div>';
+  hh+='<h1 style="text-align:center">'+sub.t+' verstanden'+(neu?' · <b>+15 XP</b>':'')+'</h1>';
+  hh+='<p class="mut" style="text-align:center">'+TEACHER.n+': „Und jetzt vier Aufgaben genau dazu – Wissen wächst beim Rechnen."</p>';
+  hh+='<div class="btnrow"><button class="btn big" onclick="lesToSkill()">Los geht\'s '+ico('right')+'</button></div>';
+  hh+='<button class="crumb" onclick="les=null;renderModule(\''+id+'\')">Später üben</button>';
+  hh+='</div>';
+  $('#app').innerHTML=hh;cheer();
+  return;
+ }
  const first=!s.seen;
  s.seen=true;
  if(first)addXP(25);
@@ -3291,6 +3568,8 @@ function lesEnd(){
  $('#app').innerHTML=h;cheer();
 }
 function lesToSess(){les=null;renderSessTask();}
+/* Direkt aus der Skill-Lektion in die vier Aufgaben desselben Skills. */
+function lesToSkill(){const id=les.mod,k=les.sk;les=null;startSkillPractice(id,k,4);}
 /* ============ Minispiele ============ */
 const GAMES={
 
@@ -3724,70 +4003,120 @@ exm:[
  {q:frac(3,4)+' in Dezimalzahl und Prozent umwandeln',steps:['Zähler durch Nenner: 3 : 4 = 0,75','Mal 100: 0,75 · 100 = <b>75 %</b>']},
  {q:frac(2,3)+' − '+frac(1,6),steps:['Hauptnenner von 3 und 6 ist 6','Erweitern: '+frac(2,3)+' = '+frac(4,6),frac(4,6)+' − '+frac(1,6)+' = '+frac(3,6),'Kürzen: '+frac(3,6)+' = <b>'+frac(1,2)+'</b>']},
  {q:'Ein Pullover kostet 60 €, er wird um 20 % reduziert. Neuer Preis?',steps:['20 % von 60 € = 60 · 0,20 = 12 €','60 € − 12 € = <b>48 €</b>','Schneller: 60 · 0,80 = 48 €']}],
-gen:function(lvl){
+/* Vier Teilkompetenzen. Die Level-Angabe sagt, welche Schwierigkeitsstufen
+   dieser Skill bedienen kann – der Auswähler unten hält sich daran. */
+subs:[
+{k:'umw',t:'Umwandeln',lvl:[1,2],gen:function(lvl){
  if(lvl===1){
-  if(pick([0,1])===0){
-   const p=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[7,10],[3,10],[9,10],[1,8],[3,20],[1,25],[7,20]]);
-   const dec=p[0]/p[1];
-   return {q:'Wandle um: '+frac(p[0],p[1]),
-    fields:[{l:'Dezimalzahl:',a:dec},{l:'Prozent (%):',a:dec*100}],
-    steps:[p[0]+' : '+p[1]+' = '+fmt(dec),fmt(dec)+' · 100 = '+fmt(dec*100)+' %'],
-    hint:'Dezimalzahl mit Komma oder Punkt.'};
-  }
+  const p=pick([[1,2],[1,4],[3,4],[1,5],[2,5],[3,5],[4,5],[7,10],[3,10],[9,10],[1,8],[3,20],[1,25],[7,20]]);
+  const dec=p[0]/p[1];
+  return {q:'Wandle um: '+frac(p[0],p[1]),
+   fields:[{l:'Dezimalzahl:',a:dec},{l:'Prozent (%):',a:dec*100}],
+   steps:[p[0]+' : '+p[1]+' = '+fmt(dec),fmt(dec)+' · 100 = '+fmt(dec*100)+' %'],
+   hint:'Dezimalzahl mit Komma oder Punkt.'};
+ }
+ /* Rückrichtung: Prozent als gekürzten Bruch schreiben */
+ const p=pick([[5,'1/20'],[10,'1/10'],[15,'3/20'],[20,'1/5'],[25,'1/4'],[30,'3/10'],
+               [40,'2/5'],[50,'1/2'],[60,'3/5'],[75,'3/4'],[80,'4/5']]);
+ return {q:'Schreibe als <b>gekürzten Bruch</b>: '+p[0]+' %',
+  fields:[{l:'Bruch (z. B. 3/4):',type:'txt',acc:[p[1]]}],
+  steps:[p[0]+' % = '+frac(p[0],100),'Zähler und Nenner so weit wie möglich kürzen',
+   'Ergebnis: <b>'+p[1]+'</b>'],
+  hint:'Erst als Hundertstel schreiben, dann kürzen.'};
+}},
+{k:'krz',t:'Kürzen & Vergleichen',lvl:[1,2,3],gen:function(lvl){
+ if(lvl===1){
   const b=pick([[1,2],[2,3],[3,4],[2,5],[3,5],[5,6],[1,3],[4,5],[3,7]]);const k=ri(2,6);
   return {q:'Kürze so weit wie möglich: '+frac(b[0]*k,b[1]*k),
    fields:[{l:'Ergebnis (z. B. 2/3):',type:'txt',acc:[b[0]+'/'+b[1]]}],
-   steps:['Größter gemeinsamer Teiler von '+(b[0]*k)+' und '+(b[1]*k)+' ist '+k,'Zähler und Nenner durch '+k+': '+frac(b[0],b[1])]};
+   steps:['Größter gemeinsamer Teiler von '+(b[0]*k)+' und '+(b[1]*k)+' ist '+k,
+    'Zähler und Nenner durch '+k+': '+frac(b[0],b[1])]};
  }
  if(lvl===2){
-  if(pick([0,1])===0){
-   const d1=pick([2,3,4,5,6]);const mf=pick([2,3]);const d2=d1*mf;
-   let n1=ri(1,d1-1),n2=ri(1,d2-1);
-   const minus=pick([true,false]);
-   if(minus){let g=0;while(n1*mf<=n2&&g<30){n1=ri(1,d1-1);n2=ri(1,d2-1);g++;}if(n1*mf<=n2){n1=d1-1;n2=1;}}
-   const num=minus?n1*mf-n2:n1*mf+n2;
-   const op=minus?' − ':' + ';
-   return {q:'Berechne: '+frac(n1,d1)+op+frac(n2,d2),
-    fields:[{l:'Ergebnis (Bruch a/b oder Dezimalzahl):',a:num/d2}],
-    steps:['Hauptnenner: '+d2,'Erweitern: '+frac(n1,d1)+' = '+frac(n1*mf,d2),frac(n1*mf,d2)+op+frac(n2,d2)+' = '+frac(num,d2),'Gekürzt: '+fracTxt(num,d2)]};
-  }
+  /* Größerer gemeinsamer Teiler – das gelingt nicht mehr nebenbei im Kopf */
+  const b=pick([[2,3],[3,4],[3,5],[5,7],[4,9],[5,8]]);const k=pick([8,9,12,14,15,16,18]);
+  return {q:'Kürze vollständig: '+frac(b[0]*k,b[1]*k),
+   fields:[{l:'Ergebnis (z. B. 2/3):',type:'txt',acc:[b[0]+'/'+b[1]]}],
+   steps:['Zerlege beide Zahlen: '+(b[0]*k)+' = '+b[0]+' · '+k+' und '+(b[1]*k)+' = '+b[1]+' · '+k,
+    'Der gemeinsame Faktor '+k+' fällt weg','<b>'+frac(b[0],b[1])+'</b>'],
+   hint:'Suche den größten gemeinsamen Teiler – nicht nur die 2.'};
+ }
+ const a=pick([[2,3],[3,4],[3,5],[5,8],[5,6],[7,10]]);
+ const b=pick([[1,2],[2,5],[3,8],[4,7],[5,9]]);
+ const va=a[0]/a[1],vb=b[0]/b[1];
+ if(Math.abs(va-vb)<0.01){
+  return {q:'Welcher Bruch ist <b>größer</b>?',mc:shufMC([frac(2,3),frac(1,2)],0),
+   steps:[frac(2,3)+' = '+fmt(2/3)+' und '+frac(1,2)+' = 0,5','Größer ist <b>'+frac(2,3)+'</b>']};
+ }
+ const mc=shufMC([frac(a[0],a[1]),frac(b[0],b[1])],va>vb?0:1);
+ return {q:'Welcher Bruch ist <b>größer</b>?',mc:mc,
+  steps:['In Dezimalzahlen umrechnen: '+frac(a[0],a[1])+' = '+fmt(va)+' und '+frac(b[0],b[1])+' = '+fmt(vb),
+   'Größer ist damit <b>'+(va>vb?frac(a[0],a[1]):frac(b[0],b[1]))+'</b>']};
+}},
+{k:'add',t:'Addieren & Subtrahieren',lvl:[2,3],gen:function(lvl){
+ if(lvl===2){
+  /* Ein Nenner ist Vielfaches des anderen – nur einer muss erweitert werden */
+  const d1=pick([2,3,4,5,6]);const mf=pick([2,3]);const d2=d1*mf;
+  let n1=ri(1,d1-1),n2=ri(1,d2-1);
+  const minus=pick([true,false]);
+  if(minus){let g=0;while(n1*mf<=n2&&g<30){n1=ri(1,d1-1);n2=ri(1,d2-1);g++;}
+   if(n1*mf<=n2){n1=d1-1;n2=1;}}
+  const num=minus?n1*mf-n2:n1*mf+n2;
+  const op=minus?' − ':' + ';
+  return {q:'Berechne: '+frac(n1,d1)+op+frac(n2,d2),
+   fields:[{l:'Ergebnis (Bruch a/b oder Dezimalzahl):',a:num/d2}],
+   steps:['Hauptnenner: '+d2,'Erweitern: '+frac(n1,d1)+' = '+frac(n1*mf,d2),
+    frac(n1*mf,d2)+op+frac(n2,d2)+' = '+frac(num,d2),'Gekürzt: '+fracTxt(num,d2)]};
+ }
+ /* Beide Nenner müssen erweitert werden – der Hauptnenner ist keiner von beiden */
+ const paare=[[2,3],[3,4],[4,3],[3,5],[5,6],[4,5],[6,4],[2,5],[5,3],[6,5]];
+ const d=pick(paare);const d1=d[0],d2=d[1];
+ const ggt=function(a,b){while(b){const t=b;b=a%b;a=t;}return a;};
+ const kgv=d1*d2/ggt(d1,d2);
+ const f1=kgv/d1,f2=kgv/d2;
+ let n1=ri(1,d1-1),n2=ri(1,d2-1);
+ const minus=n1*f1>n2*f2;
+ const num=minus?n1*f1-n2*f2:n1*f1+n2*f2;
+ const op=minus?' − ':' + ';
+ return {q:'Berechne: '+frac(n1,d1)+op+frac(n2,d2),
+  fields:[{l:'Ergebnis (Bruch a/b oder Dezimalzahl):',a:num/kgv}],
+  steps:['Hauptnenner von '+d1+' und '+d2+' ist '+kgv+' (kleinstes gemeinsames Vielfaches)',
+   'Beide erweitern: '+frac(n1,d1)+' = '+frac(n1*f1,kgv)+' und '+frac(n2,d2)+' = '+frac(n2*f2,kgv),
+   frac(n1*f1,kgv)+op+frac(n2*f2,kgv)+' = '+frac(num,kgv),'Gekürzt: <b>'+fracTxt(num,kgv)+'</b>'],
+  hint:'Hier reicht es nicht, einen Bruch zu erweitern – beide müssen auf denselben Nenner.'};
+}},
+{k:'pro',t:'Prozentrechnung',lvl:[2,3],gen:function(lvl){
+ if(lvl===2){
   const p=pick([5,10,15,20,25,30,40,50,75]);const N=ri(2,12)*20;
   return {q:'Berechne: '+p+' % von '+N,
    fields:[{l:'Ergebnis:',a:N*p/100}],
    steps:[p+' % bedeutet '+frac(p,100)+' = '+fmt(p/100),N+' · '+fmt(p/100)+' = '+fmt(N*p/100)]};
  }
- const v=pick([0,1,2]);
+ const v=pick([0,1,2,3]);
  if(v===0){const P=ri(3,12)*10;const p=pick([10,20,25,30,50]);
   return {q:'Ein Artikel kostet '+P+' €. Er wird um '+p+' % <b>reduziert</b>. Wie viel kostet er jetzt?',
    fields:[{l:'Neuer Preis (€):',a:P*(1-p/100)}],
-   steps:['Rabatt: '+p+' % von '+P+' € = '+fmt(P*p/100)+' €',P+' − '+fmt(P*p/100)+' = '+fmt(P*(1-p/100))+' €','Schneller: '+P+' · '+fmt(1-p/100)+' = '+fmt(P*(1-p/100))+' €']};}
+   steps:['Rabatt: '+p+' % von '+P+' € = '+fmt(P*p/100)+' €',
+    P+' − '+fmt(P*p/100)+' = '+fmt(P*(1-p/100))+' €',
+    'Schneller: '+P+' · '+fmt(1-p/100)+' = '+fmt(P*(1-p/100))+' €']};}
  if(v===1){const a=ri(2,6)*20;const inc=pick([10,15,20,25,50]);const b=a*(1+inc/100);
   return {q:'Ein Preis steigt von '+a+' € auf '+fmt(b)+' €. Um wie viel <b>Prozent</b> ist das gestiegen?',
    fields:[{l:'Prozent (%):',a:inc}],
-   steps:['Zuwachs: '+fmt(b)+' − '+a+' = '+fmt(b-a)+' €','Anteil: '+fmt(b-a)+' : '+a+' = '+fmt((b-a)/a),'Mal 100: <b>'+inc+' %</b>']};}
- if(pick([0,1,2])===0){
-  const g=ri(2,9),t=ri(2,5),ganz=g*t;
+   steps:['Zuwachs: '+fmt(b)+' − '+a+' = '+fmt(b-a)+' €','Anteil: '+fmt(b-a)+' : '+a+' = '+fmt((b-a)/a),
+    'Mal 100: <b>'+inc+' %</b>']};}
+ if(v===2){const g=ri(2,9),t=ri(2,5),ganz=g*t;
   return {q:'<b>Anteil rückwärts:</b> '+frac(1,t)+' einer Klasse sind '+g+' Schüler. Wie viele Schüler hat die ganze Klasse?',
    fields:[{l:'Schüler gesamt:',a:ganz}],
-   steps:[frac(1,t)+' entspricht '+g+' Schülern','Das Ganze besteht aus '+t+' solchen Teilen',g+' · '+t+' = <b>'+ganz+' Schüler</b>']};
- }
- if(pick([0,1])===0){
-  const a=pick([[2,3],[3,4],[3,5],[5,8],[5,6],[7,10]]);
-  const b=pick([[1,2],[2,5],[3,8],[4,7],[5,9]]);
-  const va=a[0]/a[1],vb=b[0]/b[1];
-  if(Math.abs(va-vb)>0.01){
-   const mc=shufMC([frac(a[0],a[1]),frac(b[0],b[1])],va>vb?0:1);
-   return {q:'Welcher Bruch ist <b>größer</b>?',mc:mc,
-    steps:['In Dezimalzahlen umrechnen: '+frac(a[0],a[1])+' = '+fmt(va)+' und '+frac(b[0],b[1])+' = '+fmt(vb),
-     'Größer ist damit <b>'+(va>vb?frac(a[0],a[1]):frac(b[0],b[1]))+'</b>']};
-  }
- }
+   steps:[frac(1,t)+' entspricht '+g+' Schülern','Das Ganze besteht aus '+t+' solchen Teilen',
+    g+' · '+t+' = <b>'+ganz+' Schüler</b>']};}
  const P0=ri(3,10)*10;const p=pick([10,20,25,50]);const E=P0*(1-p/100);
  return {q:'<b>Rückwärts denken:</b> Nach '+p+' % Rabatt kostet eine Jacke '+fmt(E)+' €. Was war der <b>Originalpreis</b>?',
   fields:[{l:'Originalpreis (€):',a:P0}],
-  steps:['Nach dem Rabatt bleiben '+(100-p)+' % übrig','Also: Originalpreis · '+fmt(1-p/100)+' = '+fmt(E),'Originalpreis = '+fmt(E)+' : '+fmt(1-p/100)+' = <b>'+P0+' €</b>'],
+  steps:['Nach dem Rabatt bleiben '+(100-p)+' % übrig','Also: Originalpreis · '+fmt(1-p/100)+' = '+fmt(E),
+   'Originalpreis = '+fmt(E)+' : '+fmt(1-p/100)+' = <b>'+P0+' €</b>'],
   hint:'Der Rabatt wurde vom Originalpreis berechnet, nicht von '+fmt(E)+' €!'};
-}},
+}}],
+gen:function(lvl){return subGen(this,lvl);}},
 
 /* ---------- A2 Klammern & Vorzeichen ---------- */
 {id:'klm',ic:'paren',t:'Klammern & Vorzeichen',blk:0,
@@ -4569,54 +4898,69 @@ ex:'<p>Die Ableitung f′(x) gibt die <b>Steigung</b> des Graphen an jeder Stell
 exm:[
  {q:'f(x) = x³',steps:['Potenzregel: Exponent 3 nach vorn','Exponent um 1 verringern: 3 − 1 = 2','<b>f′(x) = 3x²</b>']},
  {q:'f(x) = 2x⁵ − 4x² + 7',steps:['(2x⁵)′ = 2 · 5x⁴ = 10x⁴','(−4x²)′ = −8x','(7)′ = 0','<b>f′(x) = 10x⁴ − 8x</b>']}],
-gen:function(lvl){
+/* Vier Teilkompetenzen – die Reihenfolge ist auch die Lernreihenfolge. */
+subs:[
+{k:'pot',t:'Potenzregel',lvl:[1,2],gen:function(lvl){
  const powS=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x^'+e);
  const powH=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x<sup>'+e+'</sup>');
  if(lvl===1){
   const n=ri(2,7);
   return {q:'Leite ab: f(x) = x<sup>'+n+'</sup>',
    fields:[{l:'f′(x) =',type:'txt',acc:[powS(n,n-1)]}],
-   steps:['Potenzregel: Exponent nach vorn, dann um 1 verringern','f′(x) = '+n+' · x<sup>'+n+'−1</sup> = <b>'+powH(n,n-1)+'</b>'],
+   steps:['Potenzregel: Exponent nach vorn, dann um 1 verringern',
+    'f′(x) = '+n+' · x<sup>'+n+'−1</sup> = <b>'+powH(n,n-1)+'</b>'],
    hint:'z. B. 3x^2'};
  }
+ const a=ri(2,7),n=ri(2,5);
+ return {q:'Leite ab: f(x) = '+powH(a,n),
+  fields:[{l:'f′(x) =',type:'txt',acc:[powS(a*n,n-1)]}],
+  steps:['Faktor '+a+' bleibt stehen, Potenzregel für x<sup>'+n+'</sup>',
+   'f′(x) = '+a+' · '+n+' · x<sup>'+(n-1)+'</sup> = <b>'+powH(a*n,n-1)+'</b>'],hint:'z. B. 10x^4'};
+}},
+{k:'sum',t:'Summenregel',lvl:[2,3],gen:function(lvl){
+ const powS=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x^'+e);
+ const powH=(c,e)=>e===0?(''+c):e===1?co(c,'x'):co(c,'x<sup>'+e+'</sup>');
  if(lvl===2){
-  const v=pick([0,1,2]);
-  if(v===0){
-   const a=ri(2,7),n=ri(2,5);
-   return {q:'Leite ab: f(x) = '+powH(a,n),
-    fields:[{l:'f′(x) =',type:'txt',acc:[powS(a*n,n-1)]}],
-    steps:['Faktor '+a+' bleibt stehen, Potenzregel für x<sup>'+n+'</sup>','f′(x) = '+a+' · '+n+' · x<sup>'+(n-1)+'</sup> = <b>'+powH(a*n,n-1)+'</b>'],hint:'z. B. 10x^4'};}
-  if(v===1){
-   const n=ri(2,5),b=ri(2,9);
-   const t1=powS(n,n-1);
-   return {q:'Leite ab: f(x) = x<sup>'+n+'</sup> + '+co(b,'x'),
-    fields:[{l:'f′(x) =',type:'txt',acc:[t1+'+'+b,b+'+'+t1]}],
-    steps:['Summand für Summand ableiten','(x<sup>'+n+'</sup>)′ = '+powH(n,n-1)+' und ('+co(b,'x')+')′ = '+b,'<b>f′(x) = '+powH(n,n-1)+' + '+b+'</b>'],hint:'z. B. 3x^2+5'};}
+  const n=ri(2,5),b=ri(2,9);
+  const t1=powS(n,n-1);
+  return {q:'Leite ab: f(x) = x<sup>'+n+'</sup> + '+co(b,'x'),
+   fields:[{l:'f′(x) =',type:'txt',acc:[t1+'+'+b,b+'+'+t1]}],
+   steps:['Summand für Summand ableiten',
+    '(x<sup>'+n+'</sup>)′ = '+powH(n,n-1)+' und ('+co(b,'x')+')′ = '+b,
+    '<b>f′(x) = '+powH(n,n-1)+' + '+b+'</b>'],hint:'z. B. 3x^2+5'};
+ }
+ const a=ri(2,5),m=ri(3,5),b=ri(2,6),c=ri(1,9);
+ const t1=powS(a*m,m-1),t2=powS(-2*b,1);
+ return {q:'Leite ab: f(x) = '+powH(a,m)+' − '+powH(b,2)+' + '+c,
+  fields:[{l:'f′(x) =',type:'txt',acc:[t1+t2,(t2.charAt(0)==='-'?t2:'+'+t2)+'+'+t1,t2+'+'+t1]}],
+  steps:['('+powH(a,m)+')′ = '+powH(a*m,m-1),'(−'+powH(b,2)+')′ = −'+co(2*b,'x'),
+   '('+c+')′ = 0 (Konstante fällt weg)',
+   '<b>f′(x) = '+powH(a*m,m-1)+' − '+co(2*b,'x')+'</b>'],hint:'z. B. 10x^4-8x'};
+}},
+{k:'stl',t:'Steigung an einer Stelle',lvl:[2,3],gen:function(lvl){
+ if(lvl===2){
   const x0=ri(-4,5);
   return {q:'f(x) = x². Wie groß ist die <b>Steigung</b> des Graphen an der Stelle x = '+x0+'?',
    fields:[{l:'Steigung:',a:2*x0}],
    steps:['Ableitung bilden: f′(x) = 2x','Stelle einsetzen: f′('+x0+') = 2 · ('+x0+')','= <b>'+(2*x0)+'</b>']};
  }
- if(pick([0,1])===0){
-  const a=ri(2,5),m=ri(3,5),b=ri(2,6),c=ri(1,9);
-  const t1=powS(a*m,m-1),t2=powS(-2*b,1);
-  return {q:'Leite ab: f(x) = '+powH(a,m)+' − '+powH(b,2)+' + '+c,
-   fields:[{l:'f′(x) =',type:'txt',acc:[t1+t2,(t2.startsWith('-')?t2:'+'+t2)+'+'+t1,t2+'+'+t1]}],
-   steps:['('+powH(a,m)+')′ = '+powH(a*m,m-1),'(−'+powH(b,2)+')′ = −'+co(2*b,'x'),'('+c+')′ = 0 (Konstante fällt weg)','<b>f′(x) = '+powH(a*m,m-1)+' − '+co(2*b,'x')+'</b>'],hint:'z. B. 10x^4-8x'};}
- if(pick([0,1])===0){
-  const a=ri(2,4),n=ri(2,3),x0=ri(1,3);
-  const abl=a*n,val=abl*Math.pow(x0,n-1);
-  return {q:'f(x) = '+co(a,'x<sup>'+n+'</sup>')+'. Wie groß ist die <b>Steigung an der Stelle x = '+x0+'</b>?',
-   fields:[{l:'f′('+x0+') =',a:val}],
-   steps:['Ableiten: f′(x) = '+co(abl,n-1===1?'x':'x<sup>'+(n-1)+'</sup>'),
-    'Einsetzen: f′('+x0+') = '+abl+' · '+x0+(n-1>1?'<sup>'+(n-1)+'</sup>':''),
-    '= <b>'+val+'</b>']};
- }
+ const a=ri(2,4),n=ri(2,3),x0=ri(1,3);
+ const abl=a*n,val=abl*Math.pow(x0,n-1);
+ return {q:'f(x) = '+co(a,'x<sup>'+n+'</sup>')+'. Wie groß ist die <b>Steigung an der Stelle x = '+x0+'</b>?',
+  fields:[{l:'f′('+x0+') =',a:val}],
+  steps:['Ableiten: f′(x) = '+co(abl,n-1===1?'x':'x<sup>'+(n-1)+'</sup>'),
+   'Einsetzen: f′('+x0+') = '+abl+' · '+x0+(n-1>1?'<sup>'+(n-1)+'</sup>':''),
+   '= <b>'+val+'</b>']};
+}},
+{k:'ext',t:'Extremstelle finden',lvl:[3],gen:function(lvl){
  const B=2*ri(1,6);
  return {q:'<b>Anwendung:</b> f(x) = x² − '+B+'x. An welcher Stelle ist die Steigung gleich 0 (Extremstelle)?',
   fields:[{l:'x =',a:B/2}],
-  steps:['Ableiten: f′(x) = 2x − '+B,'Null setzen: 2x − '+B+' = 0','2x = '+B+' → <b>x = '+(B/2)+'</b>','Dort hat die Parabel ihren Scheitel (Minimum).']};
-}},
+  steps:['Ableiten: f′(x) = 2x − '+B,'Null setzen: 2x − '+B+' = 0',
+   '2x = '+B+' → <b>x = '+(B/2)+'</b>','Dort hat die Parabel ihren Scheitel (Minimum).'],
+  hint:'Erst ableiten, dann die Ableitung gleich null setzen.'};
+}}],
+gen:function(lvl){return subGen(this,lvl);}},
 
 /* ---------- D3 Integrale ---------- */
 {id:'int',ic:'area',t:'Integrale',blk:3,
@@ -4749,8 +5093,35 @@ function shufMC(opts,correctIdx){
  for(let i=idx.length-1;i>0;i--){const j=ri(0,i);const tmp=idx[i];idx[i]=idx[j];idx[j]=tmp;}
  return {opts:idx.map(i=>opts[i]),a:idx.indexOf(correctIdx)};}
 
+/* ============ Migration auf Teilkompetenzen ============
+   Wer ein Modul schon konnte, startet nicht bei null: ★ hebt alle Skills des
+   Moduls auf „kann ich", ★★★ auf „sicher", eine gesehene Lektion gilt als
+   gesehen. Idempotent über state.skillMig – ein zweiter Lauf ändert nichts,
+   und bereits höhere Skill-Stufen werden nie heruntergestuft. */
+const SKILL_MIG=1;
+function migSkills(){
+ if(state.skillMig>=SKILL_MIG)return 0;
+ let n=0;
+ MODS.forEach(m=>{
+  if(!m.subs)return;
+  const s=st(m.id);                    /* legt s.sk mit Standardwerten an */
+  const ziel=(s.boss||0)>=3?3:((s.boss||0)>=1?2:0);
+  m.subs.forEach(x=>{
+   const q=s.sk[x.k];
+   if(ziel>q.lvl){q.lvl=ziel;n++;}
+   if(s.seen&&!q.seen)q.seen=true;
+   /* Wiederholung anstoßen, damit der Stoff nicht liegen bleibt */
+   if(q.lvl>=2&&q.stage<0){q.stage=s.stage>=0?s.stage:0;
+    q.due=s.due||addDays(IVL[Math.max(0,q.stage)]);}
+  });
+ });
+ state.skillMig=SKILL_MIG;
+ saveNow();
+ return n;
+}
+
 /* ============ Start ============ */
-load();updHeader();renderHome();
+load();migSkills();updHeader();renderHome();
 askPersist();autoSaveHooks();
 restoreBest();
 charLifeStart();
